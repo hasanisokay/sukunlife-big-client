@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 export const verifyToken = async (token = null) => {
   if (!token) {
     const cookieStore = await cookies();
-    token = cookieStore.get(ACCESS_TOKEN)?.value?.split("Bearer")[1]?.trim();
+    token = cookieStore.get(ACCESS_TOKEN)?.value;
   }
   if (!token) return null;
   const secret = new TextEncoder().encode(process.env.JWT_ENCRYPTION_KEY);

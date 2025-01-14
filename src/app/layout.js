@@ -3,10 +3,13 @@ import "./globals.css";
 import Navbar from "@/components/nav/Navbar";
 import StoreProvider from "@/components/providers/StoreProvider";
 import getThemeCookie from "@/utils/getThemeCookie.mjs";
-import { verifyToken } from "@/utils/verifyToken.mjs";
 import { makeStore } from "@/store/store";
 import { setUserData } from "@/store/slices/authSlice";
 import { setTheme } from "@/store/slices/themeSlice";
+import ThemeProvider from "@/components/providers/ThemeProvider";
+import checkToken from "@/utils/checkToken.mjs";
+import TokenRefreh from "@/components/providers/TokenRefreh";
+import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,22 +27,26 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
+  const refreshToken = await checkToken();
   let storedTheme = await getThemeCookie();
-  let userData = await verifyToken();
+  let userData = await getUserDataFromToken();
   const store = makeStore();
-  store.dispatch(setUserData(userData));
+  store.dispatch(setUserData(userData || null));
   store.dispatch(setTheme(storedTheme));
   const initialReduxState = store.getState();
-
   return (
-    <html lang="en">
+    <html lang="en" data-theme={storedTheme}>
       <StoreProvider initialReduxState={initialReduxState}>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <Navbar />
-          {children}
-        </body>
+        <TokenRefreh refreshToken={refreshToken}>
+          <ThemeProvider>
+            <body
+              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            >
+              <Navbar />
+              {children}
+            </body>
+          </ThemeProvider>
+        </TokenRefreh>
       </StoreProvider>
     </html>
   );

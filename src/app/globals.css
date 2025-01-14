@@ -1,21 +1,167 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --text-primary: #1f2937; /* Default text color for light mode */
+  --text-secondary: #4b5563; /* Secondary text color for light mode */
+  --bg-primary: #ffffff; /* Background color for light mode */
+  --bg-secondary: #f3f4f6; /* Secondary background for light mode */
+  --border-color: #d1d5db; /* Border color for light mode */
+  --link-color: #2563eb; /* Link color for light mode */
+  --btn-primary: #007bff; /* Primary button color for light mode */
+  --btn-submit: #27c93f; /* Submit button color for light mode */
+  --btn-cancel: #dc3545; /* Cancel button color for light mode */
+  --btn-outline: transparent; /* Outline button color for light mode */
+  --btn-outline-border: #007bff; /* Outline button border color for light mode */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="dark"] {
+  --text-primary: #f3f4f6; /* Default text color for dark mode */
+  --text-secondary: #9ca3af; /* Secondary text color for dark mode */
+  --bg-primary: #1f2937; /* Background color for dark mode */
+  --bg-secondary: #111827; /* Secondary background for dark mode */
+  --border-color: #374151; /* Border color for dark mode */
+  --link-color: #3b82f6; /* Link color for dark mode */
+  --btn-primary: #375a7f; /* Primary button color for dark mode */
+  --btn-submit: #218838; /* Submit button color for dark mode */
+  --btn-cancel: #c82333; /* Cancel button color for dark mode */
+  --btn-outline: transparent; /* Outline button color for dark mode */
+  --btn-outline-border: #375a7f; /* Outline button border color for dark mode */
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
+
+.container {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.border {
+  border-color: var(--border-color);
+}
+
+.link {
+  color: var(--link-color);
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+/* Button Styles */
+.btn {
+  background-color: var(--btn-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn-sm {
+  background-color: var(--btn-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:hover {
+  background-color: darken(var(--btn-primary), 10%);
+  border-color: darken(var(--border-color), 10%);
+}
+
+.btn-submit {
+  font-family: -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+  border: none;
+  color: white;
+  background: linear-gradient(180deg, #4b91f7 0%, #367af6 100%);
+  background-origin: border-box;
+  box-shadow: 0px 0.5px 1.5px rgba(54, 122, 246, 0.25),
+    inset 0px 0.8px 0px -0.25px rgba(255, 255, 255, 0.2);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+.btn-submit:hover {
+  background: linear-gradient(180deg, #367af6 0%, #4b91f7 100%);
+  box-shadow: 0px 0.5px 1.5px rgba(54, 122, 246, 0.25),
+    inset 0px 0.8px 0px -0.25px rgba(255, 255, 255, 0.5);
+}
+
+.btn-submit:active {
+  box-shadow: inset 0px 0.8px 0px -0.25px rgba(255, 255, 255, 0.2),
+    0px 0.5px 1.5px rgba(54, 122, 246, 0.25),
+    0px 0px 0px 3.5px rgba(58, 108, 217, 0.5);
+  outline: 0;
+}
+
+.btn-cancel {
+  background-color: var(--btn-cancel);
+  border-color: var(--btn-cancel);
+}
+
+.btn-cancel:hover {
+  background-color: darken(var(--btn-cancel), 10%);
+  border-color: darken(var(--btn-cancel), 10%);
+}
+
+.btn-outline {
+  background-color: var(--btn-outline);
+  color: var(--btn-outline-border);
+  border: 1px solid var(--btn-outline-border);
+}
+
+.btn-outline:hover {
+  background-color: var(--btn-outline-border);
+  color: var(--text-primary);
+}
+
+.btn-loader {
+  width: 12px;
+  height: 12px;
+  border: 3px dotted #FFF;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: btn-loader-animation 1s linear infinite;
+}
+@keyframes btn-loader-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 
