@@ -35,7 +35,8 @@ export default async function RootLayout({ children }) {
   store.dispatch(setTheme(storedTheme));
   const initialReduxState = store.getState();
   return (
-    <html lang="en" data-theme={storedTheme}>
+    <html lang="en" data-theme={storedTheme} >
+      {/* className={`light ${storedTheme ==="dark"? "dark":""}`} */}
       <StoreProvider initialReduxState={initialReduxState}>
         <TokenRefreh refreshToken={refreshToken}>
           <ThemeProvider>

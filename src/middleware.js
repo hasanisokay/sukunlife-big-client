@@ -3,12 +3,12 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants/names.mjs";
 
 export async function middleware(request) {
   // return NextResponse.next();
-  let token = request.cookies.get(ACCESS_TOKEN)?.value;
+  let accessToken = request.cookies.get(ACCESS_TOKEN)?.value;
   let refreshToken = request.cookies.get(REFRESH_TOKEN)?.value;
 
   const pathName = request.nextUrl.pathname;
   if (
-    token &&
+    accessToken &&
     (pathName === "/login" ||
       pathName === "/signup" ||
       pathName === "/identity")
@@ -16,7 +16,10 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (!token && pathName.includes("/dashboard")) {
+  if (!accessToken && refreshToken && pathName.includes("/dashboard")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+  if (!accessToken && !refreshToken && pathName.includes("/dashboard")) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirectTo", pathName);
     return NextResponse.redirect(loginUrl);

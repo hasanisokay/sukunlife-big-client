@@ -43,7 +43,7 @@ export default function SignupForm() {
   });
 
   const onSubmit = async (d) => {
-    const res = await fetch(`${SERVER}/auth/signup`, {
+    const res = await fetch(`${SERVER}/api/auth/signup`, {
       method: "POST",
       body: JSON.stringify(d),
       headers: {

@@ -1,0 +1,85 @@
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 2em;
+}
+h2 {
+  font-size: 1.75em;
+}
+h3 {
+  font-size: 1.5em;
+}
+h4 {
+  font-size: 1.25em;
+}
+h5 {
+  font-size: 1em;
+}
+h6 {
+  font-size: 0.875em;
+}
+
+/* Paragraph */
+p {
+  margin: 1em 0;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Blockquote */
+blockquote {
+  margin: 1em 0;
+  padding-left: 1em;
+  border-left: 4px solid #ccc;
+  color: #666;
+  font-style: italic;
+}
+
+/* Unordered List (ul) */
+ul {
+  margin: 1em 0;
+  padding-left: 1.5em;
+  list-style-type: disc; /* Default bullet style */
+}
+
+ul ul {
+  list-style-type: circle; /* Nested unordered lists use circle bullets */
+}
+
+ul ul ul {
+  list-style-type: square; /* Further nested unordered lists use square bullets */
+}
+
+/* Ordered List (ol) */
+ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+  list-style-type: decimal; /* Default numeric style */
+}
+
+ol ol {
+  list-style-type: lower-alpha; /* Nested ordered lists use lower-alpha (a, b, c) */
+}
+
+ol ol ol {
+  list-style-type: lower-roman; /* Further nested ordered lists use lower-roman (i, ii, iii) */
+}
+
+/* List Items (li) */
+li {
+  margin: 0.5em 0; /* Add spacing between list items */
+  line-height: 1.5;
+}

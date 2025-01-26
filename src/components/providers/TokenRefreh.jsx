@@ -8,7 +8,8 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
     const dispatch = useDispatch();
     const theme = useSelector(state => state.theme.mode)
     const refreshAccessToken = async () => {
-        const res = await fetch(`${SERVER}/auth/refresh`, {
+    try{
+        const res = await fetch(`${SERVER}/api/auth/refresh`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -17,6 +18,9 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
         });
         const data = await res.json()
         dispatch(setUserData(data.user))
+    }catch{
+        
+    }
     }
     useEffect(() => {
         if (refreshToken) {

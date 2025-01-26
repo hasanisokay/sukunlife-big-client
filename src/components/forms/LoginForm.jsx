@@ -14,7 +14,7 @@ const loginSchema = z.object({
     .nonempty("Mobile number or email is required")
     .refine(
       (value) =>
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || /^[0-9]{10}$/.test(value),
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || /^[0-9]{11}$/.test(value),
       { message: "Must be a valid email or mobile number" }
     ),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -32,21 +32,25 @@ export default function LoginForm({ redirectTo }) {
   });
 
   const onSubmit = async (d) => {
-    setLoading(true);
-    const res = await fetch(`${SERVER}/auth/login`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(d),
-      credentials: 'include'
-    })
-    const data = await res.json();
-    setLoading(false);
-    if (data.status === 200) {
-      window.location.href = redirectTo || "/"
-    } else {
-      setServerError(data?.message || "ERROR")
+    try {
+      setLoading(true);
+      const res = await fetch(`${SERVER}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(d),
+        credentials: 'include'
+      })
+      const data = await res.json();
+      setLoading(false);
+      if (data.status === 200) {
+        window.location.href = redirectTo || "/"
+      } else {
+        setServerError(data?.message || "ERROR")
+      }
+    } catch (e) {
+      console.log(e)
     }
   };
 

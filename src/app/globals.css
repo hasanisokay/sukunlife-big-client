@@ -150,7 +150,7 @@ body {
 .btn-loader {
   width: 12px;
   height: 12px;
-  border: 3px dotted #FFF;
+  border: 3px dotted #fff;
   border-radius: 50%;
   display: inline-block;
   position: relative;
@@ -158,6 +158,42 @@ body {
   animation: btn-loader-animation 1s linear infinite;
 }
 @keyframes btn-loader-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes btn-loader-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.tailwind-reset * {
+  all: unset;
+}
+.ProseMirror-focused:focus-visible {
+  outline: none;
+}
+
+.spinner2 {
+  width: 40px;
+  height: 40px;
+  border: 4px solid;
+  border-color: #7ebc12 transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation2 1s linear infinite;
+}
+
+@keyframes rotation2 {
   0% {
     transform: rotate(0deg);
   }

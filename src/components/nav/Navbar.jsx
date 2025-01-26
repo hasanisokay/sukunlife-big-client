@@ -7,6 +7,7 @@ import { toggleTheme } from "@/store/slices/themeSlice";
 import logOut from "@/utils/logOut.mjs";
 import Image from "next/image";
 import logo from "@/../public/images/logo.png";
+import { setUserData } from "@/store/slices/authSlice";
 // import logoDark from "@/../public/images/logo-dark.png";
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -34,8 +35,9 @@ const Navbar = () => {
   }, [lastScrollY]);
 
   const handleLogOut = () => {
-    logOut()
-    window.location.href = `/login?redirectTo=${currentPath}`
+    logOut();
+    dispatch(setUserData(null));
+    window.location.reload()
   }
   const getLinkClass = (p) => {
     let path = p;
@@ -120,11 +122,12 @@ const Navbar = () => {
             <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
               <div className="flex-shrink-0">
                 <Link href="/" className="text-2xl font-bold">
-             {theme ==="light" ?     <Image src={logo} width={140} height={100} alt="logo" className="" /> :      <Image src={logo} width={140} height={100} alt="logo" className="brightness-0 invert" />}
+                  {theme === "light" ? <Image src={logo} width={140} height={100} alt="logo" className="" /> : <Image src={logo} width={140} height={100} alt="logo" className="brightness-0 invert" />}
                 </Link>
+                {user && <button onClick={handleLogOut}>Log Out</button>}
               </div>
               <div className="hidden sm:block sm:ml-6">
-              {themeSwitch}
+                {themeSwitch}
               </div>
             </div>
           </div>
