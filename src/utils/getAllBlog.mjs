@@ -8,13 +8,14 @@ const getAllBlog = async (
   limit = 10,
   keyword = "",
   tags = "",
-  sort = "newest"
+  sort = "newest",
+  skip = 0
 ) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   try {
     const res = await fetch(
-      `${SERVER}/api/public/blogs?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}`,
+      `${SERVER}/api/public/blogs?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}&&skip=${skip}`,
       {
         method: "GET",
         headers: {

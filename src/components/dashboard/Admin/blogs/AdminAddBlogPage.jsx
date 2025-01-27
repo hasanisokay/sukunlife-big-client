@@ -9,6 +9,7 @@ import DatePicker from "@/components/ui/datepicker/Datepicker";
 import { SERVER } from "@/constants/urls.mjs";
 import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
+import uploadImage from "@/utils/uploadImage.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -21,6 +22,7 @@ const blogSchema = z.object({
   authorName: z.string().optional(),
   postStatus: z.enum(["public", "private"]),
   blogTags: z.array(z.string()).optional(),
+  blogCoverPhoto: z.string().url("Blog Cover Photo Missing"),
 });
 
 const AdminAddBlogPage = () => {
@@ -48,6 +50,7 @@ const AdminAddBlogPage = () => {
       authorName: "",
       postStatus: "public",
       blogTags: [],
+      blogCoverPhoto: "",
     },
   });
 
@@ -96,7 +99,7 @@ const AdminAddBlogPage = () => {
         toast.error("Blog Url must be unique.")
         return
       }
-     
+
       const res = await fetch(`${SERVER}/api/admin/add-new-blog`, {
         credentials: "include",
         method: "POST",
@@ -123,6 +126,16 @@ const AdminAddBlogPage = () => {
     }
   };
 
+  const uploadImageHandler = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const url = await uploadImage(file);
+      if (url.length > 0) {
+        setValue('blogCoverPhoto', url)
+      }
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen w-full">
       <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">
@@ -142,7 +155,13 @@ const AdminAddBlogPage = () => {
           />
           {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
         </div>
-
+        <div>
+          <label htmlFor="blogCoverPhoto" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Blog Cover Photo
+          </label>
+          <input onChange={uploadImageHandler} type="file" accept="image/*" name="blogCoverPhoto" id="blogCoverPhoto" />
+          {errors.blogCoverPhoto && <p className="text-red-500 text-sm mt-1">{errors.blogCoverPhoto.message}</p>}
+        </div>
         <div>
           <label htmlFor="blogUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Blog URL
@@ -256,7 +275,7 @@ const AdminAddBlogPage = () => {
           Submit Blog
         </button>
       </form>
-      <ToastContainer transition={Flip} />
+      <ToastContainer transition={Flip} position="top-center"/>
     </div>
   );
 };
