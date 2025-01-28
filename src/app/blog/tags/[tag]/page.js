@@ -39,7 +39,10 @@ export default singleTagPage;
 export async function generateMetadata({ params }) {
   const host = await hostname();
   const p = await params;
-  const tag = p?.tag;
+  let tag = p.tag;
+  if(tag){
+    tag = decodeURIComponent(tag)
+  }
   const blogCoverUrl = `${host}${blogCover.src}`;
 
   let metadata = {

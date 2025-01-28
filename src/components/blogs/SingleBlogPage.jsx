@@ -4,6 +4,7 @@ import Image from "next/image";
 import BlogContent from "./BlogContnet";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const SingleBlogPage = ({ b }) => {
     const [imageUrl, setImageUrl] = useState(b?.blogCoverPhoto);
@@ -47,11 +48,11 @@ const SingleBlogPage = ({ b }) => {
                     {b?.title}
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    By{" "}
+                {b?.authorName && "By"} {" "}
                     <span className="font-medium text-gray-700 dark:text-gray-200">
                         {b?.authorName}
                     </span>{" "}
-                    on{" "}
+                    {b?.authorName ? "on" :"On"} {" "} 
                     {new Date(b?.date).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
@@ -66,7 +67,7 @@ const SingleBlogPage = ({ b }) => {
                                 whileHover={{ scale: 1.05 }}
                                 className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 dark:bg-blue-800 dark:text-blue-200 rounded-full cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors"
                             >
-                                #{tag}
+                                <Link href={`/blog/tags/${tag}`}> #{tag}</Link>
                             </motion.span>
                         ))}
                     </div>

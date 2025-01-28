@@ -201,3 +201,9 @@ body {
     transform: rotate(360deg);
   }
 } 
+
+[data-theme='dark']  .react-select__menu{
+background-color: #667494;
+color: black;
+
+}
