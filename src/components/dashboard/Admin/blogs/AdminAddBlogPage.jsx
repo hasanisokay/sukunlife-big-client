@@ -10,6 +10,7 @@ import { SERVER } from "@/constants/urls.mjs";
 import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import uploadImage from "@/utils/uploadImage.mjs";
+import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -58,13 +59,10 @@ const AdminAddBlogPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${SERVER}/api/admin/all-blog-tags`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (data?.categories) {
+        const data = await getAllBlogTags();
+        if (data?.tags) {
           setCategories(
-            data.categories.map((category) => ({
+            data?.tags?.map((category) => ({
               value: category,
               label: category,
             }))
@@ -275,7 +273,7 @@ const AdminAddBlogPage = () => {
           Submit Blog
         </button>
       </form>
-      <ToastContainer transition={Flip} position="top-center"/>
+      <ToastContainer transition={Flip} position="top-center" />
     </div>
   );
 };

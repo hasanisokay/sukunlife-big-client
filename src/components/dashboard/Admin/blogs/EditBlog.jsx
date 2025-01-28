@@ -10,6 +10,7 @@ import { SERVER } from "@/constants/urls.mjs";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
+import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -53,13 +54,10 @@ const EditBlog = ({ blog }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${SERVER}/api/admin/all-blog-tags`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (data?.categories) {
+        const data = await getAllBlogTags();
+        if (data?.tags) {
           setCategories(
-            data.categories.map((category) => ({
+            data?.tags?.map((category) => ({
               value: category,
               label: category,
             }))
