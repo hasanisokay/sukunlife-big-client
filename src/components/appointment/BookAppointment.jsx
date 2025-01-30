@@ -10,6 +10,7 @@ import Select from "react-select";
 import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import convertTo12HourFormat from '@/utils/convertTo12HourFormat.mjs';
 
 // Updated Zod schema
 const schema = z.object({
@@ -23,18 +24,17 @@ const schema = z.object({
     date: z.string().min(4, { message: "Date required." }),
     time: z.string().min(1, { message: 'Time is required' }),
     problem: z.string().min(1, { message: 'Problem description is required' }),
-    advancePayment: z.boolean().optional(), 
+    advancePayment: z.boolean().optional(),
     transactionNumber: z.string().optional(),
 }).refine(data => {
-    // Check if transactionNumber is provided when advancePayment is true
     if (data.advancePayment) {
-      return data.transactionNumber?.length > 0;
+        return data.transactionNumber?.length > 0;
     }
     return true;
-  }, {
+}, {
     message: "Transaction number is required when advance payment is selected",
     path: ["transactionNumber"],
-  });
+});
 
 
 
@@ -75,9 +75,14 @@ const BookAppointment = ({ dates, status }) => {
 
     const onSubmit = async (d) => {
         try {
-            let bookingData = d;
+            let bookingData = {
+                ...d,
+                advancePayment: d.advancePayment ?? false,
+                transactionNumber: d.advancePayment ? d.transactionNumber : "",
+            };
+
             if (user) {
-                bookingData = { ...d, loggedInUser: user };
+                bookingData.loggedInUser = user
             }
             const res = await fetch(
                 `${SERVER}/api/public/book-appointment`,
@@ -92,13 +97,30 @@ const BookAppointment = ({ dates, status }) => {
             const data = await res.json();
             if (data.status === 200) {
                 toast.success(data?.message);
-                // router.push("/");
+                try {
+                    // sending email to notify admin.
+                    const r = await fetch(
+                        `${SERVER}/api/public/send-email`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(bookingData)
+                        }
+                    );
+                    const emailData = await r.json();
+                } catch {
+                    toast.error("Error while confirming. Please contact support to confirm.")
+                }
             } else {
                 toast.error(data.message);
             }
         } catch (e) {
             console.error(e);
             toast.error("Server is busy right now. Try few hours later.");
+        } finally {
+            // router.push("/");
         }
     };
 
@@ -118,14 +140,14 @@ const BookAppointment = ({ dates, status }) => {
         setValue('time', time);
     };
 
-    const handleAdvancePaymentChange = (e) => {
-        const isChecked = e.target.checked;
-        setValue('advancePayment', isChecked);
-        setShowTransactionField(isChecked); // Show/hide transaction field
-        if (!isChecked) {
-            setValue('transactionNumber', ''); // Clear transaction number if unchecked
-        }
-    };
+    // const handleAdvancePaymentChange = (e) => {
+    //     const isChecked = e.target.checked;
+    //     setValue('advancePayment', isChecked);
+    //     setShowTransactionField(isChecked); // Show/hide transaction field
+    //     if (!isChecked) {
+    //         setValue('transactionNumber', ''); // Clear transaction number if unchecked
+    //     }
+    // };
 
     // const handlePayLater = () => {
     //     setValue('advancePayment', false);
@@ -280,7 +302,7 @@ const BookAppointment = ({ dates, status }) => {
                                         : 'bg-gray-100 dark:bg-gray-700 dark:text-white'
                                         }`}
                                 >
-                                    {time}
+                                    {convertTo12HourFormat(time)}
                                 </button>
                             ))}
                         </div>
@@ -306,66 +328,64 @@ const BookAppointment = ({ dates, status }) => {
                     )}
                 </div>
 
-{/* Advance Payment Field */}
-<div className="mb-4">
-    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-        Payment Option
-    </label>
-    <div className="flex gap-2">
-        {/* Pay Now Button */}
-        <button
-            type="button"
-            onClick={() => {
-                setValue('advancePayment', true);
-                setShowTransactionField(true);
-            }}
-            className={`flex-1 p-3 rounded-lg text-center transition-colors ${
-                showTransactionField
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-            }`}
-        >
-            Pay 500 TK Now
-        </button>
+                {/* Advance Payment Field */}
+                <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                        Payment Option
+                    </label>
+                    <div className="flex gap-2">
+                        {/* Pay Now Button */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setValue('advancePayment', true);
+                                setShowTransactionField(true);
+                            }}
+                            className={`flex-1 p-3 rounded-lg text-center transition-colors ${showTransactionField
+                                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                        >
+                            Pay 500 TK Now
+                        </button>
 
-        {/* Pay Later Button */}
-        <button
-            type="button"
-            onClick={() => {
-                setValue('advancePayment', false);
-                setShowTransactionField(false);
-            }}
-            className={`flex-1 p-3 rounded-lg text-center transition-colors ${
-                !showTransactionField
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-            }`}
-        >
-            Pay Later
-        </button>
-    </div>
+                        {/* Pay Later Button */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setValue('advancePayment', false);
+                                setShowTransactionField(false);
+                            }}
+                            className={`flex-1 p-3 rounded-lg text-center transition-colors ${!showTransactionField
+                                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                        >
+                            Pay Later
+                        </button>
+                    </div>
 
-    {/* Transaction Number Field (Conditional) */}
-    {showTransactionField && (
-        <div className="mt-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                Pay 500 TK to <strong>017xxxxx (Bkash)</strong> to confirm your booking.
-            </p>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                Transaction Number
-            </label>
-            <input
-                {...register('transactionNumber')}
-                type="text"
-                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                placeholder="Enter transaction number"
-            />
-            {errors.transactionNumber && (
-                <p className="text-red-500 text-sm mt-1">{errors.transactionNumber.message}</p>
-            )}
-        </div>
-    )}
-</div>
+                    {/* Transaction Number Field (Conditional) */}
+                    {showTransactionField && (
+                        <div className="mt-4">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                Pay 500 TK to <strong>017xxxxx (Bkash)</strong> to confirm your booking.
+                            </p>
+                            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                                Transaction Number
+                            </label>
+                            <input
+                                {...register('transactionNumber')}
+                                type="text"
+                                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                placeholder="Enter transaction number"
+                            />
+                            {errors.transactionNumber && (
+                                <p className="text-red-500 text-sm mt-1">{errors.transactionNumber.message}</p>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 {/* Pay Later Button */}
                 {/* {!showTransactionField && (
