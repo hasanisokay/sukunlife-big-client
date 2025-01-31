@@ -208,4 +208,7 @@ color: black;
 
 }
 
-
+.text-wrapped{
+  word-wrap: break-word; 
+  overflow-wrap: break-word;
+}

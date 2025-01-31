@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 
-const LoadMoreButton = ({ page }) => {
+const LoadMoreButton = ({ page, noSkip =false }) => {
     const router = useRouter();
 
     const handleClick = () => {
         const newPage = parseInt(page) + 1;
         const query = new URLSearchParams(window.location.search);
         query.set("page", newPage);
+        if(noSkip){
+            query.set("skip", 0)
+        }
         router.replace(`${window.location.pathname}?${query.toString()}`, { scroll: false });
     };
 

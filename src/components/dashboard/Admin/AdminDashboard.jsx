@@ -1,7 +1,7 @@
 const AdminDashboard = () => {
 
     return (
-        <div className="flex-1 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+        <div className="flex-1 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ">
             {/* Main Content */}
             <main className="w-full p-6">
                 <h2 className="text-xl font-bold mb-4">Dashboard Overview</h2>

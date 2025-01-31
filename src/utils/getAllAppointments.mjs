@@ -3,14 +3,21 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants/names.mjs";
 import { SERVER } from "@/constants/urls.mjs";
 import { cookies } from "next/headers";
 
-const getAllAppointment = async (page = 1, limit = 10, filter = "upcoming", sort="newest", keyword="") => {
+const getAllAppointment = async (
+  page = 1,
+  limit = 10,
+  filter = "upcoming",
+  sort = "newest",
+  keyword = "",
+  skip = ""
+) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
-  const refreshToken = cookieStore.get(REFRESH_TOKEN); 
-  
+  const refreshToken = cookieStore.get(REFRESH_TOKEN);
+
   try {
     const res = await fetch(
-      `${SERVER}/api/admin/appointments?limit=${limit}&&page=${page}&&filter=${filter}&&sort=${sort}&&keyword=${keyword}`,
+      `${SERVER}/api/admin/appointments?limit=${limit}&&page=${page}&&filter=${filter}&&sort=${sort}&&keyword=${keyword}&&skip=${skip}`,
       {
         method: "GET",
         headers: {

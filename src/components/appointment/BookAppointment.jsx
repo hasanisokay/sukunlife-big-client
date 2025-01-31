@@ -82,7 +82,7 @@ const BookAppointment = ({ dates, status }) => {
             };
 
             if (user) {
-                bookingData.loggedInUser = user
+                bookingData.loggedInUser = { _id: user._id, name: user.name, }
             }
             const res = await fetch(
                 `${SERVER}/api/public/book-appointment`,
@@ -120,7 +120,7 @@ const BookAppointment = ({ dates, status }) => {
             console.error(e);
             toast.error("Server is busy right now. Try few hours later.");
         } finally {
-            // router.push("/");
+            router.push("/");
         }
     };
 

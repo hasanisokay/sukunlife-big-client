@@ -47,7 +47,7 @@ const AdminSidebar = () => {
 
     return (
         <div 
-        className={`${isSidebarOpen ? "w-full md:min-w-64 md:w-64  md:relative fixed md:min-h-full min-h-fit bg-gray-200 dark:bg-gray-800":"max-w-0 md:w-0 h-0 min-h-0 max-h-0 bg-none"}`}
+        className={`${isSidebarOpen ? "w-full z-10 md:min-w-64 md:w-64  md:relative fixed md:min-h-full min-h-fit bg-gray-200 dark:bg-gray-800":"max-w-0 md:w-0 h-0 min-h-0 max-h-0 bg-none"}`}
         >
             {!isSidebarOpen && <button
                 onClick={toggleSidebar}

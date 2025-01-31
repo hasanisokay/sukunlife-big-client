@@ -18,7 +18,7 @@ const BlogPage = ({ b, limit, page }) => {
                 }
             </div>
             {
-                memorizedBlogs?.length < b.totalCount && <LoadMoreButton limit={limit} page={page} />
+                memorizedBlogs?.length < b.totalCount && <LoadMoreButton  page={page} />
             }
         </section>
     );
