@@ -11,6 +11,7 @@ const BlogPage = ({ b, limit, page }) => {
     }, [b])
     return (
         <section>
+
             <div className="space-y-10">
                 {
                     memorizedBlogs?.map(b => <SingleBlogCard b={b} key={b?._id} />)

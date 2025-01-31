@@ -3,6 +3,7 @@ import BlogContent from "@/components/blogs/BlogContnet";
 import Spinner from "@/components/loaders/Spinner";
 import Spinner2 from "@/components/loaders/Spinner2";
 import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal";
+import SearchBar from "@/components/search/SearchBar";
 import { SERVER } from "@/constants/urls.mjs";
 import formatDate from "@/utils/formatDate.mjs";
 // import Link from "next/link";
@@ -18,6 +19,9 @@ const AdminBlogsPage = ({ blogs }) => {
     const [initialBlogs, setInitialBlogs] = useState(blogs);
     const memorizedBlogs = useMemo(() => initialBlogs, [initialBlogs]);
 
+    useEffect(() => {
+        setInitialBlogs(blogs)
+    }, [blogs])
     const router = useRouter();
     const handleViewContent = async (blog) => {
         setFetchingBlog(true)
@@ -76,6 +80,7 @@ const AdminBlogsPage = ({ blogs }) => {
             <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">
                 Blogs
             </h1>
+            <SearchBar placeholder={"Search blog"} />
             {fetchingBlog && <Spinner2 loadingText={"Please Wait..."} />}
             <div className="overflow-x-auto ">
                 <table className="w-full border-collapse bg-white dark:bg-gray-700">
