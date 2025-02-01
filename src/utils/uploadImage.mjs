@@ -17,8 +17,6 @@ const uploadImage = async (file) => {
     );
 
     const data = await response.json();
-    console.log(data);
-
     if (response.ok) {
       const imageUrl = data.data.url;
       toast.update(loadingToast, {

@@ -11,6 +11,7 @@ import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
+import generateUniqueIds from "@/utils/generateUniqueIds.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -116,6 +117,7 @@ const EditBlog = ({ blog }) => {
         <RichTextEditor
           initialContent={blog?.content}
           onContentChange={(content) => setValue("content", content)}
+          uniqueKey={generateUniqueIds(1)}
         />
 
         <DatePicker

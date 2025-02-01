@@ -13,7 +13,7 @@ import PhotoSVG from "../svg/PhotoSVG";
 import ColorSVG from "../svg/ColorSVG";
 import { RedoSVG, UndoSVG } from "../svg/SvgCollection";
 
-const RichTextEditor = ({ onContentChange, initialContent = "" }) => {
+const RichTextEditor = ({ onContentChange, initialContent = "", uniqueKey="" }) => {
   const [imageUploadError, setImageUploadError] = useState("");
 
   const editor = useEditor({
@@ -219,12 +219,12 @@ const RichTextEditor = ({ onContentChange, initialContent = "" }) => {
         </button>
         {/* Colors */}
         <div>
-          <label htmlFor="colorPicker" className="mr-2">
-            <ColorSVG clickHandler={() => document.getElementById('colorPicker').click()} />
+          <label htmlFor={`colorPicker${uniqueKey}`} className="mr-2">
+            <ColorSVG clickHandler={() => document.getElementById(`colorPicker${uniqueKey}`).click()} />
           </label>
           <input
             type="color"
-            id="colorPicker"
+            id={`colorPicker${uniqueKey}`}
             onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
             className="invisible border rounded"
           />
@@ -232,9 +232,9 @@ const RichTextEditor = ({ onContentChange, initialContent = "" }) => {
 
         {/* Image Upload */}
         <div>
-          <PhotoSVG clickHandler={() => document.getElementById('imageFileInputField').click()} />
+          <PhotoSVG clickHandler={() => document.getElementById(`imageFileInputField${uniqueKey || ""}`).click()} />
           <input
-            id="imageFileInputField"
+            id={`imageFileInputField${uniqueKey || ""}`}
             type="file"
             accept="image/*"
             onChange={uploadImageHandler}

@@ -11,6 +11,7 @@ import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import uploadImage from "@/utils/uploadImage.mjs";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
+import generateUniqueIds from "@/utils/generateUniqueIds.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -180,7 +181,7 @@ const AdminAddBlogPage = () => {
           {errors.blogUrl && <p className="text-red-500 text-sm mt-1">{errors.blogUrl.message}</p>}
         </div>
 
-        <RichTextEditor onContentChange={(content) => setValue("content", content)} />
+        <RichTextEditor onContentChange={(content) => setValue("content", content)} uniqueKey={generateUniqueIds(1)} />
         {errors?.content && <p className="text-red-500 text-sm mt-1">{errors?.content?.message}</p>}
         <DatePicker defaultDate={new Date()} onChangeHanlder={(date) => setValue("date", date)} />
         {errors?.date && <p className="text-red-500 text-sm mt-1">{errors?.date?.message}</p>}

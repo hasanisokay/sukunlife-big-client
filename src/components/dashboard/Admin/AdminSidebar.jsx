@@ -109,7 +109,7 @@ const AdminSidebar = () => {
                     </button>
                     {activeMenu === 'courses' && (
                         <div className="ml-4 space-y-2">
-                            <Link href="/dashboard/courses/all" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/courses/all")}`}>All Courses</Link>
+                            <Link href="/dashboard/courses" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/courses")}`}>All Courses</Link>
                             <Link href="/dashboard/courses/add" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/courses/add")}`}>Add Course</Link>
                         </div>
                     )}
