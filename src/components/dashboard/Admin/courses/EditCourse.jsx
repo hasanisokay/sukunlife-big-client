@@ -6,10 +6,13 @@ import RichTextEditor from '@/components/editor/RichTextEditor';
 import uploadImage from '@/utils/uploadImage.mjs';
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
 import DatePicker from '@/components/ui/datepicker/Datepicker';
+import { SERVER } from '@/constants/urls.mjs';
+import { Flip, toast, ToastContainer } from 'react-toastify';
+import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
 
 
 const EditCourse = ({ course }) => {
-    const { register, handleSubmit, control, formState: { errors }, reset, setValue, watch } = useForm();
+    const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
     const [modules, setModules] = useState([]);
     const [coverPhotoUrl, setCoverPhotoUrl] = useState('');
     const [checkingId, setCheckingId] = useState(false);
@@ -22,16 +25,36 @@ const EditCourse = ({ course }) => {
             setModules(course.modules || []);
             setCoverPhotoUrl(course.coverPhotoUrl || '');
             setValue('courseId', course.courseId || '');
-            setValue('addedOn', course.addedOn ? new Date(course.addedOn) : new Date());
+            setValue('description', course.description || '');
+            setValue('addedOn', course.addedOn ? new Date(course?.addedOn) : new Date());
             setValue('seoTags', course.seoTags || '');
             setValue('seoDescription', course.seoDescription || '');
             setValue('instructor', course.instructor || '');
         }
     }, [course, reset, setValue]);
 
-    const onSubmit = (data) => {
-        console.log('Updated Course Data:', { ...data, modules, coverPhotoUrl });
-        reset(data);
+    const onSubmit = async (data) => {
+        if (!idAvailable && data.courseId !== course.courseId) return toast.error("Id is not available");
+        const dateObj = data.addedOn;
+        const now = new Date();
+        const date = getDateObjWithoutTime(dateObj);
+        data.addedOn = date;
+        data.updatedOn = getDateObjWithoutTime(now);
+        
+        const res = await fetch(`${SERVER}/api/admin/course/${course._id}`, {
+            credentials: "include",
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ ...data, modules, coverPhotoUrl })
+        });
+        const d = await res.json();
+        return
+        if (d?.status === 200) {
+            toast.success(d.message);
+            window.location.href = "/dashboard/courses"
+        }
     };
 
     const handleAddModule = () => {
@@ -228,7 +251,7 @@ const EditCourse = ({ course }) => {
                     ...module,
                     items: [
                         ...module.items,
-                        { type: 'textInstruction', title: '', content: '', uniqueKey: generateUniqueIds(1)[0] },
+                        { type: 'textInstruction', title: '', content: '' },
                     ],
                 };
             }
@@ -275,7 +298,7 @@ const EditCourse = ({ course }) => {
                     ...module,
                     items: module.items.map((item, idx) => {
                         if (idx === itemIndex && item.type === 'textInstruction') {
-                            return { ...item, content };
+                            return { ...item, content: content };
                         }
                         return item;
                     }),
@@ -294,33 +317,27 @@ const EditCourse = ({ course }) => {
         }
     };
 
-    const checkIdAvailability = async (courseId) => {
+
+    const checkIdAvailability = async (id) => {
         setCheckingId(true);
-        setIdAvailable(true);
-        setIdCheckMessage('');
-
         try {
-            // Replace with your actual API endpoint to check course ID availability
-            const response = await fetch(`/api/checkCourseId?id=${courseId}`);
-            const data = await response.json();
-
-            if (data.available) {
-                setIdAvailable(true);
-                setIdCheckMessage('Course ID is available.');
-            } else {
-                setIdAvailable(false);
-                setIdCheckMessage('Course ID is already taken.');
-            }
-        } catch (err) {
-            setIdAvailable(false);
-            setIdCheckMessage('Error checking course ID availability.');
+            const res = await fetch(`${SERVER}/api/admin/check-course-id?id=${id}`, {
+                credentials: "include",
+            });
+            const data = await res.json();
+            setIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
+            setIdAvailable(data?.isAvailable);
+        } catch (error) {
+            setIdCheckMessage("Failed to check Id availability. Please try again.");
         } finally {
             setCheckingId(false);
         }
     };
 
+
+
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl mx-auto p-4 bg-white shadow-md rounded-lg">
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-4 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Edit Course</h2>
 
             {/* Course Title */}
@@ -340,15 +357,18 @@ const EditCourse = ({ course }) => {
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">Course Description</label>
                 <Controller
                     name="description"
+                    id='description'
                     control={control}
                     rules={{ required: 'Description is required' }}
-                    render={({ field }) => (
-                        <RichTextEditor
+                    render={({ field }) => {
+                        if (field.value === undefined) return;
+                        return <RichTextEditor
                             onContentChange={field.onChange}
                             key={`Description Rich Text Key course`}
-                            uniqueKey={generateUniqueIds(1)[0]}
+                            uniqueKey={generateUniqueIds(1)}
+                            initialContent={field.value}
                         />
-                    )}
+                    }}
                 />
                 {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
             </div>
@@ -383,12 +403,13 @@ const EditCourse = ({ course }) => {
                     name="addedOn"
                     control={control}
                     rules={{ required: 'Date is required' }}
-                    render={({ field }) => (
-                        <DatePicker
+                    render={({ field }) => {
+                        if (field.value === undefined) return;
+                        return <DatePicker
                             defaultDate={field.value}
                             onChangeHanlder={field.onChange}
                         />
-                    )}
+                    }}
                 />
                 {errors.addedOn && <p className="text-red-500 text-sm mt-1">{errors.addedOn.message}</p>}
             </div>
@@ -411,6 +432,7 @@ const EditCourse = ({ course }) => {
                 <input
                     type="text"
                     id="courseId"
+                    {...register('courseId')}
                     onBlur={(e) => checkIdAvailability(e.target.value)}
                     onChange={(e) => {
                         setValue('courseId', e.target.value);
@@ -528,14 +550,13 @@ const EditCourse = ({ course }) => {
                                         <Controller
                                             name={`modules[${moduleId}].items[${itemIndex}].content`}
                                             control={control}
-                                            defaultValue=""
-                                            render={({ field }) => (
-                                                <RichTextEditor
-                                                    onContentChange={(content) => handleTextInstructionContentChange(moduleId, itemIndex, content)}
-                                                    key={`Text Instruction key ${item.uniqueKey}`}
-                                                    uniqueKey={item.uniqueKey}
-                                                />
-                                            )}
+                                            render={({ field }) => (<RichTextEditor
+                                                onContentChange={(content) => handleTextInstructionContentChange(moduleId, itemIndex, content)}
+                                                initialContent={field?.value}
+                                                key={`Text Instruction key`}
+                                                uniqueKey={generateUniqueIds(1)}
+                                            />)
+                                            }
                                         />
                                     </div>
                                 )}
@@ -615,6 +636,7 @@ const EditCourse = ({ course }) => {
             >
                 Save Course
             </button>
+            <ToastContainer transition={Flip} />
         </form>
     );
 };

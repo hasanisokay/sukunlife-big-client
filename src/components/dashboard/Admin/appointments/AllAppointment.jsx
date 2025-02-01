@@ -46,7 +46,7 @@ const AllAppointment = ({ a, page, limit }) => {
                 }
             });
             const data = await res.json();
-            if (data.status === 200) {
+            if (data?.status === 200) {
                 toast.success(data?.message);
                 setAppointments(updatedAppointments);
                 setSelectedIds([]);

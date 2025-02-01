@@ -9,7 +9,7 @@ const singleBlogPage = async ({ params }) => {
     const p = await params;
     const blogUrl = p.blogUrl;
     const blog = await getSingleBlog(blogUrl);
-    if (blog.status === 200) {
+    if (blog?.status === 200) {
       return <SingleBlogPage b={blog?.blog} />;
     } else return <NotFound />;
   } catch {
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }) {
     if (blogUrl) {
       const b = await getSingleBlog(blogUrl);
       let blog;
-      if (b.status === 200) {
+      if (b?.status === 200) {
         blog = b.blog;
       }
 

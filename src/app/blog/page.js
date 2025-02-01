@@ -16,7 +16,7 @@ const publicBlogPage = async ({ searchParams }) => {
     const skip = 0;
 
     const blogs = await getAllBlog(page, limit, keyword, tags, sort, skip);
-    if (blogs.status === 200) {
+    if (blogs?.status === 200) {
       return (
         <>
           <BlogPage b={blogs} limit={limit} page={page} />

@@ -108,7 +108,7 @@ const AdminAddBlogPage = () => {
         body: JSON.stringify(d)
       });
       const data = await res.json();
-      if (data.status === 200) {
+      if (data?.status === 200) {
         toast.success(data.message)
         reset();
         setUrlAvailable(false);

@@ -45,7 +45,7 @@ const ScheduleAppointment = ({ dates = [] }) => {
             body: JSON.stringify({ dateIds, times })
         });
         const data = await res.json();
-        if (data.status === 200) {
+        if (data?.status === 200) {
             toast.success(data.message);
             setPreviousDates(prev =>
                 prev.map(d => 
@@ -79,7 +79,7 @@ const ScheduleAppointment = ({ dates = [] }) => {
                 body: JSON.stringify({ dateIds })
             });
             const data = await res.json();
-            if (data.status === 200) {
+            if (data?.status === 200) {
                 toast.success(data.message)
                 setPreviousDates((prev) => prev.filter((d, i) => d._id !== id));
             } else {
@@ -128,7 +128,7 @@ const ScheduleAppointment = ({ dates = [] }) => {
         });
 
         const data = await res.json();
-        if (data.status === 200) {
+        if (data?.status === 200) {
             toast.success(data?.message);
             setAddedDates([]); 
             setPreviousDates(prev=> [...prev, ...data.dates])

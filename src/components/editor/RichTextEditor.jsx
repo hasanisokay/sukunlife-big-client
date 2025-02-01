@@ -15,7 +15,6 @@ import { RedoSVG, UndoSVG } from "../svg/SvgCollection";
 
 const RichTextEditor = ({ onContentChange, initialContent = "", uniqueKey="" }) => {
   const [imageUploadError, setImageUploadError] = useState("");
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({

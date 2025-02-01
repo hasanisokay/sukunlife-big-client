@@ -44,7 +44,7 @@ export default function LoginForm({ redirectTo }) {
       })
       const data = await res.json();
       setLoading(false);
-      if (data.status === 200) {
+      if (data?.status === 200) {
         window.location.href = redirectTo || "/"
       } else {
         setServerError(data?.message || "ERROR")

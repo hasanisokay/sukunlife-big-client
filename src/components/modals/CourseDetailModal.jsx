@@ -15,7 +15,7 @@ const CourseDetailModal = ({ courseId, onClose }) => {
         const fetchCourseDetails = async () => {
             try {
                 const course = await getCourse(courseId);
-                if (course.status === 200) {
+                if (course?.status === 200) {
                     setCourseDetails(course?.course);
                 } else {
                     setError("Could not get the course");

@@ -8,6 +8,7 @@ import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import DatePicker from '@/components/ui/datepicker/Datepicker';
 import { AddSVG, ClipboardSVG, QuizSVG, VideoSVG } from '@/components/svg/SvgCollection';
+import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
 
 const AddCourse = () => {
     const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
@@ -17,9 +18,12 @@ const AddCourse = () => {
     const [modules, setModules] = useState([]);
     const [coverPhotoUrl, setCoverPhotoUrl] = useState([]);
     const onSubmit = async (data) => {
-
         if (!idAvailable) return toast.error("Course Id is not available.")
-        // console.log('Course Data:', { ...data, modules, coverPhotoUrl });
+
+        const dateObj = data.addedOn;
+        const date = getDateObjWithoutTime(dateObj);
+        data.addedOn = date;
+
         const res = await fetch(`${SERVER}/api/admin/add-new-course`, {
             credentials: "include",
             method: "POST",
@@ -29,7 +33,7 @@ const AddCourse = () => {
             body: JSON.stringify({ ...data, modules, coverPhotoUrl })
         });
         const d = await res.json();
-        if (d.status === 200) {
+        if (d?.status === 200) {
             toast.success(d?.message);
             // return;
             reset();
@@ -356,16 +360,27 @@ const AddCourse = () => {
                 {errors.courseId && <p className="text-red-500 text-sm mt-1">{errors.courseId.message}</p>}
             </div>
             <div className="mb-4">
-                <DatePicker defaultDate={new Date()} onChangeHanlder={(d) => setValue('addedOn', d)} />
+                <Controller
+                    name="addedOn"
+                    control={control}
+                    rules={{ required: 'Date is required' }}
+                    render={({ field }) => (
+                        <DatePicker
+                            defaultDate={new Date()}
+                            onChangeHanlder={field.onChange}
+                        />
+                    )}
+                />
+                {/* <DatePicker defaultDate={new Date()} onChangeHanlder={(d) => setValue('addedOn', d)} /> */}
                 {errors.addedOn && <p className="text-red-500 text-sm mt-1">{errors.addedOn.message}</p>}
             </div>
 
             <div className="mb-4">
-                <label htmlFor="seoDesctioption" className="block text-sm font-medium text-gray-700">Seo Description</label>
+                <label htmlFor="seoDescription" className="block text-sm font-medium text-gray-700">Seo Description</label>
                 <input
                     type="text"
-                    id="seoDesctioption"
-                    {...register('seoDesctioption',)}
+                    id="seoDescription"
+                    {...register('seoDescription',)}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                     placeholder='Seo description (optional)'
                 />
@@ -392,7 +407,7 @@ const AddCourse = () => {
                         <RichTextEditor
                             onContentChange={field.onChange}
                             key={`Description Rich Text Key course`}
-                            uniqueKey={generateUniqueIds(1)[0]}
+                            uniqueKey={generateUniqueIds(1)}
                         />
                     )}
                 />
@@ -500,8 +515,8 @@ const AddCourse = () => {
                                             render={({ field }) => (
                                                 <RichTextEditor
                                                     onContentChange={(content) => handleTextInstructionContentChange(moduleId, itemIndex, content)}
-                                                    key={`Text Instruction key ${item.uniqueKey}`}
-                                                    uniqueKey={item.uniqueKey}
+                                                    key={`Text Instruction key`}
+                                                    uniqueKey={generateUniqueIds(1)}
                                                 />
                                             )}
                                         />

@@ -82,7 +82,7 @@ const EditBlog = ({ blog }) => {
         body: JSON.stringify(d),
       });
       const data = await res.json();
-      if (data.status === 200) {
+      if (data?.status === 200) {
         toast.success("Blog updated successfully!");
         window.location.href = '/dashboard/blogs'
       } else {

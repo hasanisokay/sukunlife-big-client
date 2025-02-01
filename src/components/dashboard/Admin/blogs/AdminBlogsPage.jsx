@@ -30,7 +30,7 @@ const AdminBlogsPage = ({ blogs }) => {
                 credentials: 'include',
             });
             const data = await res.json();
-            if (data.status === 200) {
+            if (data?.status === 200) {
                 setSelectedBlog(data?.blog);
                 setShowContentModal(true)
             } else return window.location.reload();
@@ -60,7 +60,7 @@ const AdminBlogsPage = ({ blogs }) => {
                 method: "DELETE",
             });
             const data = await res.json();
-            if (data.status === 200) {
+            if (data?.status === 200) {
                 toast.success(data?.message);
                 setInitialBlogs((prev) => prev.filter(b => b?._id !== selectedBlog?._id))
                 setSelectedBlog(null);

@@ -95,7 +95,7 @@ const BookAppointment = ({ dates, status }) => {
                 }
             );
             const data = await res.json();
-            if (data.status === 200) {
+            if (data?.status === 200) {
                 toast.success(data?.message);
                 try {
                     // sending email to notify admin.

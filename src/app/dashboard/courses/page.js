@@ -13,7 +13,7 @@ const page = async ({ searchParams }) => {
 
   const courses = await getAllCourse(page, limit, keyword, tags, sort, skip);
 
-  if (courses.status !== 200) return <NotFound />;
+  if (courses?.status !== 200) return <NotFound />;
   
   return (
     <div>

@@ -51,7 +51,7 @@ export default function SignupForm() {
       },
     });
     const data = await res.json();
-    if (data.status === 200) {
+    if (data?.status === 200) {
       toast.success(data?.message)
       window.location.href = "/login"
     }else{

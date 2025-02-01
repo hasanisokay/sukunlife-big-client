@@ -7,7 +7,7 @@ import hostname from "@/constants/hostname.mjs";
 const page = async () => {
   const dates = await getAllScheduleDates();
 
-  return <BookAppointment dates={dates.dates} status={dates.status} />;
+  return <BookAppointment dates={dates.dates} status={dates?.status} />;
 };
 
 export default page;
