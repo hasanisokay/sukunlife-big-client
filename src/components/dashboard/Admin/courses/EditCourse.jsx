@@ -18,16 +18,19 @@ const EditCourse = ({ course }) => {
     const [checkingId, setCheckingId] = useState(false);
     const [idAvailable, setIdAvailable] = useState(true);
     const [idCheckMessage, setIdCheckMessage] = useState('');
+    const [learningItems, setLearningItems] = useState([{ text: '' }]);
 
     useEffect(() => {
         if (course) {
             reset(course);
             setModules(course.modules || []);
+            setLearningItems(course.learningItems)
             setCoverPhotoUrl(course.coverPhotoUrl || '');
             setValue('courseId', course.courseId || '');
+            setValue('price', course.price || '');
             setValue('description', course.description || '');
             setValue('addedOn', course.addedOn ? new Date(course?.addedOn) : new Date());
-            setValue('seoTags', course.seoTags || '');
+            setValue('tags', course.tags || '');
             setValue('seoDescription', course.seoDescription || '');
             setValue('instructor', course.instructor || '');
         }
@@ -40,14 +43,14 @@ const EditCourse = ({ course }) => {
         const date = getDateObjWithoutTime(dateObj);
         data.addedOn = date;
         data.updatedOn = getDateObjWithoutTime(now);
-        
+
         const res = await fetch(`${SERVER}/api/admin/course/${course._id}`, {
             credentials: "include",
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ ...data, modules, coverPhotoUrl })
+            body: JSON.stringify({ ...data, modules, coverPhotoUrl, learningItems })
         });
         const d = await res.json();
         return
@@ -158,7 +161,23 @@ const EditCourse = ({ course }) => {
         });
         setModules(updatedModules);
     };
-
+    const handleVideoStatusChange = (moduleId, itemIndex, status) => {
+        const updatedModules = modules.map((module, index) => {
+            if (index === moduleId) {
+                return {
+                    ...module,
+                    items: module.items.map((item, idx) => {
+                        if (idx === itemIndex && item.type === 'video') {
+                            return { ...item, status };
+                        }
+                        return item;
+                    }),
+                };
+            }
+            return module;
+        });
+        setModules(updatedModules);
+    };
     const handleAddQuiz = (moduleId) => {
         const updatedModules = modules.map((module, index) => {
             if (index === moduleId) {
@@ -290,7 +309,23 @@ const EditCourse = ({ course }) => {
         });
         setModules(updatedModules);
     };
-
+    const handleTextInstructionStatusChange = (moduleId, itemIndex, status) => {
+        const updatedModules = modules.map((module, index) => {
+            if (index === moduleId) {
+                return {
+                    ...module,
+                    items: module.items.map((item, idx) => {
+                        if (idx === itemIndex && item.type === 'textInstruction') {
+                            return { ...item, status };
+                        }
+                        return item;
+                    }),
+                };
+            }
+            return module;
+        });
+        setModules(updatedModules);
+    };
     const handleTextInstructionContentChange = (moduleId, itemIndex, content) => {
         const updatedModules = modules.map((module, index) => {
             if (index === moduleId) {
@@ -387,11 +422,11 @@ const EditCourse = ({ course }) => {
 
             {/* SEO Tags */}
             <div className="mb-4">
-                <label htmlFor="seoTags" className="block text-sm font-medium text-gray-700">SEO Tags</label>
+                <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags</label>
                 <input
                     type="text"
-                    id="seoTags"
-                    {...register('seoTags')}
+                    id="tags"
+                    {...register('tags')}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                     placeholder="Enter SEO tags, separated by commas (optional)"
                 />
@@ -425,7 +460,43 @@ const EditCourse = ({ course }) => {
                 />
                 {errors.instructor && <p className="text-red-500 text-sm mt-1">{errors.instructor.message}</p>}
             </div>
-
+            <div className="mb-4">
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
+                <input
+                    type="number"
+                    id="price"
+                    {...register('price', { required: 'Price is required' })}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
+            </div>
+            <div className='mb-4'>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">What you will learn</h3>
+                {learningItems?.map((item, index) => (
+                    <div key={index} className="mb-4 flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={item.text}
+                            onChange={(e) => handleLearningInputChange(e, index)}
+                            placeholder={`Enter text ${index + 1}`}
+                            className="p-2 border rounded-md w-full"
+                        />
+                        <button
+                            onClick={() => setLearningItems(learningItems.filter((_, idx) => idx !== index))}
+                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                ))}
+                <button
+                    type='button'
+                    onClick={() => setLearningItems([...learningItems, { text: '' }])}
+                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                    Add Another
+                </button>
+            </div>
             {/* Course ID */}
             <div className="mb-4">
                 <label htmlFor="courseId" className="block text-sm font-medium text-gray-700">Course ID</label>

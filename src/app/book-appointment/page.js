@@ -3,11 +3,16 @@ import getAllScheduleDates from "@/utils/getAllScheduleDates.mjs";
 import appointmentCover from "@/../public/images/blog.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import hostname from "@/constants/hostname.mjs";
+import NotFound from "@/components/not-found/NotFound";
 
 const page = async () => {
-  const dates = await getAllScheduleDates();
+  try {
+    const dates = await getAllScheduleDates();
 
-  return <BookAppointment dates={dates.dates} status={dates?.status} />;
+    return <BookAppointment dates={dates.dates} status={dates?.status} />;
+  } catch {
+    return <NotFound />;
+  }
 };
 
 export default page;
@@ -31,15 +36,15 @@ export async function generateMetadata() {
           url: appointmentCoverUrl,
           width: 800,
           height: 600,
-          alt: 'Appointment Cover Image',
+          alt: "Appointment Cover Image",
         },
       ],
       siteName: websiteName,
-      locale: 'bn_BD',
-      type: 'website',
+      locale: "bn_BD",
+      type: "website",
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: `Book Appointment - ${websiteName}`,
       description: "Book an appointment.",
       images: [appointmentCoverUrl],

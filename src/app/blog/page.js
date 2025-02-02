@@ -9,7 +9,7 @@ const publicBlogPage = async ({ searchParams }) => {
   try {
     const s = await searchParams;
     const page = s?.page || 1;
-    const limit = s?.limit || 3;
+    const limit = s?.limit || 10;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const tags = s?.tags || "";

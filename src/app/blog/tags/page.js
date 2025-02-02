@@ -5,11 +5,15 @@ import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 import blogCover from "@/../public/images/blog.jpg";
 import { websiteName } from "@/constants/names.mjs";
 const tagsPage = async () => {
-  const tagsData = await getAllBlogTags();
-  const tags = tagsData.tags;
-  if (tags.length > 0) {
-    return <TagsPage tags={tags} />;
-  } else {
+  try {
+    const tagsData = await getAllBlogTags();
+    const tags = tagsData.tags;
+    if (tags.length > 0) {
+      return <TagsPage tags={tags} />;
+    } else {
+      return <NotFound />;
+    }
+  } catch {
     return <NotFound />;
   }
 };
@@ -48,4 +52,3 @@ export async function generateMetadata() {
 
   return metadata;
 }
-
