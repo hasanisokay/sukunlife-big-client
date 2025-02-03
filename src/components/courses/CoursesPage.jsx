@@ -13,7 +13,7 @@ const CoursesPage = ({ courses, page }) => {
     return (
         <div className="mt-4 space-y-4">
             <section
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto gap-6"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:max-w-7xl lg:max-w-6xl md:max-w-3xl mx-auto gap-6"
             >
                 {memorizedCourses?.map((c, index) => <CourseCard key={c._id} course={c} />)}
             </section>

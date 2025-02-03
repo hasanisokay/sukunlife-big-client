@@ -5,6 +5,7 @@ import Image from "next/image";
 import { memo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link"; // Import the Link component
+import StarRating from "../rating/StarRating";
 
 const formatPrice = (price) => {
     return `৳ ${price.toLocaleString()}`;
@@ -33,7 +34,7 @@ const CourseCard = ({ course }) => {
     };
 
     return (
-        <Link href={`/courses/${course.courseId}`} passHref> {/* Add the Link here */}
+        <Link href={`/courses/${course.courseId}`} passHref>
             <motion.div
                 role="button"
                 tabIndex={0}
@@ -91,11 +92,9 @@ const CourseCard = ({ course }) => {
                     <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mt-2">
                         {formatPrice(course.price)}
                     </p>
-                    <div className="flex items-center justify-between mt-3 text-gray-600 dark:text-gray-400 text-sm">
-                        <span>Students: {course.studentsCount}</span>
-                        <span>Reviews: {course.reviewsCount}</span>
-                    </div>
+                    <StarRating ratingCount={course.reviewsCount} totalRating={course.ratingSum} />
 
+                    <span className="mt-3 text-gray-600 dark:text-gray-400 text-sm">Enrolled: {course.studentsCount.toLocaleString()}</span>
                     {/* Tags Section */}
                     <motion.div
                         className="mt-4 flex flex-wrap gap-2"

@@ -212,3 +212,7 @@ color: black;
   word-wrap: break-word; 
   overflow-wrap: break-word;
 }
+
+svg.star-svg {
+  display: inline;
+}
