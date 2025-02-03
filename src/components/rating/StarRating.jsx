@@ -9,7 +9,7 @@ const StarRating = ({ totalRating, ratingCount }) => {
 
   return (
     <div className='flex items-center gap-2'>
-      <small className='inline-block text-[#d8be28] text-2xl'>{averageRating}</small>
+      <small className='inline-block text-[#d8be28] font-semibold text-2xl'>{averageRating}</small>
       <Rating
           initialValue={parseFloat(averageRating)}
           allowFraction={true}

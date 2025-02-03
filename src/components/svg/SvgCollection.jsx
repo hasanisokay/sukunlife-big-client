@@ -1,3 +1,5 @@
+import { useSelector } from "react-redux";
+
 export const UndoSVG = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -114,6 +116,68 @@ export const ClipboardSVG = ({ color }) => (
     </g>
   </svg>
 );
+export const TakaSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    id="taka"
+    width="16"
+    height="16"
+    fill={color ? color : theme === "light" ? "#000" : "#ffffff"}
+    stroke={color ? color : theme === "light" ? "#000" : "#ffffff"}
+    strokeWidth="0.48"
+    className="icon flat-color"
+    data-name="Flat Color"
+    viewBox="0 0 24 24"
+  >
+    <g id="SVGRepo_iconCarrier">
+      <path
+        id="primary"
+        fill={color ? color : theme === "light" ? "#000" : "#ffffff"}
+        d="M18.67 12.16a3.9 3.9 0 0 0-2.32-2.11 1 1 0 0 0-.63 1.9 1.87 1.87 0 0 1 1.12 2.53l-1.75 3.94A2.66 2.66 0 0 1 10 17.34V12h2a1 1 0 0 0 0-2h-2V6a4 4 0 0 0-4-4 1 1 0 0 0 0 2 2 2 0 0 1 2 2v4H6a1 1 0 0 0 0 2h2v5.34a4.66 4.66 0 0 0 8.92 1.89l1.75-3.93a3.9 3.9 0 0 0 0-3.14Z"
+      ></path>
+    </g>
+  </svg>
+};
+export const UpdateSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      id="SVGRepo_iconCarrier"
+      stroke={color ? color : theme === "light" ? "#000" : "#ffffff"}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M20.984 10H17m3.984 0V6m0 4-3.327-3.657A8 8 0 1 0 19.418 15M12 9v4l3 1.5"
+    ></path>
+  </svg>
+};
+export const StatsSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return   <svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlSpace="preserve"
+  id="Capa_1"
+  width="24"
+  height="24"
+  fill={color ? color : theme === "light" ? "#000" : "#ffffff"}
+  stroke={color ? color : theme === "light" ? "#000" : "#ffffff"}
+  strokeWidth="6.501"
+  version="1.1"
+  viewBox="0 0 250.076 250.076"
+>
+  <path
+    id="SVGRepo_iconCarrier"
+    d="M4.924.003A5 5 0 0 0 0 5.073v240a5 5 0 0 0 5 5h240a5.002 5.002 0 1 0 0-10H10v-235A5 5 0 0 0 4.924.003zm220.348 30.012a5 5 0 0 0-4.746 2.826l-23.641 47.367a15 15 0 0 0-1.885-.135c-8.225 0-15 6.775-15 15 0 4.011 1.62 7.669 4.225 10.373l-37.379 74.756a15 15 0 0 0-1.846-.129c-2.296 0-4.469.544-6.424 1.484l-49.941-50.301A14.8 14.8 0 0 0 90 125.073c0-8.225-6.775-15-15-15s-15 6.775-15 15c0 4.252 1.821 8.106 4.707 10.848l-34.275 77.121c-2.88 6.156 6.495 10.325 9.137 4.062l34.264-77.092c.387.03.774.061 1.168.061a14.8 14.8 0 0 0 6.695-1.613l49.803 50.16a14.8 14.8 0 0 0-1.498 6.453c0 8.225 6.775 15 15 15s15-6.775 15-15c0-4.012-1.619-7.671-4.225-10.375l37.379-74.752c.607.076 1.22.127 1.846.127 8.225 0 15-6.775 15-15 0-3.997-1.607-7.643-4.195-10.344l23.668-47.424c1.672-3.234-.564-7.115-4.202-7.29zm-30.271 60.058c2.821 0 5 2.179 5 5s-2.179 5-5 5-5-2.179-5-5c0-2.82 2.179-5 5-5zm-120 30c2.821 0 5 2.179 5 5s-2.179 5-5 5-5-2.179-5-5c0-2.82 2.179-5 5-5zm70 70c2.821 0 5 2.179 5 5s-2.179 5-5 5-5-2.179-5-5c0-2.82 2.179-5 5-5z"
+  ></path>
+</svg>
+};
 export const QuizSVG = ({ color }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

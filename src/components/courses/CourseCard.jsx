@@ -6,15 +6,14 @@ import { memo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link"; // Import the Link component
 import StarRating from "../rating/StarRating";
+import { TakaSVG } from "../svg/SvgCollection";
+import { useSelector } from "react-redux";
+import { formatPrice } from "./CoursePrice";
 
-const formatPrice = (price) => {
-    return `৳ ${price.toLocaleString()}`;
-};
+
 
 const CourseCard = ({ course }) => {
-    console.log(course);
-
-    // Animation variants for the card
+    const theme = useSelector(state => state.theme.mode);
     const cardVariants = {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -69,7 +68,7 @@ const CourseCard = ({ course }) => {
                             {course.learningItems?.length > 0 ? (
                                 course?.learningItems?.slice(0, 4)?.map((item, index) => (
                                     <li key={index} className="flex items-center">
-                                        <span className="text-green-500 mr-2">✔</span> {item.text}
+                                        <span className="text-green-500 mr-2 text-[14px]">	&#10003; </span> {item.text}
                                     </li>
                                 ))
                             ) : (
@@ -89,8 +88,8 @@ const CourseCard = ({ course }) => {
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                         {course.instructor}
                     </p>
-                    <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mt-2">
-                        {formatPrice(course.price)}
+                    <p className="text-lg font-bold text-blue-600 dark:text-blue-400 mt-2 flex items-center">
+                        <TakaSVG color={theme === "light" ? "#2563eb" : "#739fdd"} /> {formatPrice(course.price)}
                     </p>
                     <StarRating ratingCount={course.reviewsCount} totalRating={course.ratingSum} />
 
