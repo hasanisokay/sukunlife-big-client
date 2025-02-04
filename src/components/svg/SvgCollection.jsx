@@ -79,8 +79,9 @@ export const AddSVG = ({ color }) => (
     </g>
   </svg>
 );
-export const VideoSVG = ({ color }) => (
-  <svg
+export const VideoSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
     height="24"
@@ -89,14 +90,14 @@ export const VideoSVG = ({ color }) => (
   >
     <path
       id="SVGRepo_iconCarrier"
-      stroke="#000"
+      stroke={color ? color : theme === "light" ? "#343541" : "#d9eff1"}
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="2"
       d="m16 10 2.577-1.546c.793-.476 1.19-.714 1.516-.683a1 1 0 0 1 .713.403c.194.264.194.727.194 1.652v4.348c0 .925 0 1.388-.194 1.652a1 1 0 0 1-.713.404c-.326.03-.723-.208-1.516-.684L16 14m-9.8 4h6.6c1.12 0 1.68 0 2.108-.218a2 2 0 0 0 .874-.874C16 16.48 16 15.92 16 14.8V9.2c0-1.12 0-1.68-.218-2.108a2 2 0 0 0-.874-.874C14.48 6 13.92 6 12.8 6H6.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C3 7.52 3 8.08 3 9.2v5.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874C4.52 18 5.08 18 6.2 18"
     ></path>
   </svg>
-);
+};
 export const ClipboardSVG = ({ color }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -197,55 +198,19 @@ export const CertificateSVG = ({ color }) => {
     ></path>
   </svg>
 };
-export const QuizSVG = ({ color }) => (
-  <svg
+export const QuizSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
     height="24"
-    fill="none"
-    viewBox="0 0 32 32"
+    viewBox="0 0 24 24"
   >
-    <g id="SVGRepo_iconCarrier">
-      <path
-        fill="#CFD8DC"
-        d="M23 2.01H9a3 3 0 0 0-3 3v22a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-22a3 3 0 0 0-3-3"
-      ></path>
-      <path
-        fill="#E53935"
-        d="M21 26a1 1 0 0 1-.71-.29l-3-3a1 1 0 1 1 1.42-1.41l3 3a1 1 0 0 1 0 1.42A1 1 0 0 1 21 26"
-      ></path>
-      <path
-        fill="#E53935"
-        d="M18 26a.998.998 0 0 1-.71-1.71l3-3a1.002 1.002 0 0 1 1.71.705 1 1 0 0 1-.29.705l-3 3a1 1 0 0 1-.71.3"
-      ></path>
-      <path
-        fill="#689F38"
-        d="M12 26h-.06a1 1 0 0 1-.84-.56l-1-2a1 1 0 0 1 1.79-.89l.23.46 1.05-1.57a1 1 0 0 1 1.66 1.11l-2 3A1 1 0 0 1 12 26"
-      ></path>
-      <path fill="#304046" d="M26 17.01H6v2h20z"></path>
-      <path
-        fill="#1565C0"
-        d="M14 11h-3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1m-2-2h1V8h-1z"
-      ></path>
-      <path
-        fill="#304046"
-        d="M21 15H11a1 1 0 0 1 0-2h10a1 1 0 0 1 0 2M21 8h-3a1 1 0 1 1 0-2h3a1 1 0 1 1 0 2M21 11h-3a1 1 0 0 1 0-2h3a1 1 0 1 1 0 2"
-      ></path>
-      <path fill="#EEE" d="M9 2a3 3 0 0 0-3 3v22a3 3 0 0 0 3 3h7V2z"></path>
-      <path
-        fill="#689F38"
-        d="M13.17 21.45 12.12 23l-.23-.46a1 1 0 0 0-1.79.89l1 2a1 1 0 0 0 .84.56H12a1 1 0 0 0 .83-.45l2-3a1 1 0 0 0-1.66-1.11z"
-      ></path>
-      <path fill="#616161" d="M16 17.01H6v2h10z"></path>
-      <path
-        fill="#1565C0"
-        d="M14 11h-3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1m-2-2h1V8h-1z"
-      ></path>
-      <path fill="#616161" d="M11 13a1 1 0 0 0 0 2h5v-2z"></path>
-      <path
-        fill="#263238"
-        d="M23 2H9a3 3 0 0 0-3 3v22a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3m1 25a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1z"
-      ></path>
+    <g id="SVGRepo_iconCarrier" fill={color ? color : theme === "light" ? "#343541" : "#d9eff1"} fillRule="evenodd">
+      <path d="M13 0H3a3.01 3.01 0 0 0-3 3v13.99a3.01 3.01 0 0 0 3 3h10a3.01 3.01 0 0 0 3-3V3a3.01 3.01 0 0 0-3-3m1 16.99a1.016 1.016 0 0 1-1 1H3a1.016 1.016 0 0 1-1-1V3a1.016 1.016 0 0 1 1-1h10c.549.009.991.451 1 1z"></path>
+      <path d="M20 7v14a3.01 3.01 0 0 1-3 3H5a1 1 0 0 1 0-2h12a1.016 1.016 0 0 0 1-1V7a1 1 0 0 1 2 0"></path>
+      <circle cx="8" cy="15" r="1"></circle>
+      <path d="M12 8a3.99 3.99 0 0 1-3 3.87V12a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1 2 2 0 1 0-2-2 1 1 0 1 1-2 0 4 4 0 1 1 8 0"></path>
     </g>
   </svg>
-);
+};

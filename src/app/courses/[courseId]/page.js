@@ -1,7 +1,7 @@
 import SingleCoursePage from "@/components/courses/SingleCoursePage";
 import NotFound from "@/components/not-found/NotFound";
 import getCoursePublic from "@/utils/getCoursePublic.mjs";
-import blogCover from "@/../public/images/blog.jpg";
+import courseCover from "@/../public/images/course.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }) {
     const courseId = p.courseId;
     let courseData = await getCoursePublic(courseId);
     const course = courseData?.course;
-    const courseCoverUrl = `${host}${blogCover.src}`;
+    const courseCoverUrl = `${host}${courseCover.src}`;
 
     const description = course?.description
       ?.replace(/<[^>]+>/g, " ")

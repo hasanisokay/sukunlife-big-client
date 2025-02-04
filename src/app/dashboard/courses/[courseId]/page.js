@@ -1,5 +1,6 @@
 import EditCourse from "@/components/dashboard/Admin/courses/EditCourse";
 import NotFound from "@/components/not-found/NotFound";
+import { websiteName } from "@/constants/names.mjs";
 import getCourse from "@/utils/getCourse.mjs";
 
 const editCoursePage = async ({ params }) => {
@@ -19,3 +20,18 @@ const editCoursePage = async ({ params }) => {
 };
 
 export default editCoursePage;
+
+
+export async function generateMetadata() {
+  try {
+    let metadata = {
+      title: `Edit Course - ${websiteName}`,
+      description: "Edit courses.",
+      keywords: ["Dashboard, Edit Course, sukunlife,"],
+    };
+
+    return metadata;
+  } catch (error) {
+    console.error("Error fetching blog metadata:", error);
+  }
+}

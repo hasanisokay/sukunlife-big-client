@@ -1,6 +1,9 @@
 import CoursesPage from "@/components/courses/CoursesPage";
 import NotFound from "@/components/not-found/NotFound";
+import hostname from "@/constants/hostname.mjs";
 import getAllCoursePublic from "@/utils/getAllCoursePublic.mjs";
+import courseCover from "@/../public/images/course.jpg";
+import { websiteName } from "@/constants/names.mjs";
 
 const coursesPage = async ({ searchParams }) => {
   try {
@@ -28,3 +31,33 @@ const coursesPage = async ({ searchParams }) => {
 };
 
 export default coursesPage;
+
+export async function generateMetadata() {
+  try {
+    const host = await hostname();
+    const courseCoverUrl = `${host}${courseCover.src}`;
+    let metadata = {
+      title: `Courses - ${websiteName}`,
+      description: "Explore sukunlife courses.",
+      keywords: ["সুকুনলাইফ কোর্স, sukunlife, courses"],
+      url: `${host}/courses`,
+      canonical: `${host}/courses`,
+    };
+    metadata.other = {
+      "twitter:image": courseCoverUrl || "",
+      "twitter:card": "summary_large_image",
+      "twitter:title": metadata.title,
+      "twitter:description": metadata.description,
+      "og:title": metadata.title,
+      "og:description": metadata.description,
+      "og:url": `${host}/courses`,
+      "og:image": courseCoverUrl || "",
+      "og:type": "article",
+      "og:site_name": websiteName,
+      "og:locale": "bn_BD",
+    };
+    return metadata;
+  } catch (error) {
+    console.error("Error fetching blog metadata:", error);
+  }
+}

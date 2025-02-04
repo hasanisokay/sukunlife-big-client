@@ -33,54 +33,55 @@ const CourseCard = ({ course }) => {
     };
 
     return (
-        <Link href={`/courses/${course.courseId}`} passHref>
-            <motion.div
-                role="button"
-                tabIndex={0}
-                aria-label={`Course: ${course.title}`}
-                className="bg-white dark:bg-gray-900 shadow-lg rounded-2xl transition-all hover:shadow-xl w-80 mx-auto overflow-hidden cursor-pointer"
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-            >
-                <div className="relative group w-80 h-[200px]">
-                    <Image
-                        width={600}
-                        height={400}
-                        className="w-full h-full object-cover"
-                        quality={100}
-                        src={course.coverPhotoUrl}
-                        alt={course.title}
-                        placeholder="blur"
-                        blurDataURL={fallbackBlurDataURL}
-                    />
-                    <motion.div
-                        className="absolute hidden group-hover:block top-0 right-0 left-0 bg-white dark:bg-gray-800 shadow-xl w-80 p-5 z-10"
-                        variants={overlayVariants}
-                        initial="hidden"
-                        whileHover="visible"
-                    >
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            What You'll Learn
-                        </h3>
-                        <ul className="mt-3 space-y-2 text-gray-600 dark:text-gray-300 text-sm">
-                            {course.learningItems?.length > 0 ? (
-                                course?.learningItems?.slice(0, 4)?.map((item, index) => (
-                                    <li key={index} className="flex items-center">
-                                        <span className="text-green-500 mr-2 text-[14px]">	&#10003; </span> {item.text}
-                                    </li>
-                                ))
-                            ) : (
-                                <li>No learning items available.</li>
-                            )}
-                        </ul>
-                        <div className="mt-4 flex flex-wrap justify-between text-xs text-gray-500 dark:text-gray-400">
-                            <p>Added: {formatDate(course.addedOn)}</p>
-                            {course.updatedOn && <p>Updated: {formatDate(course.updatedOn)}</p>}
-                        </div>
-                    </motion.div>
-                </div>
+
+        <motion.div
+            role="button"
+            tabIndex={0}
+            aria-label={`Course: ${course.title}`}
+            className="bg-white dark:bg-gray-900 shadow-lg rounded-2xl transition-all hover:shadow-xl w-80 mx-auto overflow-hidden cursor-pointer"
+            variants={cardVariants}
+            initial="hidden"
+            animate="visible"
+            whileHover="hover"
+        >
+            <div className="relative group w-80 h-[200px]">
+                <Image
+                    width={600}
+                    height={400}
+                    className="w-full h-full object-cover"
+                    quality={100}
+                    src={course.coverPhotoUrl}
+                    alt={course.title}
+                    placeholder="blur"
+                    blurDataURL={fallbackBlurDataURL}
+                />
+                <motion.div
+                    className="absolute hidden group-hover:block top-0 right-0 left-0 bg-white dark:bg-gray-800 shadow-xl w-80 p-5 z-10"
+                    variants={overlayVariants}
+                    initial="hidden"
+                    whileHover="visible"
+                >
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        What You'll Learn
+                    </h3>
+                    <ul className="mt-3 space-y-2 text-gray-600 dark:text-gray-300 text-sm">
+                        {course.learningItems?.length > 0 ? (
+                            course?.learningItems?.slice(0, 4)?.map((item, index) => (
+                                <li key={index} className="flex items-center">
+                                    <span className="text-green-500 mr-2 text-[14px]">	&#10003; </span> {item.text}
+                                </li>
+                            ))
+                        ) : (
+                            <li>No learning items available.</li>
+                        )}
+                    </ul>
+                    <div className="mt-4 flex flex-wrap justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <p>Added: {formatDate(course.addedOn)}</p>
+                        {course.updatedOn && <p>Updated: {formatDate(course.updatedOn)}</p>}
+                    </div>
+                </motion.div>
+            </div>
+            <Link href={`/courses/${course.courseId}`} passHref>
                 <div className="p-5">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {course.title}
@@ -112,8 +113,9 @@ const CourseCard = ({ course }) => {
                         ))}
                     </motion.div>
                 </div>
-            </motion.div>
-        </Link>
+            </Link>
+        </motion.div>
+
     );
 };
 
