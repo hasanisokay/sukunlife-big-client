@@ -457,7 +457,7 @@ const AddCourse = () => {
                     id="tags"
                     {...register('tags',)}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                    placeholder="Enter SEO tags, separated by commas (optional)"
+                    placeholder="Enter tags, separated by commas (optional)"
                 />
             </div>
 

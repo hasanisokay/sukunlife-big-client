@@ -19,7 +19,6 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
             dispatch(setUserData(data?.user))
             // console.log("refreshed")
         } catch {
-            console.error("token refresh failed")
         }
     }
     useEffect(() => {
