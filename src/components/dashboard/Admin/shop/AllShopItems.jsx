@@ -1,78 +1,98 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import getAllProducts from '@/utils/getAllProducts.mjs';
 import StarRating from '@/components/rating/StarRating';
+import SearchBar from '@/components/search/SearchBar';
+import { TakaSVG } from '@/components/svg/SvgCollection';
 
 const AllShopItems = ({ p, totalCount }) => {
     const [products, setProducts] = useState(p);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(p?.length < totalCount);
+    const [hasMore, setHasMore] = useState(products?.length < totalCount || false);
     const [hasMounted, setHasMounted] = useState(false);
     const containerRef = useRef(null);
+    const memorizedProducts = useMemo(() => products, [products])
+    useEffect(() => {
+        if (!hasMounted) return;
+        setProducts(p)
+    }, [p])
+
 
     useEffect(() => {
         if (!hasMounted) {
             setHasMounted(true);
             return;
         }
-        const fetchProducts = async () => {
-            try {
-                setLoading(true);
-                const newProducts = await getAllProducts(page);
-                if (newProducts?.products?.length === 0) {
-                    setHasMore(false);
-                } else {
-                    setProducts((prev) => [...prev, ...newProducts?.products]);
-                }
-            } catch (error) {
-                console.error('Error fetching products:', error);
-            } finally {
-                setLoading(false);
+        
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const newProducts = await getAllProducts(page);
+            if(newProducts.status !==200)return;
+            if (newProducts?.products?.length === 0) {
+                setHasMore(false);
+            } else {
+                setProducts((prev) => [...prev, ...newProducts?.products]);
             }
-        };
-
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
         fetchProducts();
     }, [page]);
 
     // Handle infinite scroll with debounce
     useEffect(() => {
+        if (loading || !hasMore || !containerRef?.current) return;
         const handleScroll = () => {
-            if (
-                containerRef.current &&
-                window.innerHeight + document.documentElement.scrollTop >=
+            try {
+                if (
+                    containerRef.current &&
+                    window.innerHeight + document.documentElement.scrollTop >=
                     containerRef.current.offsetHeight - 100 &&
-                !loading &&
-                hasMore
-            ) {
-                setPage((prev) => prev + 1);
+                    !loading &&
+                    hasMore
+                ) {
+                    setPage((prev) => prev + 1);
+                }
+            } catch (e) {
+                console.log(e)
             }
         };
-
         const debouncedScroll = debounce(handleScroll, 200);
-        window.addEventListener('scroll', debouncedScroll);
-        return () => window.removeEventListener('scroll', debouncedScroll);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
     }, [loading, hasMore]);
 
     // Debounce function
     const debounce = (func, delay) => {
-        let timeoutId;
-        return (...args) => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => func.apply(this, args), delay);
-        };
+        try {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        } catch {
+
+        }
     };
 
     return (
         <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-8">
             <div className="max-w-6xl mx-auto" ref={containerRef}>
+                <div className='mb-4'>
+                <SearchBar placeholder={"Search Product"} />
+                </div>
                 {/* Product Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     <AnimatePresence>
-                        {products?.map((product, index) => (
-                            <Link key={product._id} href={`/${product.productId}`} passHref>
+                        {memorizedProducts?.map((product, index) => (
+                            <Link key={product?._id} href={`/shop/${product?.productId}`} passHref>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -93,7 +113,7 @@ const AllShopItems = ({ p, totalCount }) => {
                                     {/* Product Details */}
                                     <div className="p-4">
                                         <h2 className="text-lg font-semibold line-clamp-2">{product.title}</h2>
-                                        <p className="text-xl font-bold mt-2">${product.price}</p>
+                                        <p className="text-xl font-bold mt-2 flex items-center"><TakaSVG /> {product.price}</p>
                                         {/* StarRating Component */}
                                         <div className="mt-2">
                                             <StarRating

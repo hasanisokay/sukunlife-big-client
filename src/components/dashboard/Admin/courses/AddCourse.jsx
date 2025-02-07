@@ -36,7 +36,6 @@ const AddCourse = () => {
             body: JSON.stringify({ ...data, modules, coverPhotoUrl, learningItems })
         });
         const d = await res.json();
-        return console.log(d)
         if (d?.status === 200) {
             toast.success(d?.message);
             // return;
@@ -71,7 +70,6 @@ const AddCourse = () => {
                 credentials: "include",
             });
             const data = await res.json();
-            console.log(data)
             setIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
             setIdAvailable(data?.isAvailable);
         } catch (error) {

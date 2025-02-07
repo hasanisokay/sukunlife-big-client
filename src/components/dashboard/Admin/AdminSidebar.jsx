@@ -77,7 +77,7 @@ const AdminSidebar = () => {
                     </button>
                     {activeMenu === 'shop' && (
                         <div className="ml-4 space-y-2">
-                            <Link href="/dashboard/shop/all" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/shop/all")}`}>All Items</Link>
+                            <Link href="/dashboard/shop" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/shop")}`}>All Items</Link>
                             <Link href="/dashboard/shop/add" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/shop/add")}`}>Add Items</Link>
                             <Link href="/dashboard/shop/pending" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/shop/pending")}`}>Pending Orders</Link>
                         </div>

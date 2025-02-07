@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import RichTextEditor from '@/components/editor/RichTextEditor';
 import DatePicker from '@/components/ui/datepicker/Datepicker';
 import { SERVER } from '@/constants/urls.mjs';
@@ -9,24 +9,35 @@ import { Flip, toast, ToastContainer } from 'react-toastify';
 import uploadImage from '@/utils/uploadImage.mjs'; // Import the uploadImage function
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
 
-const AddShopItem = () => {
-    const { register, handleSubmit, control, formState: { errors } } = useForm({
-        defaultValues:{
-            addedOn: new Date()
-        }
+const EditProductPage = ({ product }) => {
+    const { register, handleSubmit, control, formState: { errors }, setValue } = useForm({
+        defaultValues: {
+            title: product.title,
+            productId: product.productId,
+            category: { value: product.category, label: product.category },
+            price: product.price,
+            quantity: product.quantity,
+            unit: product.unit,
+            stockQuantity: product.stockQuantity,
+            brand: product.brand,
+            tags: product.tags,
+            material: product.material,
+            addedOn: new Date(product.addedOn),
+        },
     });
-    const [description, setDescription] = useState('');
+
+    const [description, setDescription] = useState(product.description);
     const [categories, setCategories] = useState([]);
     const [productIdCheckMessage, setProductIdCheckMessage] = useState("");
     const [checkingProductId, setCheckingProductId] = useState(false);
-    const [productIdAvailable, setProductIdAvailable] = useState(false);
-    const [images, setImages] = useState([]);
+    const [productIdAvailable, setProductIdAvailable] = useState(true); // Assume ID is available for editing
+    const [images, setImages] = useState(product.images || []);
 
-    const [weight, setWeight] = useState('');
-    const [dimensions, setDimensions] = useState({ length: '', width: '', height: '' });
-    const [colorVariants, setColorVariants] = useState([]);
-    const [sizeVariants, setSizeVariants] = useState([]);
-    const [variantPrices, setVariantPrices] = useState([]);
+    const [weight, setWeight] = useState(product.weight || '');
+    const [dimensions, setDimensions] = useState(product.dimensions || { length: '', width: '', height: '' });
+    const [colorVariants, setColorVariants] = useState(product.colorVariants.map(color => ({ value: color, label: color })) || []);
+    const [sizeVariants, setSizeVariants] = useState(product.sizeVariants.map(size => ({ value: size, label: size })) || []);
+    const [variantPrices, setVariantPrices] = useState(product.variantPrices || []);
 
     // Fetch categories from API
     useEffect(() => {
@@ -37,14 +48,18 @@ const AddShopItem = () => {
                 if (data?.status === 200) {
                     setCategories(data?.categories);
                 }
-            } catch {
-                console.log('bringing categories failed')
+            } catch (error) {
+                console.error('Error fetching categories:', error);
             }
         };
         bringCategories();
     }, []);
 
     const checkUrlAvailability = async (id) => {
+        if (id === product.productId) {
+            setProductIdAvailable(true); // Allow editing if the ID hasn't changed
+            return;
+        }
         setCheckingProductId(true);
         try {
             const res = await fetch(`${SERVER}/api/admin/check-product-id?id=${id}`, {
@@ -64,71 +79,7 @@ const AddShopItem = () => {
         const file = event.target.files[0];
         if (file) {
             const imageUrl = await uploadImage(file);
-            setImages(prev => [...prev, imageUrl])
-        }
-    };
-
-    const generateSku = (title, prodId) => {
-        // Helper function to check if the title is in English
-        const isEnglish = (str) => /^[a-zA-Z0-9\s\-_,.()]+$/.test(str);
-
-        // Generate a timestamp in base36
-        const timestamp = Date.now().toString(36);
-
-        // Helper function to clean the string for SKU
-        const cleanString = (str) => {
-            return str.toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with hyphens
-                .slice(0, 10); // Limit the length to 10 characters
-        };
-
-        let cleanedTitle = "sukunlife";
-        if (isEnglish(title)) {
-            cleanedTitle = cleanString(title);
-        } else if (prodId && isEnglish(prodId)) {
-            cleanedTitle = cleanString(prodId);
-        }
-
-        // Return the SKU in the desired format
-        return `${cleanedTitle}-${timestamp}`;
-    };
-
-
-    // Memoize category options for React Select
-    const categoryOptions = useMemo(() => {
-        return categories.map((cat) => ({ value: cat, label: cat }));
-    }, [categories]);
-
-    const onSubmit = async (data) => {
-        try {
-            if (!productIdAvailable) {
-                return toast.error("Required Product Id.");
-            }
-            const sku = generateSku(data.title, data.productId);
-            const productData = {
-                ...data,
-                description,
-                category: data?.category?.value || "",
-                images,
-                weight,
-                dimensions,
-                colorVariants: colorVariants.map(color => color.value),
-                sizeVariants: sizeVariants.map(size => size.value),
-                variantPrices,
-                sku,
-            };
-
-            const res = await fetch(`${SERVER}/api/admin/add-new-product`, {
-                credentials: "include", method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(productData)
-            });
-            const resData = await res.json();
-            if (resData.status === 200) {
-                toast.success(resData.message)
-            } else {
-                toast.error(resData.message)
-            }
-        } catch (e) {
-            console.error(e)
+            setImages(prev => [...prev, imageUrl]);
         }
     };
 
@@ -142,13 +93,56 @@ const AddShopItem = () => {
         setVariantPrices([...variantPrices, { color: '', size: '', price: '' }]);
     };
 
+    const onSubmit = async (data) => {
+        try {
+            const sku = product.sku; 
+            const productData = {
+                ...data,
+                description,
+                updatedOn : new Date(),
+                category: data?.category?.value || "",
+                images,
+                weight,
+                dimensions,
+                colorVariants: colorVariants.map(color => color.value),
+                sizeVariants: sizeVariants.map(size => size.value),
+                variantPrices,
+                sku,
+                _id: product._id,
+            };
+
+            const res = await fetch(`${SERVER}/api/admin/products/${product._id}`, {
+                credentials: "include",
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(productData),
+            });
+            const resData = await res.json();
+            if (resData?.status === 200) {
+                toast.success(resData.message);
+                window.location.href = "/dashboard/shop"
+            } else {
+                toast.error(resData.message);
+            }
+        } catch (error) {
+            console.error('Error updating product:', error);
+            toast.error('Failed to update product. Please try again.');
+        }
+    };
+
+    // Memoize category options for React Select
+    const categoryOptions = useMemo(() => {
+        return categories.map((cat) => ({ value: cat, label: cat }));
+    }, [categories]);
+
     const removeVariantPrice = (index) => {
-        const newVariantPrices = variantPrices.filter((_, i) => i !== index);
+        const newVariantPrices = variantPrices?.filter((_, i) => i !== index);
         setVariantPrices(newVariantPrices);
     };
+
     return (
         <div className="p-6 lg:max-w-4xl xl:max-w-full mx-auto bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold mb-6">Add New Product</h1>
+            <h1 className="text-2xl font-bold mb-6">Edit Product</h1>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Title */}
                 <div>
@@ -166,6 +160,7 @@ const AddShopItem = () => {
                     <RichTextEditor
                         uniqueKey={generateUniqueIds(1)}
                         onContentChange={setDescription}
+                        initialContent={product.description} // Pre-fill with existing description
                         className="border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700"
                     />
                 </div>
@@ -195,7 +190,7 @@ const AddShopItem = () => {
                         render={({ field }) => (
                             <CreatableSelect
                                 isClearable
-                                instanceId={'Shop-add-category-select'}
+                                instanceId={'Shop-edit-category-select'}
                                 {...field}
                                 options={categoryOptions}
                                 placeholder="Select category"
@@ -205,6 +200,7 @@ const AddShopItem = () => {
                     />
                     {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>}
                 </div>
+                {/* Date Picker */}
                 <div className="mb-4">
                     <Controller
                         name="addedOn"
@@ -212,7 +208,7 @@ const AddShopItem = () => {
                         rules={{ required: 'Date is required' }}
                         render={({ field }) => (
                             <DatePicker
-                                defaultDate={field.value}
+                                defaultDate={new Date(product.addedOn)}
                                 onChangeHanlder={field.onChange}
                             />
                         )}
@@ -230,6 +226,7 @@ const AddShopItem = () => {
                     />
                     {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
                 </div>
+                {/* Quantity */}
                 <div>
                     <label className="block text-sm font-medium mb-1">Quantity</label>
                     <input
@@ -240,6 +237,7 @@ const AddShopItem = () => {
                     />
                     {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity.message}</p>}
                 </div>
+                {/* Unit */}
                 <div>
                     <label className="block text-sm font-medium mb-1">Measurement Unit</label>
                     <select
@@ -288,19 +286,29 @@ const AddShopItem = () => {
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                     />
                 </div>
-                {images?.length > 0 && <div className='flex flex-wrap gap-2'>
-                    {images?.map((imageUrl, index) => <div key={index} className='relative w-24 h-24'>
-                        <img src={imageUrl} alt="p-image" className='w-24 h-24' />
-                        <button onClick={() => setImages(prev => prev.filter((img, i) => i !== index))} title='Remove this photo' className='absolute top-0 right-0 text-red-500 bg-black px-2 bg-opacity-70 hover:bg-opacity-100 rounded-full'>X</button>
-                    </div>)}
-                </div>}
+                {images?.length > 0 && (
+                    <div className='flex flex-wrap gap-2'>
+                        {images?.map((imageUrl, index) => (
+                            <div key={index} className='relative w-24 h-24'>
+                                <img src={imageUrl} alt="p-image" className='w-24 h-24' />
+                                <button
+                                    onClick={() => setImages(prev => prev.filter((img, i) => i !== index))}
+                                    title='Remove this photo'
+                                    className='absolute top-0 right-0 text-red-500 bg-black px-2 bg-opacity-70 hover:bg-opacity-100 rounded-full'
+                                >
+                                    X
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
                 {/* Tags */}
                 <div className="mb-4">
                     <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-white">Tags</label>
                     <input
                         type="text"
                         id="tags"
-                        {...register('tags',)}
+                        {...register('tags')}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                         placeholder="Enter tags, separated by commas (optional)"
                     />
@@ -359,7 +367,7 @@ const AddShopItem = () => {
                     <CreatableSelect
                         isMulti
                         isClearable
-                        instanceId={'Shop-add-colors-select'}
+                        instanceId={'Shop-edit-colors-select'}
                         value={colorVariants}
                         onChange={(selectedColors) => setColorVariants(selectedColors)}
                         placeholder="Enter colors (optional)"
@@ -372,7 +380,7 @@ const AddShopItem = () => {
                     <CreatableSelect
                         isMulti
                         isClearable
-                        instanceId={'Shop-add-sizes-select'}
+                        instanceId={'Shop-edit-sizes-select'}
                         value={sizeVariants}
                         onChange={(selectedSizes) => setSizeVariants(selectedSizes)}
                         placeholder="Enter sizes (optional)"
@@ -382,7 +390,7 @@ const AddShopItem = () => {
                 {/* Variant Prices */}
                 <div>
                     <label className="block text-sm font-medium mb-1">Variant Prices</label>
-                    {variantPrices.map((variant, index) => (
+                    {variantPrices?.map((variant, index) => (
                         <div key={index} className="flex space-x-2 mb-2">
                             <input
                                 type="text"
@@ -405,9 +413,8 @@ const AddShopItem = () => {
                                 placeholder="Price"
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                             />
-                              <button
+                             <button
                                 onClick={() => removeVariantPrice(index)}
-                                type='button'
                                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                             >
                                 Remove
@@ -428,7 +435,7 @@ const AddShopItem = () => {
                         type="submit"
                         className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                        Add Product
+                        Update Product
                     </button>
                 </div>
             </form>
@@ -437,4 +444,4 @@ const AddShopItem = () => {
     );
 };
 
-export default AddShopItem;
+export default EditProductPage;

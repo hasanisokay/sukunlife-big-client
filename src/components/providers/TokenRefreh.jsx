@@ -17,7 +17,6 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
             });
             const data = await res.json()
             dispatch(setUserData(data?.user))
-            // console.log("refreshed")
         } catch {
         }
     }

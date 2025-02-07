@@ -1,9 +1,9 @@
-import ManageCourses from "@/components/dashboard/Admin/courses/ManageCourses";
 import NotFound from "@/components/not-found/NotFound";
-import getAllCourse from "@/utils/getAllCourse.mjs";
 import dashboardCover from "@/../public/images/dashboard.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
+import ManageProducts from "@/components/dashboard/Admin/shop/ManageProducts";
+import getAllProducts from "@/utils/getAllProducts.mjs";
 
 const page = async ({ searchParams }) => {
   try {
@@ -13,15 +13,15 @@ const page = async ({ searchParams }) => {
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const tags = s?.tags || "";
-    const skip = 0;
+    const skip = '';
 
-    const courses = await getAllCourse(page, limit, keyword, tags, sort, skip);
+    const products = await getAllProducts(page, limit, keyword, tags, sort, skip);
 
-    if (courses?.status !== 200) return <NotFound />;
+    if (products?.status !== 200) return <NotFound />;
 
     return (
       <section>
-        <ManageCourses courses={courses} />
+        <ManageProducts p={products?.products} totalCount={products?.totalCount} />
       </section>
     );
   } catch {
@@ -36,11 +36,11 @@ export async function generateMetadata() {
     const host = await hostname();
     const dashboardCoverUrl = `${host}${dashboardCover.src}`;
     let metadata = {
-      title: `Courses - ${websiteName}`,
-      description: "All courses.",
+      title: `Products - ${websiteName}`,
+      description: "All shop.",
       keywords: ["Dashboard, sukunlife,"],
-      url: `${host}/dashboard/courses`,
-      canonical: `${host}/dashboard/courses`,
+      url: `${host}/dashboard/shop`,
+      canonical: `${host}/dashboard/shop`,
     };
     metadata.other = {
       "twitter:image": dashboardCoverUrl || "",
@@ -49,7 +49,7 @@ export async function generateMetadata() {
       "twitter:description": metadata.description,
       "og:title": metadata.title,
       "og:description": metadata.description,
-      "og:url": `${host}/dashboard/courses`,
+      "og:url": `${host}/dashboard/shop`,
       "og:image": dashboardCoverUrl || "",
       "og:type": "article",
       "og:site_name": websiteName,

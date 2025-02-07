@@ -7,7 +7,6 @@ const page = async ({ params }) => {
     const p = await params;
     const productId = p.id;
     let product = await getSingleProduct(productId);
-    console.log(product);
     if (product?.status === 200) {
       return <SingleProductPage product={product?.product} />;
     } else return <NotFound />;

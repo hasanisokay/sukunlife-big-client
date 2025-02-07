@@ -10,7 +10,6 @@ const singleCoursePage = async ({ params }) => {
     const p = await params;
     const courseId = p.courseId;
     let course = await getCoursePublic(courseId);
-    console.log(course)
     if (course?.status === 200) {
       return <SingleCoursePage course={course?.course} />;
     } else return <NotFound />;

@@ -11,18 +11,23 @@ const shopPage = async ({ searchParams }) => {
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const tags = s?.tags || "";
-    const skip = '';
+    const skip = "";
     const products = await getAllProducts(
-        page,
-        limit,
-        keyword,
-        tags,
-        sort,
-        skip
+      page,
+      limit,
+      keyword,
+      tags,
+      sort,
+      skip
     );
 
-    if (products?.status !== 200) return <NotFound />;
-    return <AllShopItems p={products?.products} totalCount={products.totalCount} />;
+    if (products.status === 200 && products.products.length === 0)return <div>
+      No Product found
+    </div>
+      if (products?.status !== 200) return <NotFound />;
+    return (
+      <AllShopItems p={products?.products} totalCount={products.totalCount} />
+    );
   } catch {
     return <NotFound />;
   }

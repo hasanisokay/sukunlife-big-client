@@ -46,9 +46,7 @@ const Navbar = () => {
     if (!menuOpen && !userMenuOpen) return;
   
     const handleClick = (event) => {
-      console.log('clicked', event.target);
       if (navRef.current && !navRef.current.contains(event.target)) {
-        console.log({ menuOpen, userMenuOpen });
         setUserMenuOpen(false);
         setMenuOpen(false);
       }
