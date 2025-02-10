@@ -14,8 +14,9 @@ const page = async ({ searchParams }) => {
     const sort = s?.sort || "newest";
     const tags = s?.tags || "";
     const skip = '';
+    const category = s?.category || "";
 
-    const products = await getAllProducts(page, limit, keyword, tags, sort, skip);
+    const products = await getAllProducts(page, limit, keyword, tags, sort, skip, category);
 
     if (products?.status !== 200) return <NotFound />;
 
@@ -51,9 +52,9 @@ export async function generateMetadata() {
       "og:description": metadata.description,
       "og:url": `${host}/dashboard/shop`,
       "og:image": dashboardCoverUrl || "",
-      "og:type": "article",
+      "og:type": "website",
       "og:site_name": websiteName,
-      "og:locale": "bn_BD",
+      "og:locale": "en_US",
     };
     return metadata;
   } catch (error) {

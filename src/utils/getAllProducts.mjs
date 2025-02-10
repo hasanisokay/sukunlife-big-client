@@ -6,11 +6,12 @@ const getAllProducts = async (
   keyword = "",
   tags = "",
   sort = "newest",
-  skip=""
+  skip="",
+  category=""
 ) => {
   try {
     const res = await fetch(
-      `${SERVER}/api/public/products?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}&&skip=${skip}`
+      `${SERVER}/api/public/products?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}&&skip=${skip}&&category=${category}`
     );
     const data = await res.json();
     return data;

@@ -62,9 +62,9 @@ export async function generateMetadata({ params }) {
         "og:description": metadata.description,
         "og:url": `${host}/courses/${courseId}`,
         "og:image": course?.coverPhotoUrl || courseCoverUrl || "",
-        "og:type": "article",
+        "og:type": "website",
         "og:site_name": websiteName,
-        "og:locale": "bn_BD",
+        "og:locale": "en_US",
       };
     }
     return metadata;

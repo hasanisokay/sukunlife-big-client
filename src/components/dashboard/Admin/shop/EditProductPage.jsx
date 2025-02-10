@@ -43,7 +43,7 @@ const EditProductPage = ({ product }) => {
     useEffect(() => {
         const bringCategories = async () => {
             try {
-                const res = await fetch(`${SERVER}/api/public/all-shop-item-categories`);
+                const res = await fetch(`${SERVER}/api/public/all-product-categories`);
                 const data = await res.json();
                 if (data?.status === 200) {
                     setCategories(data?.categories);

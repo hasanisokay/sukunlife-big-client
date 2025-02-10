@@ -1,6 +1,7 @@
 'use client'
 import { SERVER } from "@/constants/urls.mjs";
 import { setUserData } from "@/store/slices/authSlice";
+import { setCartData } from "@/store/slices/cartSlice";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
@@ -17,6 +18,11 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
             });
             const data = await res.json()
             dispatch(setUserData(data?.user))
+            dispatch(setCartData(data?.user?.cart));
+            if (data?.user?.cart?.length < 1 || data.status !== 200) {
+                let cart = JSON.parse(localStorage.getItem("cart")) || [];
+                dispatch(setCartData(cart));
+            }
         } catch {
         }
     }

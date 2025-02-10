@@ -1,22 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StarRating from '../rating/StarRating';
 import Link from 'next/link';
 import formatDate from '@/utils/formatDate.mjs';
 import CoursePrice from './CoursePrice';
 import { CertificateSVG, QuizSVG, StatsSVG, UpdateSVG, VideoSVG } from '../svg/SvgCollection';
-import ReactPlayer from 'react-player';
-import CustomPlayerWithControls from '../player/CustomPlayer';
 import CustomYouTubePlayer from '../player/CustomPlayer';
 import StarsOnly from '../rating/StarsOnly';
+import { useDispatch, useSelector } from 'react-redux';
+import addToCart from '../cart/functions/addToCart.mjs';
+import { setCartData } from '@/store/slices/cartSlice';
 
 const SingleCoursePage = ({ course }) => {
     const [expandedModule, setExpandedModule] = useState(null);
     const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
-
-
+    const [itemAddedToCart, setItemAddedToCart] = useState(false);
+    const dispatch = useDispatch()
+    const user = useSelector((state) => state.user.userData);
+    const cart = useSelector((state) => state.cart.cartData);
+    
     const overlayVariants = {
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
@@ -47,7 +51,13 @@ const SingleCoursePage = ({ course }) => {
             return acc;
         }, []);
     };
-
+    useEffect(() => {
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const existingIndex = cart.findIndex((cartItem) => cartItem._id === course._id);
+        if (existingIndex !== -1) {
+            setItemAddedToCart(true)
+        }
+    }, [cart])
     const toggleModule = (index) => {
         setExpandedModule(expandedModule === index ? null : index);
     };
@@ -58,6 +68,25 @@ const SingleCoursePage = ({ course }) => {
 
     const closeVideoModal = () => {
         setVideoModal({ isOpen: false, url: '' });
+    };
+
+    const handleAddToCart = async (buyNow) => {
+        if (itemAddedToCart) return;
+        const cartItem = {
+            _id: course._id,
+            type: 'course',
+            courseId: course?.courseId,
+            title: course?.title,
+            price: course.price,
+            quantity: 1,
+            image: course?.coverPhotoUrl,
+        };
+        const c = await addToCart(cartItem, user);
+        dispatch(setCartData(c));
+        if (buyNow) {
+            window.location.href = "/cart"
+        }
+        // Add your cart logic here
     };
 
     return (
@@ -92,10 +121,11 @@ const SingleCoursePage = ({ course }) => {
                                 </div>
                             </div>
                             <button
+                                disabled={itemAddedToCart}
                                 className="bg-blue-600 text-white px-6 md:py-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                                onClick={() => alert('Enroll/Buy Course Clicked!')}
+                                onClick={() => handleAddToCart(false)}
                             >
-                                Enroll Now
+                                {itemAddedToCart ? "Added To Cart" : " Enroll Now"}
                             </button>
                         </div>
                     </div>
@@ -236,24 +266,24 @@ const SingleCoursePage = ({ course }) => {
                     {course.reviews?.length > 0 ? (
                         course.reviews.map((review, index) => (
                             <motion.div
-                            key={index}
-                            className="border-b pb-4"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0, transition: { duration: 0.3, delay: index * 0.1 } }}
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{review.name}</p>
-                                    {review?.date && (
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {formatDate(review?.date)}
-                                        </p>
-                                    )}
+                                key={index}
+                                className="border-b pb-4"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0, transition: { duration: 0.3, delay: index * 0.1 } }}
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{review.name}</p>
+                                        {review?.date && (
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                {formatDate(review?.date)}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <StarsOnly star={review?.rating} />
                                 </div>
-                                <StarsOnly star={review?.rating} />
-                            </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">{review.comment}</p>
-                        </motion.div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">{review.comment}</p>
+                            </motion.div>
                         ))
                     ) : (
                         <p>No reviews available.</p>

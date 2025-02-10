@@ -39,7 +39,7 @@ export async function generateMetadata() {
       "og:description": metadata.description,
       "og:url": `${host}/dashboard`,
       "og:image": dashboardCoverUrl || "",
-      "og:type": "article",
+      "og:type": "website",
       "og:site_name": websiteName,
       "og:locale": "bn_BD",
     };

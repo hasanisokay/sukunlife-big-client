@@ -9,6 +9,8 @@ import Image from "next/image";
 import logo from "@/../public/images/logo.png";
 import { setUserData } from "@/store/slices/authSlice";
 import { motion, AnimatePresence } from "framer-motion";
+import { CartSVG } from "../svg/SvgCollection";
+import { setCartData } from "@/store/slices/cartSlice";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -18,9 +20,10 @@ const Navbar = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
   const user = useSelector((state) => state.user.userData);
+  const cart = useSelector((state) => state.cart.cartData);
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.mode);
-
+  const [cartItems, setCartItems] = useState(cart?.length || 0)
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleUserMenu = () => setUserMenuOpen(!userMenuOpen);
 
@@ -36,6 +39,20 @@ const Navbar = () => {
   };
 
   useEffect(() => {
+    setCartItems(cart?.length || 0)
+  }, [cart])
+
+  useEffect(() => {
+    const cartFromStorage = JSON.parse(localStorage.getItem('cart')) || [];
+    if (cart?.length < cartFromStorage?.length) {
+      dispatch(setCartData(cartFromStorage));
+    } else {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, []);
+
+
+  useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -44,22 +61,22 @@ const Navbar = () => {
 
   useEffect(() => {
     if (!menuOpen && !userMenuOpen) return;
-  
+
     const handleClick = (event) => {
       if (navRef.current && !navRef.current.contains(event.target)) {
         setUserMenuOpen(false);
         setMenuOpen(false);
       }
     };
-  
+
     document.addEventListener('click', handleClick);
-  
+
     // Cleanup function to remove the event listener
     return () => {
       document.removeEventListener('click', handleClick);
     };
   }, [menuOpen, userMenuOpen]);
-  
+
 
   const handleLogOut = () => {
     logOut();
@@ -116,7 +133,7 @@ const Navbar = () => {
     <div ref={navRef} className="h-[64px]">
       <div className="dark:bg-[#0c0c0e] sticky top-0 z-50 w-full bg-gray-700 supports-[backdrop-filter]:bg-background/60 shadow-lg">
         <nav
-          className={`fixed top-0 left-0 w-full mx-auto px-2 sm:px-6 lg:px-8 z-50 transition-transform bg-opacity-85 backdrop-blur-sm duration-300 ${visible
+          className={`fixed top-0 left-0 w-full mx-auto px-2 sm:px-6 lg:px-8 z-50 transition-transform bg-opacity-85  backdrop-blur-3xl  duration-300 ${visible
             ? "transform-none border-border/40 dark:shadow-xl shadow-md"
             : "-translate-y-full"
             }`}
@@ -127,7 +144,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={toggleMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-0 focus:ring-offset-0 focus:ring-offset-gray-800 focus:ring-white"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-0 focus:ring-offset-0 focus:ring-offset-gray-800 focus:ring-white"
                 aria-controls="mobile-menu"
                 aria-expanded={menuOpen ? "true" : "false"}
               >
@@ -249,10 +266,9 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
               <Link href="/cart" className="relative">
-                <span className="text-white">Cart</span>
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
-                  3
-                </span>
+                <CartSVG color={cartItems > 0 && '#ef4444'} />
+                <span className={`absolute -top-3 right-0 text-xs  ${cartItems > 0 ? 'pop text-red-500' : ''}`}
+                >{cartItems < 100 ? cartItems : "99+"}</span>
               </Link>
             </div>
           </div>
@@ -303,8 +319,10 @@ const Navbar = () => {
                       </Link>
                     </>
                   )}
-                  <Link href="/cart" className={getLinkClass("/cart")}>
-                    Cart
+                  <Link href="/cart" className={`flex ${getLinkClass("/cart")}`}>
+                    <CartSVG color={cartItems > 0 && '#ef4444'} />
+                    <span className={`text-xs  ${cartItems > 0 ? 'pop text-red-500' : ''}`}
+                    >{cartItems < 100 ? cartItems : "99+"}</span>
                   </Link>
                 </div>
               </motion.div>

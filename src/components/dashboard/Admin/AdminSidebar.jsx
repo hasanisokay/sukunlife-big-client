@@ -68,6 +68,7 @@ const AdminSidebar = () => {
                     </button>
                 </div>
                 <Link href="/dashboard" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard")}`}>Dashboard</Link>
+                <Link href="/dashboard/vouchers" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/vouchers")}`}>Vouchers</Link>
                 <div>
                     <button
                         onClick={() => toggleMenu('shop')}

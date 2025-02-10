@@ -1,5 +1,6 @@
 import AllShopItems from "@/components/dashboard/Admin/shop/AllShopItems";
 import NotFound from "@/components/not-found/NotFound";
+import SearchBar from "@/components/search/SearchBar";
 import getAllProducts from "@/utils/getAllProducts.mjs";
 import React from "react";
 
@@ -12,19 +13,26 @@ const shopPage = async ({ searchParams }) => {
     const sort = s?.sort || "newest";
     const tags = s?.tags || "";
     const skip = "";
+    const category = s?.category || "";
+
     const products = await getAllProducts(
       page,
       limit,
       keyword,
       tags,
       sort,
-      skip
+      skip,
+      category
     );
 
-    if (products.status === 200 && products.products.length === 0)return <div>
-      No Product found
-    </div>
-      if (products?.status !== 200) return <NotFound />;
+    if (products.status === 200 && products.products.length === 0)
+      return (
+        <div className="mt-10">
+          <SearchBar placeholder={"Search for products"}/>
+          <p className="text-center">No Product found</p>
+        </div>
+      );
+    if (products?.status !== 200) return <NotFound />;
     return (
       <AllShopItems p={products?.products} totalCount={products.totalCount} />
     );

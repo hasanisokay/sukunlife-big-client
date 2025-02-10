@@ -1,7 +1,6 @@
-
 import updateCartInDB from "./updateCartInDB.mjs";
 
-const addToCart = async (item, user) => {
+const removeItemFromCart = async (item, user) => {
   if (!item || !item._id) return;
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
   const existingIndex = cart.findIndex((cartItem) => cartItem._id === item._id);
@@ -12,14 +11,16 @@ const addToCart = async (item, user) => {
   } else {
     cart.push(item); // Add new item
   }
+
+  // Save updated cart to localStorage
   localStorage.setItem("cart", JSON.stringify(cart));
 
   // If user exists, update the cart in DB
   if (user?._id) {
     await updateCartInDB(user._id, cart);
   }
-  return cart;
 };
 
 
-export default addToCart;
+
+export default removeItemFromCart;

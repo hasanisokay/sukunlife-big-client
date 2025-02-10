@@ -10,6 +10,8 @@ import ThemeProvider from "@/components/providers/ThemeProvider";
 import checkToken from "@/utils/checkToken.mjs";
 import TokenRefreh from "@/components/providers/TokenRefreh";
 import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
+import getCartItemsFromDb from "@/components/cart/functions/getCartItemsFromDb.mjs";
+import { setCartData } from "@/store/slices/cartSlice";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,9 +35,13 @@ export default async function RootLayout({ children }) {
   const store = makeStore();
   store.dispatch(setUserData(userData || null));
   store.dispatch(setTheme(storedTheme));
+  if (userData) {
+    const cartItems = await getCartItemsFromDb(userData?._id);
+    store.dispatch(setCartData(cartItems?.cart?.cart));
+  }
   const initialReduxState = store.getState();
   return (
-    <html lang="en" data-theme={storedTheme} >
+    <html lang="en" data-theme={storedTheme}>
       {/* className={`light ${storedTheme ==="dark"? "dark":""}`} */}
       <StoreProvider initialReduxState={initialReduxState}>
         <TokenRefreh refreshToken={refreshToken}>

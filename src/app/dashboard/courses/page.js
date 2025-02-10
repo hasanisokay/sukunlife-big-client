@@ -51,9 +51,9 @@ export async function generateMetadata() {
       "og:description": metadata.description,
       "og:url": `${host}/dashboard/courses`,
       "og:image": dashboardCoverUrl || "",
-      "og:type": "article",
+      "og:type": "website",
       "og:site_name": websiteName,
-      "og:locale": "bn_BD",
+      "og:locale": "en_US",
     };
     return metadata;
   } catch (error) {
