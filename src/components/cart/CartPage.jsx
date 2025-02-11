@@ -22,62 +22,27 @@ const CartPage = () => {
     const voucher = useSelector((state) => state.cart.voucher);
     const discount = useSelector((state) => state.cart.discount);
     const totalPrice = useSelector((state) => state.cart.finalPrice);
+    const validateVoucher = async (updatedCartItems, voucherPassed) => {
+        if (!typedVoucher && !voucherPassed) return;
 
-    useEffect(() => {
-        const existingIndex = cartItems?.findIndex((cartItem) => cartItem.type === 'course');
-        if (existingIndex !== -1) {
-            setCourseInCart(true);
-        }
-    }, [cartItems]);
-    useEffect(() => {
-        if (voucher) {
-            setTypedVoucher(voucher);
-        }
-    }, [])
-    // Update quantity of an item
-    const updateQuantity = async (id, newQuantity) => {
-        const updatedCart = cartItems.map((item) =>
-            item._id === id ? { ...item, quantity: newQuantity } : item
-        );
-        dispatch(setCartData(updatedCart));
-        dispatch(removeVoucher(updatedCart));
-        setVoucherError("");
-        setVoucherMessage("");
-        await updateCart(updatedCart, user);
-    };
-
-    // Remove item from cart
-    const removeItem = async (id) => {
-        const updatedCart = cartItems.filter((item) => item._id !== id);
-        dispatch(removeVoucher(updatedCart));
-        dispatch(setCartData(updatedCart));
-        setVoucherError("");
-        setVoucherMessage("");
-        await updateCart(updatedCart, user);
-
-    };
-    const subtotalPrice = cartItems?.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
-    );
-
-
-    // Validate voucher on blur
-    const validateVoucher = async () => {
-        if (!typedVoucher || voucher === typedVoucher) return;
-
-        // Simulate API call to validate voucher
         try {
-            const response = await fetch(`${SERVER}/api/public/check-voucher?code=${typedVoucher}&&totalPrice=${subtotalPrice}`);
+            const subtotal = updatedCartItems?.reduce(
+                (total, item) => total + item.price * item.quantity,
+                0
+            );
+
+            const response = await fetch(`${SERVER}/api/public/check-voucher?code=${typedVoucher || voucherPassed}&&totalPrice=${subtotal}`);
             const data = await response.json();
             console.log(data)
             if (data.isValid) {
                 const calculatedDiscount = data.discount;
                 const calculatedFinalPrice = data.finalPrice;
-                dispatch(setVoucher({ code: typedVoucher, discount: calculatedDiscount }));
+                dispatch(setVoucher({ code: typedVoucher, discount: calculatedDiscount, voucherDetails: data.voucher }));
                 setVoucherError('');
-                setVoucherMessage(data.message)
+                setVoucherMessage(data.message);
+                localStorage.setItem('voucher', JSON.stringify(typedVoucher))
             } else {
+                setVoucherMessage('')
                 setVoucherError(data.message);
 
             }
@@ -86,6 +51,52 @@ const CartPage = () => {
             alert("Failed to validate voucher");
         }
     };
+
+
+    useEffect(() => {
+        const existingIndex = cartItems?.findIndex((cartItem) => cartItem.type === 'course');
+        if (existingIndex !== -1) {
+            setCourseInCart(true);
+        }
+    }, [cartItems]);
+    useEffect(() => {
+        (async () => {
+            if (voucher) {
+                setTypedVoucher(voucher);
+            } else {
+                const voucherFromStorage = JSON.parse(localStorage.getItem("voucher")) || ""
+                if (voucherFromStorage) {
+                    setTypedVoucher(voucherFromStorage);
+                    await validateVoucher(cartItems, voucherFromStorage)
+                }
+            }
+        })()
+    }, [])
+    // Update quantity of an item
+    const updateQuantity = async (id, newQuantity) => {
+        const updatedCart = cartItems.map((item) =>
+            item._id === id ? { ...item, quantity: newQuantity } : item
+        );
+        dispatch(setCartData(updatedCart));
+        dispatch(removeVoucher());
+        await updateCart(updatedCart, user);
+        await validateVoucher(updatedCart);
+    };
+
+    // Remove item from cart
+    const removeItem = async (id) => {
+        const updatedCart = cartItems.filter((item) => item._id !== id);
+        dispatch(removeVoucher());
+        dispatch(setCartData(updatedCart));
+        await updateCart(updatedCart, user);
+        await validateVoucher(updatedCart);
+
+    };
+    const subtotalPrice = cartItems?.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+    );
+
 
     return (
         <div className={`min-h-screen dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900 p-8`}>

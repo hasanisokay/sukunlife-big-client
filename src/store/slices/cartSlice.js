@@ -6,7 +6,8 @@ const cartSlice = createSlice({
     cartData:[],
     voucher: null, 
     discount: 0,
-    finalPrice: 0
+    finalPrice: 0,
+    voucherDetails: {},
   },
   reducers: {
     setCartData:(state,action)=>{
@@ -16,11 +17,13 @@ const cartSlice = createSlice({
     setVoucher: (state, action) => {
       state.voucher = action.payload.code;
       state.discount = action.payload.discount;
+      state.voucherDetails = action.payload.voucherDetails;
       state.finalPrice = calculateFinalPrice(state.cartData, action.payload.discount);
     },
     removeVoucher: (state) => {
       state.voucher = null;
       state.discount = 0;
+      state.voucherDetails = {};
       state.finalPrice = calculateFinalPrice(state.cartData, 0);
     }
   },
