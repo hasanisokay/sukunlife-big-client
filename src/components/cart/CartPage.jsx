@@ -22,33 +22,32 @@ const CartPage = () => {
     const voucher = useSelector((state) => state.cart.voucher);
     const discount = useSelector((state) => state.cart.discount);
     const totalPrice = useSelector((state) => state.cart.finalPrice);
-    const validateVoucher = async (updatedCartItems, voucherPassed) => {
+    const validateVoucher = async (updatedCartItems=[], voucherPassed) => {
         if (!typedVoucher && !voucherPassed) return;
-
+        let newCartItems = updatedCartItems.length > 0 ? updatedCartItems : cartItems;
         try {
-            const subtotal = updatedCartItems?.reduce(
+            const subtotal = newCartItems?.reduce(
                 (total, item) => total + item.price * item.quantity,
                 0
             );
 
             const response = await fetch(`${SERVER}/api/public/check-voucher?code=${typedVoucher || voucherPassed}&&totalPrice=${subtotal}`);
             const data = await response.json();
-            console.log(data)
             if (data.isValid) {
                 const calculatedDiscount = data.discount;
                 const calculatedFinalPrice = data.finalPrice;
                 dispatch(setVoucher({ code: typedVoucher, discount: calculatedDiscount, voucherDetails: data.voucher }));
                 setVoucherError('');
                 setVoucherMessage(data.message);
-                localStorage.setItem('voucher', JSON.stringify(typedVoucher))
+                localStorage.setItem('voucher', JSON.stringify(typedVoucher || voucherPassed))
             } else {
                 setVoucherMessage('')
                 setVoucherError(data.message);
 
             }
         } catch (error) {
-            console.error("Error validating voucher:", error);
-            alert("Failed to validate voucher");
+            console.log("Error validating voucher:", error);
+            // alert("Failed to validate voucher");
         }
     };
 
@@ -63,8 +62,9 @@ const CartPage = () => {
         (async () => {
             if (voucher) {
                 setTypedVoucher(voucher);
+                console.log('setting typed voucher', voucher)
             } else {
-                const voucherFromStorage = JSON.parse(localStorage.getItem("voucher")) || ""
+                const voucherFromStorage = JSON.parse(localStorage.getItem("voucher")) || "";
                 if (voucherFromStorage) {
                     setTypedVoucher(voucherFromStorage);
                     await validateVoucher(cartItems, voucherFromStorage)
@@ -178,7 +178,7 @@ const CartPage = () => {
                                 <p className="dark:text-gray-400 text-gray-700 ">Total</p>
                                 <p className="text-xl font-semibold flex items-center"><TakaSVG />{totalPrice?.toLocaleString()}</p>
                             </div>
-                            <div className="mt-4 flex gap-4">
+                            <div className="mt-4 flex gap-4 md:flex-nowrap flex-wrap">
                                 <input
                                     type="text"
                                     placeholder="Enter voucher code"
@@ -186,7 +186,7 @@ const CartPage = () => {
                                     onChange={(e) => setTypedVoucher(e.target.value)}
                                     className={`w-full px-4 py-2 dark:bg-gray-700 dark:text-white bg-gray-200 text-gray-900 rounded-lg focus:outline-none`}
                                 />
-                                <button className="w-[200px] h-fit px-6 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                                <button className="md:w-[200px] w-[130px] h-fit md:px-6 py-1 md:py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
                                     onClick={validateVoucher}>Apply Voucher</button>
                             </div>
                             {voucherMessage?.length > 0 && <p className="text-green-500">{voucherMessage}</p>}
