@@ -5,7 +5,11 @@ import Link from 'next/link';
 import getAllProducts from '@/utils/getAllProducts.mjs';
 import StarRating from '@/components/rating/StarRating';
 import SearchBar from '@/components/search/SearchBar';
-import { TakaSVG } from '@/components/svg/SvgCollection';
+import { AddCartSVG, BuyNowSVG, TakaSVG } from '@/components/svg/SvgCollection';
+import addToCart from '@/components/cart/functions/addToCart.mjs';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCartData } from '@/store/slices/cartSlice';
+import { Flip, toast, ToastContainer } from 'react-toastify';
 
 const AllShopItems = ({ p, totalCount }) => {
     const [products, setProducts] = useState(p);
@@ -14,7 +18,10 @@ const AllShopItems = ({ p, totalCount }) => {
     const [hasMore, setHasMore] = useState(products?.length < totalCount || false);
     const [hasMounted, setHasMounted] = useState(false);
     const containerRef = useRef(null);
-    const memorizedProducts = useMemo(() => products, [products])
+    const memorizedProducts = useMemo(() => products, [products]);
+    const user = useSelector((state) => state.user.userData);
+    const dispatch = useDispatch();
+
     useEffect(() => {
         if (!hasMounted) return;
         setProducts(p)
@@ -26,23 +33,23 @@ const AllShopItems = ({ p, totalCount }) => {
             setHasMounted(true);
             return;
         }
-        
-    const fetchProducts = async () => {
-        try {
-            setLoading(true);
-            const newProducts = await getAllProducts(page);
-            if(newProducts.status !==200)return;
-            if (newProducts?.products?.length === 0) {
-                setHasMore(false);
-            } else {
-                setProducts((prev) => [...prev, ...newProducts?.products]);
+
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                const newProducts = await getAllProducts(page);
+                if (newProducts.status !== 200) return;
+                if (newProducts?.products?.length === 0) {
+                    setHasMore(false);
+                } else {
+                    setProducts((prev) => [...prev, ...newProducts?.products]);
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Error fetching products:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
         fetchProducts();
     }, [page]);
 
@@ -81,12 +88,33 @@ const AllShopItems = ({ p, totalCount }) => {
 
         }
     };
+    const handleAddToCart = async (product, buyNow) => {
+        const cartItem = {
+            _id: product._id,
+            type: 'product',
+            productId: product?.productId,
+            title: product?.title,
+            price: product.price,
+            quantity: 1,
+            color: product?.colorVariants?.length > 0 ? product.colorVariants[0] : "",
+            size: product?.sizeVariants?.length > 0 ? product.sizeVariants[0] : "",
+            image: product?.images[0] || "",
+            unit: product?.unit
+        };
+        const c = await addToCart(cartItem, user);
+        dispatch(setCartData(c));
 
+        if (buyNow) {
+            window.location.href = "/cart"
+        } else {
+            toast.success('Added to cart.', { autoClose: 700 })
+        }
+    };
     return (
         <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-8">
             <div className="max-w-6xl mx-auto" ref={containerRef}>
                 <div className='mb-4'>
-                <SearchBar placeholder={"Search Product"} />
+                    <SearchBar placeholder={"Search Product"} />
                 </div>
                 {/* Product Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -121,6 +149,26 @@ const AllShopItems = ({ p, totalCount }) => {
                                                 ratingCount={product.reviewsCount}
                                             />
                                         </div>
+                                        <div className="mt-4 flex space-x-2 text-sm">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleAddToCart(product, false);
+                                                }}
+                                                className=" flex gap-3 px-1 w-[140px] items-center justify-center h-[34px] bg-blue-500 text-white  rounded hover:bg-blue-600 transition-colors duration-300"
+                                            >
+                                                Add to Cart <AddCartSVG />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleAddToCart(product, true);
+                                                }}
+                                                className="flex gap-3 px-1 w-[120px] items-center justify-center h-[34px] bg-green-500 text-white  rounded hover:bg-green-600 transition-colors duration-300"
+                                            >
+                                                Buy Now <BuyNowSVG />
+                                            </button>
+                                        </div>
                                     </div>
                                 </motion.div>
                             </Link>
@@ -153,6 +201,7 @@ const AllShopItems = ({ p, totalCount }) => {
                     </motion.div>
                 )}
             </div>
+            <ToastContainer transition={Flip} />
         </div>
     );
 };

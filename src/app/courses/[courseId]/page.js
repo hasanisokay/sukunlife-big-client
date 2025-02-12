@@ -44,7 +44,7 @@ export async function generateMetadata({ params }) {
       canonical: `${host}/courses/${courseId}`,
     };
     if (course) {
-      if (course?.tags > 2) {
+      if (course?.tags?.length > 2) {
         const keywords = course?.tags.split(",");
         metadata.keywords.push(...keywords);
       } else {

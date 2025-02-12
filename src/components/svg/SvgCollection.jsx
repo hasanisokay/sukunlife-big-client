@@ -234,3 +234,45 @@ export const CartSVG = ({ color }) => {
     </g>
   </svg>
 };
+export const AddCartSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <g id="SVGRepo_iconCarrier" fill= {color ? color : theme === "light" ? "#f0f1f3" : "#343541"}>
+      <path
+        fillRule="evenodd"
+        d="M3.04 2.292a.75.75 0 0 0-.497 1.416l.261.091c.668.235 1.107.39 1.43.549.303.149.436.27.524.398.09.132.16.314.2.677.04.38.042.875.042 1.615V9.64c0 2.942.063 3.912.93 4.826.866.914 2.26.914 5.05.914h5.302c1.561 0 2.342 0 2.893-.45.552-.45.71-1.214 1.025-2.742l.5-2.425c.347-1.74.52-2.609.076-3.186S18.816 6 17.131 6H6.492a9 9 0 0 0-.043-.738c-.054-.497-.17-.95-.452-1.362-.284-.416-.662-.682-1.103-.899-.412-.202-.936-.386-1.552-.603zM13 8.25a.75.75 0 0 1 .75.75v1.25H15a.75.75 0 0 1 0 1.5h-1.25V13a.75.75 0 0 1-1.5 0v-1.25H11a.75.75 0 0 1 0-1.5h1.25V9a.75.75 0 0 1 .75-.75"
+        clipRule="evenodd"
+      ></path>
+      <path d="M7.5 18a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3M16.5 18a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3"></path>
+    </g>
+  </svg>
+};
+export const BuyNowSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <g id="SVGRepo_iconCarrier" stroke={color ? color : theme === "light" ? "#f0f1f3" : "#343541"} strokeWidth="1.5">
+      <path d="M7.5 18a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM16.5 18a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"></path>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m11 10.8 1.143 1.2L15 9"
+      ></path>
+      <path
+        strokeLinecap="round"
+        d="m2 3 .261.092c1.302.457 1.953.686 2.325 1.231s.372 1.268.372 2.715V9.76c0 2.942.063 3.912.93 4.826.866.914 2.26.914 5.05.914H12m4.24 0c1.561 0 2.342 0 2.894-.45.551-.45.709-1.214 1.024-2.743l.5-2.424c.347-1.74.52-2.609.076-3.186-.443-.577-1.96-.577-3.645-.577h-6.065m-6.066 0H7"
+      ></path>
+    </g>
+  </svg>
+};

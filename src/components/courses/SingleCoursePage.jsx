@@ -12,6 +12,7 @@ import StarsOnly from '../rating/StarsOnly';
 import { useDispatch, useSelector } from 'react-redux';
 import addToCart from '../cart/functions/addToCart.mjs';
 import { setCartData } from '@/store/slices/cartSlice';
+import { Flip, toast, ToastContainer } from 'react-toastify';
 
 const SingleCoursePage = ({ course }) => {
     const [expandedModule, setExpandedModule] = useState(null);
@@ -20,7 +21,7 @@ const SingleCoursePage = ({ course }) => {
     const dispatch = useDispatch()
     const user = useSelector((state) => state.user.userData);
     const cart = useSelector((state) => state.cart.cartData);
-    
+
     const overlayVariants = {
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
@@ -71,7 +72,7 @@ const SingleCoursePage = ({ course }) => {
     };
 
     const handleAddToCart = async (buyNow) => {
-        if (itemAddedToCart) return;
+        if (itemAddedToCart) return window.location.href = "/cart";
         const cartItem = {
             _id: course._id,
             type: 'course',
@@ -83,8 +84,11 @@ const SingleCoursePage = ({ course }) => {
         };
         const c = await addToCart(cartItem, user);
         dispatch(setCartData(c));
+
         if (buyNow) {
             window.location.href = "/cart"
+        } else {
+            toast.success('Added to cart.', { autoClose: 700 })
         }
         // Add your cart logic here
     };
@@ -121,11 +125,11 @@ const SingleCoursePage = ({ course }) => {
                                 </div>
                             </div>
                             <button
-                                disabled={itemAddedToCart}
+                                // disabled={itemAddedToCart}
                                 className="bg-blue-600 text-white px-6 md:py-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                                 onClick={() => handleAddToCart(false)}
                             >
-                                {itemAddedToCart ? "Added To Cart" : " Enroll Now"}
+                                {itemAddedToCart ? "View Cart" : " Enroll Now"}
                             </button>
                         </div>
                     </div>
@@ -317,6 +321,7 @@ const SingleCoursePage = ({ course }) => {
                     </motion.div>
                 )}
             </AnimatePresence>
+            <ToastContainer transition={Flip} />
         </div>
     );
 }

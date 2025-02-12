@@ -9,15 +9,19 @@ import Link from "next/link";
 import { TakaSVG } from "../svg/SvgCollection";
 import { useRouter } from "next/navigation";
 import { SERVER } from "@/constants/urls.mjs";
-import { setVoucher } from "@/store/slices/cartSlice";
+import { setCartData, setVoucher } from "@/store/slices/cartSlice";
 import convertToBanglaNumber from "../cart/functions/convertToBanglaNumber.mjs";
+import updateCart from "../cart/functions/updateCart.mjs";
+import { Flip, toast, ToastContainer } from "react-toastify";
 
 const CheckOutPage = () => {
     const router = useRouter();
     const dispatch = useDispatch();
+    const user = useSelector((state) => state.user.userData);
     const cartItems = useSelector((state) => state.cart.cartData);
     const voucher = useSelector((state) => state.cart.voucher);
     const discount = useSelector((state) => state.cart.discount);
+    const theme = useSelector((state) => state.theme.mode);
     const totalPrice = useSelector((state) => state.cart.finalPrice);
     const subtotalPrice = cartItems?.reduce(
         (total, item) => total + item.price * item.quantity,
@@ -25,7 +29,7 @@ const CheckOutPage = () => {
     );
 
     // React Hook Form
-    const { register, handleSubmit, control, formState: { errors } } = useForm();
+    const { register, handleSubmit, setValue, control, formState: { errors } } = useForm();
     const [deliveryCharge, setDeliveryCharge] = useState(120); // Default to Outside Dhaka
 
     // Delivery Options
@@ -34,6 +38,14 @@ const CheckOutPage = () => {
         { value: 80, label: "Inside Dhaka - ৳80" },
     ];
 
+    useEffect(() => {
+        if (user) {
+            setValue('name', user.name)
+            setValue('phone', user.mobile)
+            setValue('email', user.email)
+            setValue('address', user?.address || "")
+        }
+    }, [])
     // Calculate Final Total
     const finalTotalPrice = totalPrice + deliveryCharge;
 
@@ -48,12 +60,12 @@ const CheckOutPage = () => {
             deliveryCharge,
             finalTotalPrice,
         };
-
+        delete orderDetails.deliveryArea;
         console.log("Order Details:", orderDetails);
 
         // Call API to submit order
         try {
-            const response = await fetch("/api/place-order", {
+            const response = await fetch(`${SERVER}/api/public/place-order`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -61,11 +73,16 @@ const CheckOutPage = () => {
                 body: JSON.stringify(orderDetails),
             });
 
-            if (response.ok) {
-                alert("Order placed successfully!");
-                router.push("/confirmation");
+            const resData = await response.json();
+            console.log(resData);
+            if (resData.status === 200) {
+                localStorage.removeItem("voucher")
+                toast.success(data.message)
+                dispatch(setCartData([]));
+                await updateCart([], user);
+                window.location.href = "/"
             } else {
-                alert("Failed to place order. Please try again.");
+                toast.error(data.message)
             }
         } catch (error) {
             console.error("Error placing order:", error);
@@ -98,7 +115,38 @@ const CheckOutPage = () => {
             console.log("Error validating voucher:", error);
         }
     };
-
+    const customStyles = (theme) => ({
+        control: (provided) => ({
+            ...provided,
+            backgroundColor: theme === "dark" ? '#384152' : '#fff', // Dark or light background
+            color: theme === "dark" ? '#fff' : '#333', // Text color
+            borderColor: theme === "dark" ? '#555' : '#ccc', // Border color
+            boxShadow: theme === "dark" ? '0 0 0 1px #555' : '0 0 0 1px #ccc', // Border focus shadow
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isSelected
+                ? theme === "dark"
+                    ? '#444'
+                    : '#ddd'
+                : state.isFocused
+                    ? theme === "dark"
+                        ? '#555'
+                        : '#f2f2f2'
+                    : theme === "dark"
+                        ? '#2D2D2D'
+                        : '#fff', // Option background colors based on dark or light theme
+            color: theme === "dark" ? '#fff' : '#333', // Option text color
+        }),
+        singleValue: (provided) => ({
+            ...provided,
+            color: theme === "dark" ? '#fff' : '#333', // Text color for the selected value
+        }),
+        menu: (provided) => ({
+            ...provided,
+            backgroundColor: theme === "dark" ? '#384152' : '#fff', // Dropdown menu background color
+        }),
+    });
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -129,6 +177,7 @@ const CheckOutPage = () => {
                                         <h3 className="text-lg font-semibold">{item.title}</h3>
                                         <p className="dark:text-gray-400 text-gray-600 flex items-center">
                                             <TakaSVG /> {item.price.toLocaleString()} x {item.quantity}
+                                            {item.size ? <span className="ml-2 text-xs">Variant: {item?.size} {item?.unit}</span> : <span></span>} {item.color ? <span className="ml-2 text-xs">Color: {item.color}</span> : <span></span>}
                                         </p>
                                     </div>
                                 </div>
@@ -171,7 +220,7 @@ const CheckOutPage = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
-                    className="dark:bg-gray-800 bg-white rounded-lg shadow-lg p-6"
+                    className="dark:bg-gray-800 bg-white rounded-lg h-fit shadow-lg p-6"
                 >
                     <h2 className="text-2xl font-bold mb-6">Delivery Information</h2>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -238,6 +287,7 @@ const CheckOutPage = () => {
                                             field.onChange(selected);
                                             setDeliveryCharge(selected.value);
                                         }}
+                                        styles={customStyles(theme)}
                                         className="dark:text-gray-900"
                                     />
                                 )}
@@ -245,7 +295,7 @@ const CheckOutPage = () => {
                         </div>
 
                         {/* Payment Instructions */}
-                        <div className="mt-6">
+                        <div className="mt-10">
                             <h3 className="text-lg font-semibold mb-2">Payment Instructions</h3>
                             <p className="dark:text-gray-400 text-gray-700 mb-4">
                                 আপনি <strong>017xxx</strong> নাম্বারে বিকাশে/নগদে <strong>{convertToBanglaNumber(finalTotalPrice)}</strong> টাকা সেন্ডমানি করবেন। এরপর বিকাশ নাম্বার অথবা ট্রাঞ্জেকশন আইডি নিচে দিবেন।
@@ -283,6 +333,7 @@ const CheckOutPage = () => {
                     Back to Cart
                 </Link>
             </div>
+            <ToastContainer transition={Flip} />
         </motion.div>
     );
 };

@@ -6,8 +6,10 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 const TokenRefreh = ({ children, refreshToken = false }) => {
+    // return children
     const dispatch = useDispatch();
     const refreshAccessToken = async () => {
+        console.log('refreshing')
         try {
             const res = await fetch(`${SERVER}/api/auth/refresh`, {
                 method: "POST",
@@ -17,6 +19,7 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
                 credentials: "include",
             });
             const data = await res.json()
+            console.log(data)
             dispatch(setUserData(data?.user))
             dispatch(setCartData(data?.user?.cart));
             if (data?.user?.cart?.length < 1 || data.status !== 200) {

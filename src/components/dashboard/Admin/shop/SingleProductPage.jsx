@@ -15,6 +15,7 @@ import { TakaSVG } from "@/components/svg/SvgCollection";
 import { useDispatch, useSelector } from "react-redux";
 import addToCart from "@/components/cart/functions/addToCart.mjs";
 import { setCartData } from "@/store/slices/cartSlice";
+import { Flip, toast, ToastContainer } from "react-toastify";
 
 const SingleProductPage = ({ product }) => {
     const [selectedColor, setSelectedColor] = useState(product?.colorVariants[0]);
@@ -26,8 +27,14 @@ const SingleProductPage = ({ product }) => {
     const dispatch = useDispatch()
     const totalRating = product?.reviews.reduce((sum, review) => sum + review.rating, 0);
     const ratingCount = product?.reviews.length;
-
+    const [selectedThumbnailIndex, setSelectedThumbnailIndex] = useState(0); // Track selected thumbnail
+    useEffect(() => {
+        if (thumbsSwiper) {
+            setSelectedThumbnailIndex(thumbsSwiper.activeIndex);
+        }
+    }, [thumbsSwiper]);
     // Update price when color or size changes
+
     useEffect(() => {
         const variantPrice = product?.variantPrices.find(
             (variant) =>
@@ -51,14 +58,16 @@ const SingleProductPage = ({ product }) => {
             color: selectedColor,
             size: selectedSize,
             image: product?.images[0],
+            unit: product?.unit
         };
         const c = await addToCart(cartItem, user);
         dispatch(setCartData(c));
+
         if (buyNow) {
             window.location.href = "/cart"
+        } else {
+            toast.success('Added to cart.', { autoClose: 700 })
         }
-        console.log("Added to cart:", cartItem);
-        // Add your cart logic here
     };
 
     // Prevent right-click on images
@@ -75,14 +84,20 @@ const SingleProductPage = ({ product }) => {
                     <div className="space-y-4">
                         {/* Main Image Swiper */}
                         <Swiper
+                            onSlideChange={(e) => {
+                                setSelectedThumbnailIndex(e?.activeIndex)
+                                thumbsSwiper?.slideTo(e?.activeIndex)
+                            }}
                             navigation
                             thumbs={{ swiper: thumbsSwiper }}
                             modules={[Navigation, Thumbs]}
                             className="rounded-lg"
+
                             onContextMenu={handleImageContextMenu} // Prevent right-click
                         >
                             {product?.images.map((image, index) => (
-                                <SwiperSlide key={index}>
+                                <SwiperSlide key={index}
+                                >
                                     <motion.img
                                         src={image}
                                         alt={`${product?.title} ${index + 1}`}
@@ -111,10 +126,16 @@ const SingleProductPage = ({ product }) => {
                                     <motion.img
                                         src={image}
                                         alt={`${product?.title} ${index + 1}`}
-                                        className="w-24 h-24 object-cover rounded-lg cursor-pointer"
-                                        whileHover={{ scale: 1.05 }}
+                                        // className="w-24 h-24 object-cover rounded-lg cursor-pointer"
+                                        className={`w-24 h-24 object-cover rounded-lg cursor-pointer transition-all duration-300
+                                            ${selectedThumbnailIndex === index ? 'border-4 border-blue-500' : 'border-2 border-transparent'}`}
                                         whileTap={{ scale: 0.95 }}
                                         onContextMenu={handleImageContextMenu}
+
+                                        onClick={() => {
+                                            setSelectedThumbnailIndex(index); // Update the selected thumbnail index
+                                            thumbsSwiper?.slideTo(index); // Change the main image to the clicked thumbnail
+                                        }}
                                     />
                                 </SwiperSlide>
                             ))}
@@ -211,15 +232,33 @@ const SingleProductPage = ({ product }) => {
                             </div>
                         </div>}
 
-                        {/* Add to Cart Button */}
-                        {product.stockQuantity > 0 && <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleAddToCart(false)}
-                            className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
-                        >
-                            Add to Cart
-                        </motion.button>}
+                        {product?.stockQuantity > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex gap-4"
+                            >
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleAddToCart(false)}
+                                    className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
+                                >
+                                    Add to Cart
+                                </motion.button>
+
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleAddToCart(true)}
+                                    className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-300"
+                                >
+                                    Buy Now
+                                </motion.button>
+                            </motion.div>
+                        )}
+
                     </div>
                 </div>
 
@@ -311,7 +350,8 @@ const SingleProductPage = ({ product }) => {
                     </div>
                 </div>
             </div>
-        </div>
+            <ToastContainer transition={Flip} />
+        </div >
     );
 };
 

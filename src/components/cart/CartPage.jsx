@@ -22,7 +22,7 @@ const CartPage = () => {
     const voucher = useSelector((state) => state.cart.voucher);
     const discount = useSelector((state) => state.cart.discount);
     const totalPrice = useSelector((state) => state.cart.finalPrice);
-    const validateVoucher = async (updatedCartItems=[], voucherPassed) => {
+    const validateVoucher = async (updatedCartItems = [], voucherPassed) => {
         if (!typedVoucher && !voucherPassed) return;
         let newCartItems = updatedCartItems.length > 0 ? updatedCartItems : cartItems;
         try {
@@ -84,8 +84,10 @@ const CartPage = () => {
     };
 
     // Remove item from cart
-    const removeItem = async (id) => {
-        const updatedCart = cartItems.filter((item) => item._id !== id);
+    const removeItem = async (item) => {
+        const uniqueId = `${item?._id}-${item?.size || "default"}-${item?.color || "default"}`;
+        const updatedCart = cartItems.filter((cartItem) => `${cartItem._id}-${cartItem.size || "default"}-${cartItem.color || "default"}` !== uniqueId)
+          
         dispatch(removeVoucher());
         dispatch(setCartData(updatedCart));
         await updateCart(updatedCart, user);
@@ -112,9 +114,9 @@ const CartPage = () => {
                 <>
                     <div className="grid gap-6">
                         <AnimatePresence>
-                            {cartItems?.map((item) => (
+                            {cartItems?.map((item, index) => (
                                 <motion.div
-                                    key={item._id}
+                                    key={index}
                                     initial={{ opacity: 0, y: -20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
@@ -129,7 +131,9 @@ const CartPage = () => {
                                         />
                                         <div>
                                             <h2 className="text-xl font-semibold">{item.title}</h2>
-                                            <p className={` dark:text-gray-400 text-gray-600 flex items-center font-semibold`}> <TakaSVG /> {item.price.toLocaleString()}</p>
+                                            <p className={` dark:text-gray-400 text-gray-600 flex items-center font-semibold`}> <TakaSVG /> {item.price.toLocaleString()}
+                                                {item.size ? <span className="ml-2 text-xs">Variant: {item?.size} {item?.unit}</span> : <span></span>} {item.color ? <span className="ml-2 text-xs">Color: {item.color}</span> : <span></span>}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -153,7 +157,7 @@ const CartPage = () => {
                                             </button>
                                         </div>
                                         <button
-                                            onClick={() => removeItem(item._id)}
+                                            onClick={() => removeItem(item)}
                                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
                                         >
                                             Remove

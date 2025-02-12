@@ -26,7 +26,6 @@ const Navbar = () => {
   const [cartItems, setCartItems] = useState(cart?.length || 0)
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleUserMenu = () => setUserMenuOpen(!userMenuOpen);
-
   const handleScroll = () => {
     if (window.scrollY > lastScrollY) {
       setVisible(false);
