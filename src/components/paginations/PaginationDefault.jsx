@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const PaginationDefault = ({ p, totalPages }) => {
+
     const [page, setPage] = useState(p)
     const [hasMounted, setHasMounted] = useState(false)
     const router = useRouter();
@@ -41,7 +42,7 @@ const PaginationDefault = ({ p, totalPages }) => {
         if (hasMounted) {
             const query = new URLSearchParams(window.location.search);
             query.set('page', page);
-            router.replace(`${window.location.pathname}?${query.toString()}`, { scroll: false });
+            router.replace(`${window.location.pathname}?${query.toString()}`);
         } else {
             setHasMounted(true);
         }

@@ -57,15 +57,33 @@ const VouchersPage = ({ vouchers: initialVouchers = [] }) => {
 
     };
 
-    const handleDeleteVoucher = (code) => {
-        setVouchers((prev) => prev.filter((voucher) => voucher.code !== code));
+    const handleDeleteVoucher = async (code) => {
+        try {
+            const res = await fetch(`${SERVER}/api/admin/voucher/${code}`, {
+                credentials: "include",
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            });
+            const d = await res.json();
+            if (d.status === 200) {
+                toast.success(d.message);
+                setVouchers((prev) => prev.filter((voucher) => voucher.code !== code));
+            } else {
+                toast.error(d.message || "ERROR")
+            }
+        } catch {
+
+        }
+
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Vouchers</h1>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6 w-full">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">Vouchers</h1>
 
-            <div className='flex justify-between gap-4 flex-wrap  items-start max-w-6xl min-w-[300px] mx-auto '>
+            <div className='flex justify-around gap-4 flex-wrap  items-start max-w-6xl min-w-[300px] mx-auto '>
                 {/* Add Voucher Form */}
                 <form onSubmit={handleAddVoucher} className="bg-gray-300 min-w-96 dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Add New Voucher</h2>

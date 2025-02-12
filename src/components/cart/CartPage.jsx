@@ -62,7 +62,6 @@ const CartPage = () => {
         (async () => {
             if (voucher) {
                 setTypedVoucher(voucher);
-                console.log('setting typed voucher', voucher)
             } else {
                 const voucherFromStorage = JSON.parse(localStorage.getItem("voucher")) || "";
                 if (voucherFromStorage) {
@@ -72,6 +71,7 @@ const CartPage = () => {
             }
         })()
     }, [])
+    // console.log(cartItems)
     // Update quantity of an item
     const updateQuantity = async (id, newQuantity) => {
         const updatedCart = cartItems.map((item) =>
