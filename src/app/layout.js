@@ -4,7 +4,7 @@ import Navbar from "@/components/nav/Navbar";
 import StoreProvider from "@/components/providers/StoreProvider";
 import getThemeCookie from "@/utils/getThemeCookie.mjs";
 import { makeStore } from "@/store/store";
-import { setUserData } from "@/store/slices/authSlice";
+import { setEnrolledCourses, setUserData } from "@/store/slices/authSlice";
 import { setTheme } from "@/store/slices/themeSlice";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import checkToken from "@/utils/checkToken.mjs";
@@ -12,6 +12,7 @@ import TokenRefreh from "@/components/providers/TokenRefreh";
 import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
 import getCartItemsFromDb from "@/components/cart/functions/getCartItemsFromDb.mjs";
 import { setCartData } from "@/store/slices/cartSlice";
+import getEnrolledCourses from "@/utils/getEnrolledCourses.mjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,8 @@ export default async function RootLayout({ children }) {
   if (userData) {
     const cartItems = await getCartItemsFromDb(userData?._id);
     store.dispatch(setCartData(cartItems?.cart?.cart));
+    const courses = await getEnrolledCourses(userData._id);
+    store.dispatch(setEnrolledCourses(courses?.courses?.enrolledCourses));
   }
   const initialReduxState = store.getState();
   return (

@@ -1,21 +1,26 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const authSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState: {
-    userData:{}
+    userData: {},
+    enrolledCourses: [],
   },
   reducers: {
-    setUserData:(state,action)=>{
+    setUserData: (state, action) => {
       state.userData = action.payload;
-    }
+    },
+    setEnrolledCourses: (state, action) => {
+      state.enrolledCourses = action.payload;
+    },
   },
   extraReducers: (builder) => {
-    builder.addCase('HYDRATE', (state, action) => {
+    builder.addCase("HYDRATE", (state, action) => {
       if (action.payload.user) {
         return {
           ...state,
-          userData: action.payload.user,  
+          userData: action.payload.user,
+          enrolledCourses: action.payload.enrolledCourses,
         };
       }
       return state;
@@ -23,5 +28,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUserData } = authSlice.actions;
+export const { setUserData, setEnrolledCourses } = authSlice.actions;
 export default authSlice.reducer;

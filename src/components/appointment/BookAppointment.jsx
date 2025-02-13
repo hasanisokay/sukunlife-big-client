@@ -60,9 +60,7 @@ const BookAppointment = ({ dates, status }) => {
         handleSubmit,
         control,
         setValue,
-        watch,
         formState: { errors },
-        reset
     } = useForm({
         resolver: zodResolver(schema),
     });
@@ -84,6 +82,7 @@ const BookAppointment = ({ dates, status }) => {
             if (user) {
                 bookingData.loggedInUser = { _id: user._id, name: user.name, }
             }
+            console.log(bookingData)
             const res = await fetch(
                 `${SERVER}/api/public/book-appointment`,
                 {
@@ -97,22 +96,22 @@ const BookAppointment = ({ dates, status }) => {
             const data = await res.json();
             if (data?.status === 200) {
                 toast.success(data?.message);
-                try {
-                    // sending email to notify admin.
-                    const r = await fetch(
-                        `${SERVER}/api/public/send-email`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify(bookingData)
-                        }
-                    );
-                    const emailData = await r.json();
-                } catch {
-                    toast.error("Error while confirming. Please contact support to confirm.")
-                }
+                // try {
+                //     // sending email to notify admin.
+                //     const r = await fetch(
+                //         `${SERVER}/api/public/send-email`,
+                //         {
+                //             method: "POST",
+                //             headers: {
+                //                 "Content-Type": "application/json",
+                //             },
+                //             body: JSON.stringify(bookingData)
+                //         }
+                //     );
+                //     const emailData = await r.json();
+                // } catch {
+                //     toast.error("Error while confirming. Please contact support to confirm.")
+                // }
             } else {
                 toast.error(data.message);
             }
