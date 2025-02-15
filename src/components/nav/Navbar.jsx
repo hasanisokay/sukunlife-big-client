@@ -11,6 +11,7 @@ import { setUserData } from "@/store/slices/authSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartSVG } from "../svg/SvgCollection";
 import { setCartData } from "@/store/slices/cartSlice";
+import userShortName from "./userShortName.mjs";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -204,7 +205,7 @@ const Navbar = () => {
                   onClick={toggleUserMenu}
                   className="flex items-center text-sm font-medium  hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md"
                 >
-                  {user ? user.name : "Login/Signup"}
+                  {user ? userShortName(user?.name) : "Login/Signup"}
                   <svg
                     className="ml-2 h-4 w-4"
                     xmlns="http://www.w3.org/2000/svg"

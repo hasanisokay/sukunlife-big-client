@@ -1,11 +1,12 @@
 import AdminDashboard from "@/components/dashboard/Admin/AdminDashboard";
-import UserDashboard from "@/components/dashboard/UserDashboard";
+
 import NotFound from "@/components/not-found/NotFound";
 import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
 import dashboardCover from "@/../public/images/dashboard.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import getAdminDashboardData from "@/utils/getAdminDashboardData.mjs";
+import UserDashboard from "@/components/dashboard/UserDashboard";
 
 const dashboardPage = async () => {
   try {
@@ -18,7 +19,7 @@ const dashboardPage = async () => {
       } else {
         return <NotFound />;
       }
-    } else if (user?.role === "user") return <UserDashboard />;
+    } else if (user?.role === "user") return <UserDashboard/>;
     else return null;
   } catch {
     return <NotFound />;

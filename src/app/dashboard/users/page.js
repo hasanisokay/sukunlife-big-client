@@ -1,4 +1,5 @@
 import UserManagementPageAdmin from "@/components/dashboard/Admin/UserManagementPageAdmin";
+import { websiteName } from "@/constants/names.mjs";
 import getAllUsers from "@/utils/getAllUsers?.mjs";
 import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
 
@@ -17,3 +18,17 @@ const usersPageAdmin = async ({ searchParams }) => {
 };
 
 export default usersPageAdmin;
+
+
+export async function generateMetadata() {
+  try {
+    let metadata = {
+      title: `Users - ${websiteName}`,
+      description: "Users page.",
+      keywords: ["Dashboard, sukunlife,"],
+    };
+    return metadata;
+  } catch (error) {
+    console.error("Error fetching blog metadata:", error);
+  }
+}
