@@ -243,7 +243,7 @@ export const AddCartSVG = ({ color }) => {
     fill="none"
     viewBox="0 0 24 24"
   >
-    <g id="SVGRepo_iconCarrier" fill= {color ? color : theme === "light" ? "#f0f1f3" : "#343541"}>
+    <g id="SVGRepo_iconCarrier" fill={color ? color : theme === "light" ? "#f0f1f3" : "#343541"}>
       <path
         fillRule="evenodd"
         d="M3.04 2.292a.75.75 0 0 0-.497 1.416l.261.091c.668.235 1.107.39 1.43.549.303.149.436.27.524.398.09.132.16.314.2.677.04.38.042.875.042 1.615V9.64c0 2.942.063 3.912.93 4.826.866.914 2.26.914 5.05.914h5.302c1.561 0 2.342 0 2.893-.45.552-.45.71-1.214 1.025-2.742l.5-2.425c.347-1.74.52-2.609.076-3.186S18.816 6 17.131 6H6.492a9 9 0 0 0-.043-.738c-.054-.497-.17-.95-.452-1.362-.284-.416-.662-.682-1.103-.899-.412-.202-.936-.386-1.552-.603zM13 8.25a.75.75 0 0 1 .75.75v1.25H15a.75.75 0 0 1 0 1.5h-1.25V13a.75.75 0 0 1-1.5 0v-1.25H11a.75.75 0 0 1 0-1.5h1.25V9a.75.75 0 0 1 .75-.75"
@@ -275,4 +275,178 @@ export const BuyNowSVG = ({ color }) => {
       ></path>
     </g>
   </svg>
+};
+export const SettingsSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      id="SVGRepo_iconCarrier"
+      fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+      fillRule="evenodd"
+      d="M14.279 2.152C13.909 2 13.439 2 12.5 2s-1.408 0-1.779.152a2 2 0 0 0-1.09 1.083c-.094.223-.13.484-.145.863a1.62 1.62 0 0 1-.796 1.353 1.64 1.64 0 0 1-1.579.008c-.338-.178-.583-.276-.825-.308a2.03 2.03 0 0 0-1.49.396c-.318.242-.553.646-1.022 1.453-.47.807-.704 1.21-.757 1.605-.07.526.074 1.058.4 1.479.148.192.357.353.68.555.477.297.783.803.783 1.361s-.306 1.064-.782 1.36c-.324.203-.533.364-.682.556-.325.421-.469.953-.399 1.479.053.394.287.798.757 1.605s.704 1.21 1.022 1.453c.424.323.96.465 1.49.396.242-.032.487-.13.825-.308a1.64 1.64 0 0 1 1.58.008c.486.28.774.795.795 1.353.015.38.051.64.145.863.204.49.596.88 1.09 1.083.37.152.84.152 1.779.152s1.409 0 1.779-.152a2 2 0 0 0 1.09-1.083c.094-.223.13-.483.145-.863.02-.558.309-1.074.796-1.353a1.64 1.64 0 0 1 1.579-.008c.338.178.583.276.825.308.53.07 1.066-.073 1.49-.396.318-.242.553-.646 1.022-1.453.47-.807.704-1.21.757-1.605a2 2 0 0 0-.4-1.479c-.148-.192-.357-.353-.68-.555-.477-.297-.783-.803-.783-1.361s.306-1.064.782-1.36c.324-.203.533-.364.682-.556a2 2 0 0 0 .399-1.479c-.053-.394-.287-.798-.757-1.605s-.704-1.21-1.022-1.453a2.03 2.03 0 0 0-1.49-.396c-.242.032-.487.13-.825.308a1.64 1.64 0 0 1-1.58-.008 1.62 1.62 0 0 1-.795-1.353c-.015-.38-.051-.64-.145-.863a2 2 0 0 0-1.09-1.083M12.5 15c1.67 0 3.023-1.343 3.023-3S14.169 9 12.5 9s-3.023 1.343-3.023 3 1.354 3 3.023 3"
+      clipRule="evenodd"
+    ></path>
+  </svg>
+};
+export const UserSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 16 16"
+  >
+    <g id="SVGRepo_iconCarrier" fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}>
+      <path d="M8 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6M14 12a3 3 0 0 0-3-3H5a3 3 0 0 0-3 3v3h12z"></path>
+    </g>
+  </svg>
+};
+export const BookSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <g id="SVGRepo_iconCarrier" stroke={color ? color : theme === "light" ? "#1C274C" : "#fff"} strokeWidth="1.5">
+      <path d="M4 8c0-2.828 0-4.243.879-5.121C5.757 2 7.172 2 10 2h4c2.828 0 4.243 0 5.121.879C20 3.757 20 5.172 20 8v8c0 2.828 0 4.243-.879 5.121C18.243 22 16.828 22 14 22h-4c-2.828 0-4.243 0-5.121-.879C4 20.243 4 18.828 4 16z"></path>
+      <path d="M19.898 16h-12c-.93 0-1.395 0-1.777.102A3 3 0 0 0 4 18.224"></path>
+      <path
+        strokeLinecap="round"
+        d="M8 7h8M8 10.5h5M13 16v3.53c0 .276 0 .414-.095.47s-.224-.006-.484-.13l-1.242-.59c-.088-.04-.132-.062-.179-.062s-.091.021-.179.063l-1.242.59c-.26.123-.39.185-.484.129C9 19.944 9 19.806 9 19.53v-3.08"
+        opacity="0.5"
+      ></path>
+    </g>
+  </svg>
+};
+export const CrossSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return     <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 25 25"
+>
+  <g id="SVGRepo_iconCarrier">
+    <g
+      id="Page-1"
+      fill="none"
+      fillRule="evenodd"
+      stroke="none"
+      strokeWidth="1"
+    >
+      <g id="Icon-Set-Filled" fill={color ? color : theme === "light" ? "#1C274C" : "#fff"} transform="translate(-469 -1041)">
+        <path
+          id="cross"
+          d="m487.148 1053.48 5.665-5.66a4 4 0 0 0 0-5.66 3.996 3.996 0 0 0-5.665 0l-5.664 5.66-5.664-5.66a3.994 3.994 0 0 0-5.664 0 4 4 0 0 0 0 5.66l5.664 5.66-5.664 5.67a4 4 0 0 0 0 5.66 3.994 3.994 0 0 0 5.664 0l5.664-5.66 5.664 5.66a3.996 3.996 0 0 0 5.665 0 4 4 0 0 0 0-5.66z"
+        ></path>
+      </g>
+    </g>
+  </g>
+</svg>
+};
+export const MenuSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return   <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 -0.5 21 21"
+>
+  <g id="SVGRepo_iconCarrier">
+    <g
+      id="Page-1"
+      fill="none"
+      fillRule="evenodd"
+      stroke="none"
+      strokeWidth="1"
+    >
+      <g
+        id="Dribbble-Light-Preview"
+        fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+        transform="translate(-99 -200)"
+      >
+        <g id="icons" transform="translate(56 160)">
+          <path
+            id="menu_navigation_grid-[#1529]"
+            d="M60.85 51H57.7c-1.74 0-3.15 1.343-3.15 3v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3M49.3 51h-3.15C44.41 51 43 52.343 43 54v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3m11.55-11H57.7c-1.74 0-3.15 1.343-3.15 3v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3m-8.4 3v3c0 1.657-1.41 3-3.15 3h-3.15C44.41 49 43 47.657 43 46v-3c0-1.657 1.41-3 3.15-3h3.15c1.74 0 3.15 1.343 3.15 3"
+          ></path>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
+};
+export const SaveSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return     <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  fill="none"
+  viewBox="0 0 24 24"
+>
+  <g id="SVGRepo_iconCarrier">
+    <path
+      fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+      d="M4 6a2 2 0 0 1 2-2h8.172a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 20 9.828V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+      opacity="0.15"
+    ></path>
+    <path
+      stroke="#000"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+      d="M15 20v-5H9v5m9 0H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8.172a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 20 9.828V18a2 2 0 0 1-2 2"
+    ></path>
+  </g>
+</svg>
+};
+export const UploadSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return       <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  fill="none"
+  viewBox="0 0 24 24"
+>
+  <path
+    id="SVGRepo_iconCarrier"
+    fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+    fillRule="evenodd"
+    d="M8 10a4 4 0 1 1 8 0v1h1a3.5 3.5 0 1 1 0 7h-1a1 1 0 1 0 0 2h1a5.5 5.5 0 0 0 .93-10.922 6.001 6.001 0 0 0-11.86 0A5.502 5.502 0 0 0 7 20h1a1 1 0 1 0 0-2H7a3.5 3.5 0 1 1 0-7h1zm7.707 3.293-3-3a1 1 0 0 0-1.414 0l-3 3a1 1 0 1 0 1.414 1.414L11 13.414V19a1 1 0 1 0 2 0v-5.586l1.293 1.293a1 1 0 0 0 1.414-1.414"
+    clipRule="evenodd"
+  ></path>
+</svg>
+};
+export const EditSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return         <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  fill="none"
+  viewBox="0 0 24 24"
+>
+  <g
+    id="SVGRepo_iconCarrier"
+    stroke={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="1.5"
+  >
+    <path d="m21.28 6.4-9.54 9.54c-.95.95-3.77 1.39-4.4.76s-.2-3.45.75-4.4l9.55-9.55a2.58 2.58 0 1 1 3.64 3.65"></path>
+    <path d="M11 4H6a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h11c2.21 0 3-1.8 3-4v-5"></path>
+  </g>
+</svg>
 };

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { SERVER } from "@/constants/urls.mjs";
+import { motion, AnimatePresence } from "framer-motion";
 
 const identitySchema = z.object({
   userIdentifier: z
@@ -37,7 +38,6 @@ const passwordSchema = z.object({
 export default function IdentityForm() {
   const [userIdentifier, setUserIdentifier] = useState("");
   const [typedOtp, setTypedOtp] = useState("");
-
   const [step, setStep] = useState("requestOTP");
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -77,7 +77,7 @@ export default function IdentityForm() {
     });
     const resData = await res.json();
     if (resData.status === 200) {
-      setUserIdentifier(data?.userIdentifier)
+      setUserIdentifier(data?.userIdentifier);
       setSuccessMessage("OTP has been sent to your email. It will expire within 30 minutes.");
       setServerError("");
       setStep("verifyOTP");
@@ -97,7 +97,7 @@ export default function IdentityForm() {
     });
     const resData = await res.json();
     if (resData.status === 200) {
-      setTypedOtp(data?.otp)
+      setTypedOtp(data?.otp);
       setSuccessMessage("OTP verified! You can now reset your password.");
       setServerError("");
       setStep("resetPassword");
@@ -115,11 +115,10 @@ export default function IdentityForm() {
       body: JSON.stringify({ ...data, otp: typedOtp, userIdentifier })
     });
     const resData = await res.json();
-    console.log(resData)
     if (resData.status === 200) {
       setSuccessMessage("Password has been reset successfully. Redirecting to Login page.");
       setServerError("");
-      redirectToLogin()
+      redirectToLogin();
     } else {
       setServerError(resData?.message);
     }
@@ -129,7 +128,7 @@ export default function IdentityForm() {
     setTimeout(() => {
       window.location.href = '/login';
     }, 3000);
-  }
+  };
 
   const onSubmit =
     step === "requestOTP"
@@ -155,126 +154,212 @@ export default function IdentityForm() {
               : "Reset Password"}
         </h2>
 
-        {step === "requestOTP" && (
-          <p className="mb-4 text-sm text-secondary">
-            Enter your email address or mobile number, and we’ll send you an OTP
-            to verify your identity.
-          </p>
-        )}
-
-        {step === "verifyOTP" && (
-          <p className="mb-4 text-sm text-secondary">
-            We’ve sent a 6-digit OTP to your email or mobile. Please enter it
-            below to verify your identity. OTP will expire in {formatTime(timer)}.
-          </p>
-        )}
-
-        {step === "resetPassword" && (
-          <p className="mb-4 text-sm text-secondary">
-            Please enter your new password and confirm it.
-          </p>
-        )}
-
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <AnimatePresence mode="wait">
           {step === "requestOTP" && (
-            <div className="mb-4">
-              <label
-                htmlFor="userIdentifier"
-                className="block text-sm font-medium text-secondary"
-              >
-                Mobile Number or Email
-              </label>
-              <input
-                type="text"
-                id="userIdentifier"
-                {...register("userIdentifier")}
-                className={`w-full mt-1 px-4 py-2 border ${errors.userIdentifier ? "border-red-500" : "border"
-                  } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
-              />
-              {errors.userIdentifier && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.userIdentifier.message}
-                </p>
-              )}
-            </div>
+            <motion.div
+              key="requestOTP"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p className="mb-4 text-sm text-secondary">
+                Enter your email address or mobile number, and we’ll send you an OTP
+                to verify your identity.
+              </p>
+            </motion.div>
           )}
 
           {step === "verifyOTP" && (
-            <div className="mb-4">
-              <label
-                htmlFor="otp"
-                className="block text-sm font-medium text-secondary"
-              >
-                Enter OTP
-              </label>
-              <input
-                type="text"
-                id="otp"
-                {...register("otp")}
-                className={`w-full mt-1 px-4 py-2 border ${errors.otp ? "border-red-500" : "border"
-                  } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
-              />
-              {errors.otp && (
-                <p className="mt-1 text-sm text-red-500">{errors.otp.message}</p>
-              )}
-            </div>
+            <motion.div
+              key="verifyOTP"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p className="mb-4 text-sm text-secondary">
+                We’ve sent a 6-digit OTP to your email or mobile. Please enter it
+                below to verify your identity. OTP will expire in {formatTime(timer)}.
+              </p>
+            </motion.div>
           )}
 
           {step === "resetPassword" && (
-            <>
-              <div className="mb-4">
-                <label
-                  htmlFor="newPassword"
-                  className="block text-sm font-medium text-secondary"
-                >
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  {...register("newPassword")}
-                  className={`w-full mt-1 px-4 py-2 border ${errors.newPassword ? "border-red-500" : "border"
-                    } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
-                />
-                {errors.newPassword && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.newPassword.message}
-                  </p>
-                )}
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-secondary"
-                >
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  {...register("confirmPassword")}
-                  className={`w-full mt-1 px-4 py-2 border ${errors.confirmPassword ? "border-red-500" : "border"
-                    } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
-                />
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
-            </>
+            <motion.div
+              key="resetPassword"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p className="mb-4 text-sm text-secondary">
+                Please enter your new password and confirm it.
+              </p>
+            </motion.div>
           )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <AnimatePresence mode="wait">
+            {step === "requestOTP" && (
+              <motion.div
+                key="requestOTPForm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-4"
+              >
+                <label
+                  htmlFor="userIdentifier"
+                  className="block text-sm font-medium text-secondary"
+                >
+                  Mobile Number or Email
+                </label>
+                <input
+                  type="text"
+                  id="userIdentifier"
+                  {...register("userIdentifier")}
+                  className={`w-full mt-1 px-4 py-2 border ${errors.userIdentifier ? "border-red-500" : "border"
+                    } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
+                />
+                {errors.userIdentifier && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-1 text-sm text-red-500"
+                  >
+                    {errors.userIdentifier.message}
+                  </motion.p>
+                )}
+              </motion.div>
+            )}
+
+            {step === "verifyOTP" && (
+              <motion.div
+                key="verifyOTPForm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-4"
+              >
+                <label
+                  htmlFor="otp"
+                  className="block text-sm font-medium text-secondary"
+                >
+                  Enter OTP
+                </label>
+                <input
+                  type="text"
+                  id="otp"
+                  {...register("otp")}
+                  className={`w-full mt-1 px-4 py-2 border ${errors.otp ? "border-red-500" : "border"
+                    } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
+                />
+                {errors.otp && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-1 text-sm text-red-500"
+                  >
+                    {errors.otp.message}
+                  </motion.p>
+                )}
+              </motion.div>
+            )}
+
+            {step === "resetPassword" && (
+              <motion.div
+                key="resetPasswordForm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="mb-4">
+                  <label
+                    htmlFor="newPassword"
+                    className="block text-sm font-medium text-secondary"
+                  >
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    {...register("newPassword")}
+                    className={`w-full mt-1 px-4 py-2 border ${errors.newPassword ? "border-red-500" : "border"
+                      } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
+                  />
+                  {errors.newPassword && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="mt-1 text-sm text-red-500"
+                    >
+                      {errors.newPassword.message}
+                    </motion.p>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-secondary"
+                  >
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    {...register("confirmPassword")}
+                    className={`w-full mt-1 px-4 py-2 border ${errors.confirmPassword ? "border-red-500" : "border"
+                      } rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-link`}
+                  />
+                  {errors.confirmPassword && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="mt-1 text-sm text-red-500"
+                    >
+                      {errors.confirmPassword.message}
+                    </motion.p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {serverError && (
-            <p className="mb-4 text-sm text-red-500">{serverError}</p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-4 text-sm text-red-500"
+            >
+              {serverError}
+            </motion.p>
           )}
           {successMessage && (
-            <p className="mb-4 text-sm text-green-500">{successMessage}</p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-4 text-sm text-green-500"
+            >
+              {successMessage}
+            </motion.p>
           )}
 
-          <button
+          <motion.button
             type="submit"
             role="button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="btn-sm w-full btn-submit"
           >
             {step === "requestOTP"
@@ -282,7 +367,7 @@ export default function IdentityForm() {
               : step === "verifyOTP"
                 ? "Verify OTP"
                 : "Reset Password"}
-          </button>
+          </motion.button>
         </form>
 
         <div className="mt-4 text-sm">

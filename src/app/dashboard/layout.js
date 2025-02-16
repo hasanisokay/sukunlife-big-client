@@ -4,6 +4,7 @@ import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
 import dashboardCover from "@/../public/images/dashboard.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
+import UserSidebar from "@/components/dashboard/user/UserSidebar";
 
 const dashboardLayout = async ({ children }) => {
   try {
@@ -16,7 +17,13 @@ const dashboardLayout = async ({ children }) => {
         </div>
       );
     }
-    return children;
+    if (user?.role === "user") {
+      return <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <UserSidebar />
+        <main className="flex-1 p-8 overflow-x-auto">{children}</main>
+      </div>;
+    }
+    // return children;
   } catch {
     return <NotFound />;
   }
@@ -53,4 +60,3 @@ export async function generateMetadata() {
     console.error("Error fetching blog metadata:", error);
   }
 }
-

@@ -19,7 +19,6 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
                 credentials: "include",
             });
             const data = await res.json()
-            console.log(data)
             dispatch(setUserData(data?.user))
             dispatch(setCartData(data?.user?.cart));
             if (data?.user?.cart?.length < 1 || data.status !== 200) {

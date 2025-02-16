@@ -13,14 +13,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import addToCart from '../cart/functions/addToCart.mjs';
 import { setCartData } from '@/store/slices/cartSlice';
 import { Flip, toast, ToastContainer } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 const SingleCoursePage = ({ course }) => {
     const [expandedModule, setExpandedModule] = useState(null);
     const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
     const [itemAddedToCart, setItemAddedToCart] = useState(false);
     const dispatch = useDispatch()
+    const router = useRouter();
     const user = useSelector((state) => state.user.userData);
     const cart = useSelector((state) => state.cart.cartData);
+    const coursesEnrolled = useSelector((state) => state.user.enrolledCourses);
+    const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
+    useEffect(() => {
+        coursesEnrolled.filter((c) => {
+            return c.courseId === course._id
+        })
+        if (coursesEnrolled.length > 0) {
+            setAlreadyEnrolled(true);
+        }
+    }, [coursesEnrolled]);
 
     const overlayVariants = {
         hidden: { opacity: 0, y: 10 },
@@ -127,9 +139,14 @@ const SingleCoursePage = ({ course }) => {
                             <button
                                 // disabled={itemAddedToCart}
                                 className="bg-blue-600 text-white px-6 md:py-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                                onClick={() => handleAddToCart(false)}
+                                onClick={() => {
+                                    if (alreadyEnrolled) {
+                                        return router.replace(`/dashboard/c/${course?.courseId}`)
+                                    }
+                                    return handleAddToCart(false)
+                                }}
                             >
-                                {itemAddedToCart ? "View Cart" : " Enroll Now"}
+                                {alreadyEnrolled ? "Continue to course" : itemAddedToCart ? "View Cart" : " Enroll Now"}
                             </button>
                         </div>
                     </div>
