@@ -1,11 +1,12 @@
 'use client'
 import { BookSVG, CartSVG, CrossSVG, MenuSVG, SettingsSVG, UserSVG } from "@/components/svg/SvgCollection";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from 'framer-motion';
 import { useState } from "react";
 
 const UserSidebar = () => {
     const router = useRouter();
+    const pathname = usePathname();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const sidebarVariants = {
@@ -52,7 +53,7 @@ const UserSidebar = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => router.push(item.path)}
-                        className={`flex items-center space-x-4 p-4 rounded-2xl ${router.pathname === item.path
+                        className={`flex items-center space-x-4 p-4 rounded-2xl ${pathname === item.path
                             ? 'bg-purple-100 dark:bg-gray-700 text-purple-600 dark:text-purple-400'
                             : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
