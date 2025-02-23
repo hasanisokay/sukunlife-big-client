@@ -1,6 +1,8 @@
 import UserSingleCoursePage from "@/components/dashboard/user/UserSingleCoursePage";
+import Spinner from "@/components/loaders/Spinner";
 import NotFound from "@/components/not-found/NotFound";
 import getSingleCourseDetails from "@/utils/getSingleCourseDetails.mjs";
+import { Suspense } from "react";
 
 const page = async ({ params }) => {
   try {
@@ -8,7 +10,9 @@ const page = async ({ params }) => {
     const courseId = p.courseId;
     const courseData = await getSingleCourseDetails(courseId);
     if (courseData.status === 200) {
-      return <UserSingleCoursePage course={courseData?.course} />;
+      return <Suspense fallback={<Spinner />}>
+        <UserSingleCoursePage course={courseData?.course} />
+      </Suspense>;
     } else {
       return <NotFound />;
     }

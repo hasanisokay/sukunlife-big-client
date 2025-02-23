@@ -33,7 +33,7 @@ const UserCoursePage = ({ courses }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 md:p-6">
       {enrolledCourses?.length > 0 ? (
         <motion.div
           initial="hidden"
@@ -89,7 +89,7 @@ const UserCoursePage = ({ courses }) => {
 
                     <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                       <span>
-                        Module {enrolled.lastSync?.module || 0}
+                        Module {enrolled.lastSync?.module  + 1  || 0}
                       </span>
                     </div>
                   </div>

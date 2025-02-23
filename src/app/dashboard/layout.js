@@ -20,7 +20,7 @@ const dashboardLayout = async ({ children }) => {
     if (user?.role === "user") {
       return <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
         <UserSidebar />
-        <main className="flex-1 p-8 overflow-x-auto">{children}</main>
+        <main className="flex-1 md:p-8 p-1 overflow-x-auto">{children}</main>
       </div>;
     }
     // return children;

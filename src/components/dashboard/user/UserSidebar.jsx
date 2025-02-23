@@ -20,6 +20,9 @@ const UserSidebar = () => {
         { name: 'Orders', icon: <CartSVG />, path: '/dashboard/o' },
         { name: 'Settings', icon: <SettingsSVG />, path: '/dashboard/settings' }
     ];
+    if(pathname.includes("/dashboard/c/")){
+        return null
+    }
 
     return (
         <motion.div

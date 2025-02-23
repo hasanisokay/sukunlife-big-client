@@ -79,12 +79,13 @@ export const AddSVG = ({ color }) => (
     </g>
   </svg>
 );
-export const VideoSVG = ({ color }) => {
+export const VideoSVG = ({ color, width, height, classes }) => {
   const theme = useSelector(state => state.theme.mode);
   return <svg
+    className={`${classes}`}
     xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+    width={width || "24"}
+    height={height || "24"}
     fill="none"
     viewBox="0 0 24 24"
   >
@@ -98,15 +99,17 @@ export const VideoSVG = ({ color }) => {
     ></path>
   </svg>
 };
-export const ClipboardSVG = ({ color }) => (
-  <svg
+export const ClipboardSVG = ({ color, width, height, classes }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    className={`${classes}`}
     xmlns="http://www.w3.org/2000/svg"
     xmlSpace="preserve"
     id="Layer_1"
-    width="24"
-    height="24"
-    fill="#080808"
-    stroke="#080808"
+    width={width || "24"}
+    height={height || "24"}
+    fill={color ? color : theme === "light" ? "#000" : "#ffffff"}
+    stroke={color ? color : theme === "light" ? "#000" : "#ffffff"}
     version="1.1"
     viewBox="0 0 23 32"
   >
@@ -116,7 +119,7 @@ export const ClipboardSVG = ({ color }) => (
       <path d="M8.166 13.605 6.73 15.041l-.613-.614a.5.5 0 0 0-.707.707l.967.968a.5.5 0 0 0 .708 0l1.789-1.789a.5.5 0 0 0-.708-.708zM8.166 17.885 6.73 19.32l-.613-.614a.5.5 0 0 0-.707.707l.967.968a.5.5 0 0 0 .708 0l1.789-1.789a.5.5 0 0 0-.708-.707zM8.166 23.164 6.73 24.6l-.613-.614a.5.5 0 0 0-.707.707l.967.968a.5.5 0 0 0 .708 0l1.789-1.789a.5.5 0 0 0-.708-.708z"></path>
     </g>
   </svg>
-);
+};
 export const TakaSVG = ({ color }) => {
   const theme = useSelector(state => state.theme.mode);
   return <svg
@@ -179,12 +182,13 @@ export const StatsSVG = ({ color }) => {
     ></path>
   </svg>
 };
-export const CertificateSVG = ({ color }) => {
+export const CertificateSVG = ({ color, width, height, classes }) => {
   const theme = useSelector(state => state.theme.mode);
   return <svg
+    className={`${classes}`}
     xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+    width={width || "24"}
+    height={height || "24"}
     fill="none"
     viewBox="0 0 24 24"
   >
@@ -198,12 +202,13 @@ export const CertificateSVG = ({ color }) => {
     ></path>
   </svg>
 };
-export const QuizSVG = ({ color }) => {
+export const QuizSVG = ({ color, width, height, classes }) => {
   const theme = useSelector(state => state.theme.mode);
   return <svg
+    className={`${classes}`}
     xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+    width={width || "24"}
+    height={height || "24"}
     viewBox="0 0 24 24"
   >
     <g id="SVGRepo_iconCarrier" fill={color ? color : theme === "light" ? "#343541" : "#d9eff1"} fillRule="evenodd">
@@ -330,123 +335,174 @@ export const BookSVG = ({ color }) => {
 };
 export const CrossSVG = ({ color }) => {
   const theme = useSelector(state => state.theme.mode);
-  return     <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 25 25"
->
-  <g id="SVGRepo_iconCarrier">
-    <g
-      id="Page-1"
-      fill="none"
-      fillRule="evenodd"
-      stroke="none"
-      strokeWidth="1"
-    >
-      <g id="Icon-Set-Filled" fill={color ? color : theme === "light" ? "#1C274C" : "#fff"} transform="translate(-469 -1041)">
-        <path
-          id="cross"
-          d="m487.148 1053.48 5.665-5.66a4 4 0 0 0 0-5.66 3.996 3.996 0 0 0-5.665 0l-5.664 5.66-5.664-5.66a3.994 3.994 0 0 0-5.664 0 4 4 0 0 0 0 5.66l5.664 5.66-5.664 5.67a4 4 0 0 0 0 5.66 3.994 3.994 0 0 0 5.664 0l5.664-5.66 5.664 5.66a3.996 3.996 0 0 0 5.665 0 4 4 0 0 0 0-5.66z"
-        ></path>
-      </g>
-    </g>
-  </g>
-</svg>
-};
-export const MenuSVG = ({ color }) => {
-  const theme = useSelector(state => state.theme.mode);
-  return   <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 -0.5 21 21"
->
-  <g id="SVGRepo_iconCarrier">
-    <g
-      id="Page-1"
-      fill="none"
-      fillRule="evenodd"
-      stroke="none"
-      strokeWidth="1"
-    >
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 25 25"
+  >
+    <g id="SVGRepo_iconCarrier">
       <g
-        id="Dribbble-Light-Preview"
-        fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
-        transform="translate(-99 -200)"
+        id="Page-1"
+        fill="none"
+        fillRule="evenodd"
+        stroke="none"
+        strokeWidth="1"
       >
-        <g id="icons" transform="translate(56 160)">
+        <g id="Icon-Set-Filled" fill={color ? color : theme === "light" ? "#1C274C" : "#fff"} transform="translate(-469 -1041)">
           <path
-            id="menu_navigation_grid-[#1529]"
-            d="M60.85 51H57.7c-1.74 0-3.15 1.343-3.15 3v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3M49.3 51h-3.15C44.41 51 43 52.343 43 54v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3m11.55-11H57.7c-1.74 0-3.15 1.343-3.15 3v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3m-8.4 3v3c0 1.657-1.41 3-3.15 3h-3.15C44.41 49 43 47.657 43 46v-3c0-1.657 1.41-3 3.15-3h3.15c1.74 0 3.15 1.343 3.15 3"
+            id="cross"
+            d="m487.148 1053.48 5.665-5.66a4 4 0 0 0 0-5.66 3.996 3.996 0 0 0-5.665 0l-5.664 5.66-5.664-5.66a3.994 3.994 0 0 0-5.664 0 4 4 0 0 0 0 5.66l5.664 5.66-5.664 5.67a4 4 0 0 0 0 5.66 3.994 3.994 0 0 0 5.664 0l5.664-5.66 5.664 5.66a3.996 3.996 0 0 0 5.665 0 4 4 0 0 0 0-5.66z"
           ></path>
         </g>
       </g>
     </g>
-  </g>
-</svg>
+  </svg>
+};
+export const MenuSVG = ({ color }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 -0.5 21 21"
+  >
+    <g id="SVGRepo_iconCarrier">
+      <g
+        id="Page-1"
+        fill="none"
+        fillRule="evenodd"
+        stroke="none"
+        strokeWidth="1"
+      >
+        <g
+          id="Dribbble-Light-Preview"
+          fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+          transform="translate(-99 -200)"
+        >
+          <g id="icons" transform="translate(56 160)">
+            <path
+              id="menu_navigation_grid-[#1529]"
+              d="M60.85 51H57.7c-1.74 0-3.15 1.343-3.15 3v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3M49.3 51h-3.15C44.41 51 43 52.343 43 54v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3m11.55-11H57.7c-1.74 0-3.15 1.343-3.15 3v3c0 1.657 1.41 3 3.15 3h3.15c1.74 0 3.15-1.343 3.15-3v-3c0-1.657-1.41-3-3.15-3m-8.4 3v3c0 1.657-1.41 3-3.15 3h-3.15C44.41 49 43 47.657 43 46v-3c0-1.657 1.41-3 3.15-3h3.15c1.74 0 3.15 1.343 3.15 3"
+            ></path>
+          </g>
+        </g>
+      </g>
+    </g>
+  </svg>
 };
 export const SaveSVG = ({ color }) => {
   const theme = useSelector(state => state.theme.mode);
-  return     <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  fill="none"
-  viewBox="0 0 24 24"
->
-  <g id="SVGRepo_iconCarrier">
-    <path
-      fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
-      d="M4 6a2 2 0 0 1 2-2h8.172a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 20 9.828V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
-      opacity="0.15"
-    ></path>
-    <path
-      stroke="#000"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.5"
-      d="M15 20v-5H9v5m9 0H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8.172a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 20 9.828V18a2 2 0 0 1-2 2"
-    ></path>
-  </g>
-</svg>
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <g id="SVGRepo_iconCarrier">
+      <path
+        fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+        d="M4 6a2 2 0 0 1 2-2h8.172a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 20 9.828V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"
+        opacity="0.15"
+      ></path>
+      <path
+        stroke="#000"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        d="M15 20v-5H9v5m9 0H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8.172a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 20 9.828V18a2 2 0 0 1-2 2"
+      ></path>
+    </g>
+  </svg>
 };
 export const UploadSVG = ({ color }) => {
   const theme = useSelector(state => state.theme.mode);
-  return       <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  fill="none"
-  viewBox="0 0 24 24"
->
-  <path
-    id="SVGRepo_iconCarrier"
-    fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
-    fillRule="evenodd"
-    d="M8 10a4 4 0 1 1 8 0v1h1a3.5 3.5 0 1 1 0 7h-1a1 1 0 1 0 0 2h1a5.5 5.5 0 0 0 .93-10.922 6.001 6.001 0 0 0-11.86 0A5.502 5.502 0 0 0 7 20h1a1 1 0 1 0 0-2H7a3.5 3.5 0 1 1 0-7h1zm7.707 3.293-3-3a1 1 0 0 0-1.414 0l-3 3a1 1 0 1 0 1.414 1.414L11 13.414V19a1 1 0 1 0 2 0v-5.586l1.293 1.293a1 1 0 0 0 1.414-1.414"
-    clipRule="evenodd"
-  ></path>
-</svg>
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      id="SVGRepo_iconCarrier"
+      fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+      fillRule="evenodd"
+      d="M8 10a4 4 0 1 1 8 0v1h1a3.5 3.5 0 1 1 0 7h-1a1 1 0 1 0 0 2h1a5.5 5.5 0 0 0 .93-10.922 6.001 6.001 0 0 0-11.86 0A5.502 5.502 0 0 0 7 20h1a1 1 0 1 0 0-2H7a3.5 3.5 0 1 1 0-7h1zm7.707 3.293-3-3a1 1 0 0 0-1.414 0l-3 3a1 1 0 1 0 1.414 1.414L11 13.414V19a1 1 0 1 0 2 0v-5.586l1.293 1.293a1 1 0 0 0 1.414-1.414"
+      clipRule="evenodd"
+    ></path>
+  </svg>
 };
 export const EditSVG = ({ color }) => {
   const theme = useSelector(state => state.theme.mode);
-  return         <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  fill="none"
-  viewBox="0 0 24 24"
->
-  <g
-    id="SVGRepo_iconCarrier"
-    stroke={color ? color : theme === "light" ? "#1C274C" : "#fff"}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth="1.5"
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
   >
-    <path d="m21.28 6.4-9.54 9.54c-.95.95-3.77 1.39-4.4.76s-.2-3.45.75-4.4l9.55-9.55a2.58 2.58 0 1 1 3.64 3.65"></path>
-    <path d="M11 4H6a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h11c2.21 0 3-1.8 3-4v-5"></path>
-  </g>
-</svg>
+    <g
+      id="SVGRepo_iconCarrier"
+      stroke={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+    >
+      <path d="m21.28 6.4-9.54 9.54c-.95.95-3.77 1.39-4.4.76s-.2-3.45.75-4.4l9.55-9.55a2.58 2.58 0 1 1 3.64 3.65"></path>
+      <path d="M11 4H6a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h11c2.21 0 3-1.8 3-4v-5"></path>
+    </g>
+  </svg>
+};
+export const RightArrowSVG = ({ color, width, height, classes }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    className={` ${classes}`}
+    xmlns="http://www.w3.org/2000/svg"
+    xmlSpace="preserve"
+    width={width || "24"}
+    height={height || "24"}
+    viewBox="0 0 52 52"
+    fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+  >
+    <path
+      id="SVGRepo_iconCarrier"
+      d="m17.9 4.4 20.7 20.5c.6.6.6 1.6 0 2.2L17.9 47.6c-.6.6-1.6.6-2.2 0l-2.2-2.2c-.6-.6-.6-1.6 0-2.2l16.3-16.1c.6-.6.6-1.6 0-2.2L13.6 8.8c-.6-.6-.6-1.6 0-2.2l2.2-2.2c.6-.5 1.5-.5 2.1 0"
+    ></path>
+  </svg>
+};
+export const DownArrowSVG = ({ color, classes, width, height }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    className={` ${classes}`}
+    xmlns="http://www.w3.org/2000/svg"
+    xmlSpace="preserve"
+    width={width || "24"}
+    height={height || "24"}
+    viewBox="0 0 52 52"
+    fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+  >
+    <path
+      id="SVGRepo_iconCarrier"
+      d="M47.6 17.8 27.1 38.5c-.6.6-1.6.6-2.2 0L4.4 17.8c-.6-.6-.6-1.6 0-2.2l2.2-2.2c.6-.6 1.6-.6 2.2 0l16.1 16.3c.6.6 1.6.6 2.2 0l16.1-16.2c.6-.6 1.6-.6 2.2 0l2.2 2.2c.5.6.5 1.5 0 2.1"
+    ></path>
+  </svg>
+};
+export const LeftArrowSVG = ({ color, width, height, classes }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlSpace="preserve"
+    className={` ${classes}`}
+    width={width || "24"}
+    height={height || "24"}
+    viewBox="0 0 52 52"
+    fill={color ? color : theme === "light" ? "#1C274C" : "#fff"}
+  >
+    <path
+      id="SVGRepo_iconCarrier"
+      d="M34.2 47.7 13.4 27.2c-.6-.6-.6-1.6 0-2.2L34.2 4.5c.6-.6 1.6-.6 2.2 0l2.2 2.2c.6.6.6 1.6 0 2.2L22.1 25c-.6.6-.6 1.6 0 2.2l16.3 16.1c.6.6.6 1.6 0 2.2l-2.2 2.2c-.5.5-1.4.5-2 0"
+    ></path>
+  </svg>
 };
