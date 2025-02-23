@@ -5,12 +5,13 @@ import BlogContent from "./BlogContnet";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import blogCoverPhotoUrl from "@/../public/images/blog.jpg";
 
 const SingleBlogPage = ({ b }) => {
     const [imageUrl, setImageUrl] = useState(b?.blogCoverPhoto);
 
     const handleImageError = () => {
-        setImageUrl(null);
+        setImageUrl(blogCoverPhotoUrl);
     };
 
     return (

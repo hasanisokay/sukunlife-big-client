@@ -10,6 +10,7 @@ import addToCart from '@/components/cart/functions/addToCart.mjs';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCartData } from '@/store/slices/cartSlice';
 import { Flip, toast, ToastContainer } from 'react-toastify';
+import ProductImage from '@/components/home/ProductImage';
 
 const AllShopItems = ({ p, totalCount }) => {
     const [products, setProducts] = useState(p);
@@ -131,11 +132,16 @@ const AllShopItems = ({ p, totalCount }) => {
                                 >
                                     {/* Product Image */}
                                     <div className="relative h-48 overflow-hidden">
-                                        <img
+                                        {/* <img
                                             src={product?.images[0]}
                                             alt={product.title}
                                             className="w-full h-full object-cover"
-                                        />
+                                        /> */}
+                                           <ProductImage
+                      key={product._id}
+                      src={product.images[0]}
+                      alt={product.title}
+                    />
                                     </div>
 
                                     {/* Product Details */}

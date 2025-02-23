@@ -50,8 +50,6 @@ const CartPage = () => {
             // alert("Failed to validate voucher");
         }
     };
-
-
     useEffect(() => {
         const existingIndex = cartItems?.findIndex((cartItem) => cartItem.type === 'course');
         if (existingIndex !== -1) {

@@ -83,7 +83,7 @@ const CheckOutPage = () => {
         if (courseInCart) {
             orderDetails.userId = user._id;
         }
-
+        orderDetails.date = new Date();
         // Call API to submit order
         try {
             const response = await fetch(`${SERVER}/api/public/place-order`, {
@@ -96,6 +96,16 @@ const CheckOutPage = () => {
 
             const resData = await response.json();
             if (resData.status === 200) {
+                const cartProducts = cartItems.filter(p => p.type === 'product');
+                if (cartProducts?.length > 0) {
+                    await fetch(`${SERVER}/api/public/update-stock-quantity`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(cartProducts),
+                    });
+                }
                 toast.success(resData.message)
                 localStorage.removeItem("voucher")
                 dispatch(setCartData([]));

@@ -16,6 +16,10 @@ import { useDispatch, useSelector } from "react-redux";
 import addToCart from "@/components/cart/functions/addToCart.mjs";
 import { setCartData } from "@/store/slices/cartSlice";
 import { Flip, toast, ToastContainer } from "react-toastify";
+import ThumbnailImage from "./ThumbnailImage";
+import ProductImage from "@/components/home/ProductImage";
+
+import ImageWithFallback from "./ImageWithFallback";
 
 const SingleProductPage = ({ product }) => {
     const [selectedColor, setSelectedColor] = useState(product?.colorVariants[0]);
@@ -98,7 +102,16 @@ const SingleProductPage = ({ product }) => {
                             {product?.images.map((image, index) => (
                                 <SwiperSlide key={index}
                                 >
-                                    <motion.img
+                                    {/* <motion.img
+                                        src={image}
+                                        alt={`${product?.title} ${index + 1}`}
+                                        className="w-full h-96 object-cover rounded-lg"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.5 }}
+                                        onContextMenu={handleImageContextMenu} // Prevent right-click
+                                    /> */}
+                                    <ImageWithFallback
                                         src={image}
                                         alt={`${product?.title} ${index + 1}`}
                                         className="w-full h-96 object-cover rounded-lg"
@@ -122,16 +135,29 @@ const SingleProductPage = ({ product }) => {
                             className="mt-4"
                         >
                             {product?.images.map((image, index) => (
+                                // <SwiperSlide key={index}>
+                                //     <motion.img
+                                //         src={image}
+                                //         alt={`${product?.title} ${index + 1}`}
+                                //         // className="w-24 h-24 object-cover rounded-lg cursor-pointer"
+                                //         className={`w-24 h-24 object-cover rounded-lg cursor-pointer transition-all duration-300
+                                //             ${selectedThumbnailIndex === index ? 'border-4 border-blue-500' : 'border-2 border-transparent'}`}
+                                //         whileTap={{ scale: 0.95 }}
+                                //         onContextMenu={handleImageContextMenu}
+
+                                //         onClick={() => {
+                                //             setSelectedThumbnailIndex(index); // Update the selected thumbnail index
+                                //             thumbsSwiper?.slideTo(index); // Change the main image to the clicked thumbnail
+                                //         }}
+                                //     />
+                                // </SwiperSlide>
                                 <SwiperSlide key={index}>
-                                    <motion.img
+                                    <ThumbnailImage
+                                        onContextMenu={handleImageContextMenu}
                                         src={image}
                                         alt={`${product?.title} ${index + 1}`}
-                                        // className="w-24 h-24 object-cover rounded-lg cursor-pointer"
-                                        className={`w-24 h-24 object-cover rounded-lg cursor-pointer transition-all duration-300
-                                            ${selectedThumbnailIndex === index ? 'border-4 border-blue-500' : 'border-2 border-transparent'}`}
-                                        whileTap={{ scale: 0.95 }}
-                                        onContextMenu={handleImageContextMenu}
-
+                                        className="w-24 h-24 object-cover rounded-lg cursor-pointer transition-all duration-300"
+                                        selected={selectedThumbnailIndex === index}
                                         onClick={() => {
                                             setSelectedThumbnailIndex(index); // Update the selected thumbnail index
                                             thumbsSwiper?.slideTo(index); // Change the main image to the clicked thumbnail
