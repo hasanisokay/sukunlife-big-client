@@ -9,6 +9,7 @@ const page = async ({ params }) => {
     const p = await params;
     const courseId = p.courseId;
     const courseData = await getSingleCourseDetails(courseId);
+    console.log(courseData)
     if (courseData.status === 200) {
       return <Suspense fallback={<Spinner />}>
         <UserSingleCoursePage course={courseData?.course} />

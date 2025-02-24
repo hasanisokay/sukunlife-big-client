@@ -5,6 +5,7 @@ import PaginationDefault from "../paginations/PaginationDefault";
 import { SERVER } from "@/constants/urls.mjs";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import SortOrders from "./SortOrders";
+import formatDate from "@/utils/formatDate.mjs";
 
 const OrdersPage = ({ orders: initialOrders, page, limit, filter }) => {
     const [sortType, setSortType] = useState("all"); // 'all', 'course', 'product'
@@ -33,10 +34,11 @@ const OrdersPage = ({ orders: initialOrders, page, limit, filter }) => {
                 return;
             }
 
-            // Extract courseIds and userId from the order
+
             const courseIds = order.cartItems
-                .filter((item) => item.type === "course")
-                .map((item) => item.courseId);
+                .filter((item) => item.type === "course") 
+                .map((item) => ({ courseId: item._id, title: item.title })); 
+
 
             const userId = order.userId;
 
@@ -183,6 +185,9 @@ const OrdersPage = ({ orders: initialOrders, page, limit, filter }) => {
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             Transaction ID: {order?.transactionId}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Date: {formatDate(order?.date)}
                         </p>
                         <div className="mt-4">
                             {order?.cartItems?.map((item, i) => (

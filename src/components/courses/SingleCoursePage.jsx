@@ -141,7 +141,7 @@ const SingleCoursePage = ({ course }) => {
                                 className="bg-blue-600 text-white px-6 md:py-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                                 onClick={() => {
                                     if (alreadyEnrolled) {
-                                        return router.replace(`/dashboard/c/${course?.courseId}`)
+                                        return window.location.href =`/dashboard/c/${course?.courseId}`
                                     }
                                     return handleAddToCart(false)
                                 }}

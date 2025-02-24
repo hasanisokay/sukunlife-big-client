@@ -31,8 +31,8 @@ export async function generateMetadata() {
         title: `My Courses - ${websiteName}`,
         description: "All enrolled courses.",
         keywords: ["Dashboard, sukunlife, courses"],
-        url: `${host}/dashboard/blogs`,
-        canonical: `${host}/dashboard/blogs`,
+        url: `${host}/dashboard/c`,
+        canonical: `${host}/dashboard/c`,
       };
       return metadata;
     } catch (error) {

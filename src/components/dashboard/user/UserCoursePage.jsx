@@ -8,9 +8,8 @@ import Percentage from "@/components/ui/percentage/Percentage";
 
 const UserCoursePage = ({ courses }) => {
   const enrolledCourses =  useSelector((state) => state.user.enrolledCourses);
-
   const getCourseDetails = (courseId) => 
-    courses.find(course => course._id === courseId); // Fixed courseId matching
+    courses.find(course => course._id === courseId);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -79,17 +78,17 @@ const UserCoursePage = ({ courses }) => {
                         Progress
                       </span>
                       <span className="text-primary-500 text-sm font-medium text-sky-500" >
-                        {enrolled.lastSync?.percentage || 0}%
+                        {enrolled?.lastSync?.percentage || 0}%
                       </span>
                     </div>
 
                     <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                      <Percentage progress={enrolled.lastSync?.percentage}/>
+                      <Percentage progress={enrolled?.lastSync?.percentage ? enrolled?.lastSync?.percentage : 0}/>
                     </div>
 
                     <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                       <span>
-                        Module {enrolled.lastSync?.module  + 1  || 0}
+                        Module {enrolled?.lastSync?.module  + 1  || 0}
                       </span>
                     </div>
                   </div>

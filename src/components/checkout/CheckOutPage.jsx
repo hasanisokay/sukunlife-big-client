@@ -80,7 +80,7 @@ const CheckOutPage = () => {
             finalTotalPrice,
         };
         delete orderDetails.deliveryArea;
-        if (courseInCart) {
+        if (user) {
             orderDetails.userId = user._id;
         }
         orderDetails.date = new Date();

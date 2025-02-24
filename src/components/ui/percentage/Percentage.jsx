@@ -1,5 +1,5 @@
 
-const Percentage = ({ progress }) => {
+const Percentage = ({ progress=0 }) => {
     return (
         <div className="mx-auto flex  flex-col gap-2">
             <div className="flex h-3 w-full  items-center justify-center rounded-full bg-sky-300">

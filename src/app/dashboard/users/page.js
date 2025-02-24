@@ -1,4 +1,5 @@
 import UserManagementPageAdmin from "@/components/dashboard/Admin/UserManagementPageAdmin";
+import NotFound from "@/components/not-found/NotFound";
 import { websiteName } from "@/constants/names.mjs";
 import getAllUsers from "@/utils/getAllUsers?.mjs";
 import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
@@ -13,12 +14,15 @@ const usersPageAdmin = async ({ searchParams }) => {
   const user = await getUserDataFromToken();
   if (user?.role === "admin") {
     const users = await getAllUsers(page, limit, keyword, sort, filter);
-    return <UserManagementPageAdmin u={users} />;
-  } else return null;
+    if (users.status === 200) {
+      return <UserManagementPageAdmin u={users?.users} />;
+    } else {
+      return <NotFound />;
+    }
+  } else return <NotFound />;
 };
 
 export default usersPageAdmin;
-
 
 export async function generateMetadata() {
   try {

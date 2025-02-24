@@ -38,11 +38,13 @@ const UserSingleCoursePage = ({ course }) => {
   // Initialize progress
   useEffect(() => {
     const enrollment = enrolledCourses.find((c) => c.courseId === course._id);
-    if (enrollment) {
-      setProgress(enrollment.lastSync);
-      setActiveModuleIndex(enrollment.lastSync.module);
-      setActiveItemIndex(enrollment.lastSync.item);
-      setExpandedModule(enrollment.lastSync.module);
+    if (enrollment && enrollment?.lastSync) {
+      setProgress(enrollment?.lastSync);
+      setActiveModuleIndex(enrollment?.lastSync?.module);
+      setActiveItemIndex(enrollment?.lastSync?.item);
+      setExpandedModule(enrollment?.lastSync?.module);
+    }else{
+      setExpandedModule(0)
     }
   }, [enrolledCourses, course._id]);
 

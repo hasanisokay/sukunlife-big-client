@@ -43,14 +43,23 @@ const Navbar = () => {
   }, [cart])
 
   useEffect(() => {
-    const cartFromStorage = JSON.parse(localStorage.getItem('cart')) || [];
-    if (cart?.length < cartFromStorage?.length) {
-      dispatch(setCartData(cartFromStorage));
-    } else {
-      localStorage.setItem("cart", JSON.stringify(cart));
+    try {
+      const cartInStorage = localStorage.getItem('cart')
+      let cartFromStorage;
+      if (cartInStorage) {
+        cartFromStorage = JSON.parse(cartInStorage) || [];
+      } else {
+        cartFromStorage = []
+      }
+      if (cart?.length < cartFromStorage?.length) {
+        dispatch(setCartData(cartFromStorage));
+      } else {
+        localStorage.setItem("cart", JSON.stringify(cart));
+      }
+    } catch {
+      localStorage.removeItem("cart");
     }
   }, []);
-
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);

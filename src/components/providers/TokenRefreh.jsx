@@ -9,7 +9,6 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
     // return children
     const dispatch = useDispatch();
     const refreshAccessToken = async () => {
-        console.log('refreshing')
         try {
             const res = await fetch(`${SERVER}/api/auth/refresh`, {
                 method: "POST",
