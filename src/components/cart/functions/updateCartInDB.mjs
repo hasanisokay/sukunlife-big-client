@@ -9,7 +9,7 @@ const updateCartInDB = async (userId, cart) => {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Error updating cart:", error);
+      console.log("Error updating cart:", error);
     }
   };
 

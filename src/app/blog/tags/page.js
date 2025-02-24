@@ -47,7 +47,7 @@ export async function generateMetadata() {
       "og:locale": "bn_BD",
     };
   } catch (error) {
-    console.error("Error fetching blog metadata:", error);
+  
   }
 
   return metadata;

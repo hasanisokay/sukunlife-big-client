@@ -41,7 +41,7 @@ const schema = z.object({
 const BookAppointment = ({ dates, status }) => {
     const uniqueDateStrings = Array.from(
         new Set(
-            dates.map(d => {
+            dates?.map(d => {
                 const [day, month, year] = d.date.split('-');
                 const dateObj = new Date(`${year}-${month}-${day}`);
                 return dateObj;
@@ -116,7 +116,6 @@ const BookAppointment = ({ dates, status }) => {
                 toast.error(data.message);
             }
         } catch (e) {
-            console.error(e);
             toast.error("Server is busy right now. Try few hours later.");
         } finally {
             router.push("/");
@@ -128,7 +127,7 @@ const BookAppointment = ({ dates, status }) => {
         const month = String(s.getMonth() + 1).padStart(2, '0');
         const day = String(s.getDate()).padStart(2, '0');
         const date = `${day}-${month}-${year}`;
-        const filteredTimes = dates.filter(d => d.date === date).flatMap(d => d.times);
+        const filteredTimes = dates?.filter(d => d.date === date)?.flatMap(d => d.times);
         setValue('date', date);
         setAvailableTimes(filteredTimes);
         setSelectedTime('');
@@ -159,7 +158,7 @@ const BookAppointment = ({ dates, status }) => {
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center text-red-500 dark:text-red-400"
+                className="text-center text-red-500 dark:text-red-400 mt-10"
             >
                 The server is busy. Please try again later.
             </motion.div>

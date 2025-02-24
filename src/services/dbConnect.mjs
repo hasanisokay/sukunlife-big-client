@@ -19,7 +19,7 @@ const dbConnect = async () => {
     await client.db("admin").command({ ping: 1 });
     return db;
   } catch (e) {
-    console.error(e.message);
+    console.log(e.message);
   }
 };
 

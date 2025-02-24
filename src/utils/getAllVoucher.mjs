@@ -20,7 +20,7 @@ const getAllVoucher = async () => {
     const data = await res.json();
     return data;
   } catch (e) {
-    console.error(e);
+    console.log(e);
     return null;
   }
 };

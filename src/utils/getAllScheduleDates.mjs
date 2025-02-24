@@ -6,7 +6,6 @@ const getAllScheduleDates = async () => {
     const data = await res.json();
     return data;
   } catch (e) {
-    console.error(e);
     return null;
   }
 };

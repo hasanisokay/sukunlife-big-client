@@ -34,6 +34,6 @@ export async function generateMetadata() {
       };
       return metadata;
     } catch (error) {
-      console.error("Error fetching blog metadata:", error);
+      console.log("error occured")
     }
   }

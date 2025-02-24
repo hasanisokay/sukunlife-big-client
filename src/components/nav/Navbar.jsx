@@ -93,10 +93,15 @@ const Navbar = () => {
     window.location.reload();
   };
 
+  // const getLinkClass = (path) => {
+  //   return path === currentPath
+  //     ? "text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+  //     : "dark:text-white text-black dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white transition-colors";
+  // };
   const getLinkClass = (path) => {
     return path === currentPath
       ? "text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-      : "dark:text-white text-black dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white transition-colors";
+      : "relative dark:text-white text-black px-3 py-2 rounded-md text-sm font-medium group transition-colors";
   };
 
   const themeSwitch = (
@@ -135,68 +140,83 @@ const Navbar = () => {
           </g>
         </svg>
       )}
+
     </button>
   );
 
   return (
-    <div ref={navRef} className="h-[64px]">
+    <div ref={navRef} className="h-[64px] montserrat-font">
       <div className="dark:bg-[#0c0c0e] sticky top-0 z-50 w-full bg-gray-700 supports-[backdrop-filter]:bg-background/60 shadow-lg">
         <nav
-          className={`fixed top-0 left-0 w-full mx-auto px-2 sm:px-6 lg:px-8 z-50 transition-transform bg-opacity-85  backdrop-blur-3xl  duration-300 ${visible
-            ? "transform-none border-border/40 dark:shadow-xl shadow-md"
-            : "-translate-y-full"
+          className={`fixed  top-0 left-0 w-full mx-auto px-2 sm:px-6 lg:px-8 z-50 transition-transform duration-300 bg-opacity-75 backdrop-blur-md shadow-md border-b border-gray-500/20 ${visible ? "transform-none shadow-[0_4px_20px_rgba(0,0,0,0.3)]" : "-translate-y-full shadow-none"
             }`}
           aria-label="Global"
         >
           <div className="relative flex items-center justify-between h-16">
-            <div className="absolute inset-y-0 right-0 flex items-center sm:hidden">
+            <div className="absolute inset-y-0 right-0 flex items-center nav-theme-switch-lg">
               <button
                 type="button"
                 onClick={toggleMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-0 focus:ring-offset-0 focus:ring-offset-gray-800 focus:ring-white"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
                 aria-controls="mobile-menu"
                 aria-expanded={menuOpen ? "true" : "false"}
               >
                 <span className="sr-only">Open main menu</span>
-                {menuOpen ? (
-                  <span className="text-red-500 block h-6 w-6">&#10006;</span>
-                ) : (
-                  <svg
-                    className="block h-6 w-6"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    ></path>
-                  </svg>
-                )}
+                <motion.div
+                  animate={menuOpen ? "open" : "closed"}
+                  variants={{
+                    open: { rotate: 45, scale: 1.1 },
+                    closed: { rotate: 0, scale: 1 },
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {menuOpen ? (
+                    <span className="text-red-500 text-2xl">✖</span>
+                  ) : (
+                    <svg
+                      className="h-6 w-6"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <motion.path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 6h16M4 12h16M4 18h16"
+                        variants={{
+                          closed: { d: "M4 6h16M4 12h16M4 18h16" },
+                          open: { d: "M6 6L18 18M6 18L18 6" },
+                        }}
+                      />
+                    </svg>
+                  )}
+                </motion.div>
               </button>
             </div>
-            <div className="md:hidden flex absolute inset-y-0 left-0 items-center">
+            <div className=" nav-theme-switch flex absolute inset-y-0 left-0 items-center">
               {themeSwitch}
             </div>
-            <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+            <div className="flex-1 flex items-center justify-center logo-nav ">
               <div className="flex-shrink-0">
                 <Link href="/" className="text-2xl font-bold">
                   {theme === "light" ? (
-                    <Image src={logo} width={140} height={100} alt="logo" className="" />
+                    <motion.div whileHover={{ scale: 1.05, rotate: 2 }} transition={{ type: "spring", stiffness: 300 }}>
+                      <Image src={logo} width={140} height={100} alt="logo" className="" />
+                    </motion.div>
                   ) : (
-                    <Image src={logo} width={140} height={100} alt="logo" className="brightness-0 invert" />
+                    <motion.div whileHover={{ scale: 1.05, rotate: 2 }} transition={{ type: "spring", stiffness: 300 }}>
+                      <Image src={logo} width={140} height={100} alt="logo" className="brightness-0 invert" />
+                    </motion.div>
                   )}
                 </Link>
               </div>
-              <div className="hidden sm:block sm:ml-6">
+              <div className=" logo-lg">
                 {themeSwitch}
               </div>
             </div>
-            <div className="hidden sm:flex sm:items-center sm:space-x-4">
+            <div className=" nav-items sm:items-center sm:space-x-4">
               <Link href="/shop" className={getLinkClass("/shop")}>
                 Shop
               </Link>
@@ -275,9 +295,18 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
               <Link href="/cart" className="relative">
-                <CartSVG color={cartItems > 0 && '#ef4444'} />
-                <span className={`absolute -top-3 right-0 text-xs  ${cartItems > 0 ? 'pop text-red-500' : ''}`}
-                >{cartItems < 100 ? cartItems : "99+"}</span>
+                <motion.div
+                  animate={cartItems > 0 ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CartSVG color={cartItems > 0 ? "#ef4444" : "currentColor"} />
+                  <span
+                    className={`absolute -top-3 right-0 text-xs ${cartItems > 0 ? "pop text-red-500" : ""
+                      }`}
+                  >
+                    {cartItems < 100 ? cartItems : "99+"}
+                  </span>
+                </motion.div>
               </Link>
             </div>
           </div>
@@ -290,7 +319,7 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
-                className="sm:hidden"
+                className="nav-theme-switch-lg"
                 id="mobile-menu"
               >
                 <div className="flex flex-col px-2 pt-2 pb-3 space-y-1">

@@ -35,7 +35,7 @@ const AdminBlogsPage = ({ blogs }) => {
                 setShowContentModal(true)
             } else return window.location.reload();
         } catch (e) {
-            console.error(e)
+            console.log(e)
         } finally {
             setFetchingBlog(false);
         }
@@ -69,7 +69,7 @@ const AdminBlogsPage = ({ blogs }) => {
                 toast.error(data?.message)
             }
         } catch (e) {
-            console.error(e)
+            console.log(e)
         } finally {
             setFetchingBlog(false);
         }

@@ -9,7 +9,7 @@ const page = async () => {
   try {
     const dates = await getAllScheduleDates();
 
-    return <BookAppointment dates={dates.dates} status={dates?.status} />;
+    return <BookAppointment dates={dates?.dates} status={dates?.status} />;
   } catch {
     return <NotFound />;
   }

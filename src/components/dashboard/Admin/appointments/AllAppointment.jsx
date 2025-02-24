@@ -54,7 +54,7 @@ const AllAppointment = ({ a, page, limit }) => {
                 toast.error(data?.message);
             }
         } catch (e) {
-            console.error(e);
+            console.log(e);
         } finally {
             setLoading(false);
         }

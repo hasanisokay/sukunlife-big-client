@@ -128,7 +128,7 @@ const AddShopItem = () => {
                 toast.error(resData.message)
             }
         } catch (e) {
-            console.error(e)
+            console.log(e)
         }
     };
 

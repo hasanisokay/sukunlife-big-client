@@ -120,7 +120,7 @@ const AdminAddBlogPage = () => {
         toast.error(data.message)
       }
     } catch (e) {
-      console.error(e)
+      console.log(e)
       toast.error("Reload the page and try again.")
     }
   };
