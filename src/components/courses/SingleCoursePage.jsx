@@ -14,6 +14,8 @@ import addToCart from '../cart/functions/addToCart.mjs';
 import { setCartData } from '@/store/slices/cartSlice';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import courseCover from "@/../public/images/course.jpg";
 
 const SingleCoursePage = ({ course }) => {
     const [expandedModule, setExpandedModule] = useState(null);
@@ -25,11 +27,13 @@ const SingleCoursePage = ({ course }) => {
     const cart = useSelector((state) => state.cart.cartData);
     const coursesEnrolled = useSelector((state) => state.user.enrolledCourses);
     const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
+    const [imageError, setImageError] = useState(false);
     useEffect(() => {
-        coursesEnrolled.filter((c) => {
+        if (!coursesEnrolled) return;
+        coursesEnrolled?.filter((c) => {
             return c.courseId === course._id
         })
-        if (coursesEnrolled.length > 0) {
+        if (coursesEnrolled?.length > 0) {
             setAlreadyEnrolled(true);
         }
     }, [coursesEnrolled]);
@@ -114,10 +118,14 @@ const SingleCoursePage = ({ course }) => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2 } }}
                 >
-                    <img
-                        src={course.coverPhotoUrl}
-                        alt="Course Cover"
+                    <Image
+                        width={1200}
+                        height={600}
                         className="w-full h-full object-cover"
+                        quality={100}
+                        src={imageError ? courseCover : course?.coverPhotoUrl ? course?.coverPhotoUrl : courseCover}
+                        alt={course?.title||"Course Cover"}
+                        onError={() => setImageError(true)}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
                         <div className="flex md:flex-row flex-col gap-3 md:gap-0 justify-between items-end">
@@ -141,7 +149,7 @@ const SingleCoursePage = ({ course }) => {
                                 className="bg-blue-600 text-white px-6 md:py-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                                 onClick={() => {
                                     if (alreadyEnrolled) {
-                                        return window.location.href =`/dashboard/c/${course?.courseId}`
+                                        return window.location.href = `/dashboard/c/${course?.courseId}`
                                     }
                                     return handleAddToCart(false)
                                 }}

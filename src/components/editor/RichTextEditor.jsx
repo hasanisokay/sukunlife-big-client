@@ -193,13 +193,13 @@ const RichTextEditor = ({ onContentChange, initialContent = "", uniqueKey="" }) 
           Link
         </button>
         {/* Horizontal Rule */}
-        <button
+        {/* <button
           type="button"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           className="p-2 border rounded bg-gray-200 dark:bg-gray-700"
         >
           Horizontal Rule
-        </button>
+        </button> */}
 
         {/* Undo & Redo */}
         <button

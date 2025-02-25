@@ -49,8 +49,8 @@ export async function generateMetadata({ params }) {
         metadata.keywords.push(...keywords);
       } else {
         const titleKeywords = course?.title
-          .split(" ")
-          .filter((kw) => kw.length > 3);
+          ?.split(" ")
+          ?.filter((kw) => kw.length > 3);
         metadata.keywords.push(...titleKeywords);
       }
       metadata.other = {

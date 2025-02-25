@@ -111,76 +111,101 @@ const AllShopItems = ({ p, totalCount }) => {
             toast.success('Added to cart.', { autoClose: 700 })
         }
     };
+    const cardVariants = {
+        hidden: { opacity: 0, y: 50, rotate: -2 },
+        visible: (i) => ({
+          opacity: 1,
+          y: 0,
+          rotate: 0,
+          transition: {
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+            delay: i * 0.1,
+          },
+        }),
+        hover: {
+          scale: 1.03,
+          boxShadow: '0 15px 30px rgba(0,0,0,0.1)',
+          transition: { duration: 0.3 },
+        },
+      };
     return (
         <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-8">
-            <div className="max-w-6xl mx-auto" ref={containerRef}>
+            <div className="max-w-7xl mx-auto" ref={containerRef}>
                 <div className='mb-4'>
                     <SearchBar placeholder={"Search Product"} />
                 </div>
                 {/* Product Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    <AnimatePresence>
-                        {memorizedProducts?.map((product, index) => (
-                            <Link key={product?._id} href={`/shop/${product?.productId}`} passHref>
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ delay: index * 0.1, duration: 0.5 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform duration-300"
-                                >
-                                    {/* Product Image */}
-                                    <div className="relative h-48 overflow-hidden">
-                                        {/* <img
-                                            src={product?.images[0]}
-                                            alt={product.title}
-                                            className="w-full h-full object-cover"
-                                        /> */}
-                                           <ProductImage
-                      key={product._id}
+      {/* Product Grid with Enhanced Styling */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 xl:gap-8">
+          <AnimatePresence>
+            {memorizedProducts?.map((product, index) => (
+              <Link key={product?._id} href={`/shop/${product?.productId}`} passHref>
+                <motion.div
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                  custom={index}
+                  className="bg-white dark:bg-gray-950 rounded-xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300 border border-gray-100 dark:border-gray-800 group"
+                >
+                  {/* Enhanced Image Container */}
+                  <div className="relative h-56 overflow-hidden">
+                    <ProductImage
                       src={product.images[0]}
                       alt={product.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
 
-                                    {/* Product Details */}
-                                    <div className="p-4">
-                                        <h2 className="text-lg font-semibold line-clamp-2">{product.title}</h2>
-                                        <p className="text-xl font-bold mt-2 flex items-center"><TakaSVG /> {product.price}</p>
-                                        {/* StarRating Component */}
-                                        <div className="mt-2">
-                                            <StarRating
-                                                totalRating={product.ratingSum}
-                                                ratingCount={product.reviewsCount}
-                                            />
-                                        </div>
-                                        <div className="mt-4 flex space-x-2 text-sm">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handleAddToCart(product, false);
-                                                }}
-                                                className=" flex gap-3 px-1 w-[140px] items-center justify-center h-[34px] bg-blue-500 text-white  rounded hover:bg-blue-600 transition-colors duration-300"
-                                            >
-                                                Add to Cart <AddCartSVG />
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handleAddToCart(product, true);
-                                                }}
-                                                className="flex gap-3 px-1 w-[120px] items-center justify-center h-[34px] bg-green-500 text-white  rounded hover:bg-green-600 transition-colors duration-300"
-                                            >
-                                                Buy Now <BuyNowSVG />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            </Link>
-                        ))}
-                    </AnimatePresence>
-                </div>
+                  {/* Product Details with Enhanced Styling */}
+                  <div className="p-5">
+                    <h2 className="min-h-[56px] text-lg font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                      {product.title}
+                    </h2>
+                    
+                    <div className=" mt-3">
+                      <p className="text-xl font-semibold flex items-center text-gray-900 dark:text-white">
+                        <TakaSVG className="w-5 h-5 mr-1" /> {product.price}
+                      </p>
+                      <StarRating
+                        totalRating={product.ratingSum}
+                        ratingCount={product.reviewsCount}
+                        size="sm"
+                      />
+                    </div>
+
+                    {/* Enhanced Buttons */}
+                    <div className="mt-4 flex gap-3">
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(product, false);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
+                      >
+                        <AddCartSVG className="w-5 h-5" /> Add
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(product, true);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300"
+                      >
+                        <BuyNowSVG className="w-5 h-5" /> Buy
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+          </AnimatePresence>
+        </div>
 
                 {/* Loading Spinner */}
                 {loading && (

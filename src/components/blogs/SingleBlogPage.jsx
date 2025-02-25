@@ -1,42 +1,36 @@
 'use client';
-
+import blogCover from "@/../public/images/blog.jpg";
 import Image from "next/image";
 import BlogContent from "./BlogContnet";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import blogCoverPhotoUrl from "@/../public/images/blog.jpg";
 
 const SingleBlogPage = ({ b }) => {
-    const [imageUrl, setImageUrl] = useState(b?.blogCoverPhoto);
 
-    const handleImageError = () => {
-        setImageUrl(blogCoverPhotoUrl);
-    };
+    const [imageError, setImageError] = useState(false);
 
     return (
         <div className="max-w-4xl mx-auto mt-10 p-6 bg-white dark:bg-gray-900 shadow-lg rounded-xl">
             {/* Blog Cover Photo with Gradient Overlay */}
-            {imageUrl && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative w-full h-96 overflow-hidden rounded-t-xl"
-                >
-                    <Image
-                        width={1200}
-                        height={600}
-                        className="w-full h-full object-cover"
-                        quality={100}
-                        src={imageUrl}
-                        alt={b.title}
-                        onError={handleImageError}
-                        onLoadingComplete={() => setImageUrl(b?.blogCoverPhoto)}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                </motion.div>
-            )}
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="relative w-full h-96 overflow-hidden rounded-t-xl"
+            >
+                <Image
+                    width={1200}
+                    height={600}
+                    className="w-full h-full object-cover"
+                    quality={100}
+                    src={imageError ? blogCover : b?.blogCoverPhoto ? b?.blogCoverPhoto : blogCover}
+                    alt={b.title}
+                    onError={() => setImageError(true)}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            </motion.div>
 
             {/* Blog Info */}
             <motion.div
@@ -49,11 +43,11 @@ const SingleBlogPage = ({ b }) => {
                     {b?.title}
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                {b?.authorName && "By"} {" "}
+                    {b?.authorName && "By"} {" "}
                     <span className="font-medium text-gray-700 dark:text-gray-200">
                         {b?.authorName}
                     </span>{" "}
-                    {b?.authorName ? "on" :"On"} {" "} 
+                    {b?.authorName ? "on" : "On"} {" "}
                     {new Date(b?.date).toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",

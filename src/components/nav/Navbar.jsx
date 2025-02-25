@@ -87,8 +87,9 @@ const Navbar = () => {
   }, [menuOpen, userMenuOpen]);
 
 
-  const handleLogOut = () => {
-    logOut();
+  const handleLogOut = async() => {
+    await fetch("/api/logout")
+    await logOut();
     dispatch(setUserData(null));
     window.location.reload();
   };
@@ -154,46 +155,48 @@ const Navbar = () => {
         >
           <div className="relative flex items-center justify-between h-16">
             <div className="absolute inset-y-0 right-0 flex items-center nav-theme-switch-lg">
-              <button
-                type="button"
-                onClick={toggleMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
-                aria-controls="mobile-menu"
-                aria-expanded={menuOpen ? "true" : "false"}
-              >
-                <span className="sr-only">Open main menu</span>
-                <motion.div
-                  animate={menuOpen ? "open" : "closed"}
-                  variants={{
-                    open: { rotate: 45, scale: 1.1 },
-                    closed: { rotate: 0, scale: 1 },
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {menuOpen ? (
-                    <span className="text-red-500 text-2xl">✖</span>
-                  ) : (
-                    <svg
-                      className="h-6 w-6"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <motion.path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4 6h16M4 12h16M4 18h16"
-                        variants={{
-                          closed: { d: "M4 6h16M4 12h16M4 18h16" },
-                          open: { d: "M6 6L18 18M6 18L18 6" },
-                        }}
-                      />
-                    </svg>
-                  )}
-                </motion.div>
-              </button>
+            <button
+      type="button"
+      onClick={toggleMenu}
+      className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
+      aria-controls="mobile-menu"
+      aria-expanded={menuOpen ? "true" : "false"}
+    >
+      <span className="sr-only">Open main menu</span>
+      <motion.div
+        animate={menuOpen ? "open" : "closed"}
+        variants={{
+          open: { rotate: 180, scale: 1.1 },
+          closed: { rotate: 0, scale: 1 },
+        }}
+        transition={{ duration: 0.3 }}
+      >
+        {menuOpen ? (
+          <span className="text-red-500 text-2xl">✖</span>
+        ) : (
+          <motion.svg
+            className="h-6 w-6"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <motion.path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              initial={{ d: "M4 6h16M4 12h16M4 18h16" }} // Set default path
+              animate={menuOpen ? "open" : "closed"}
+              variants={{
+                closed: { d: "M4 6h16M4 12h16M4 18h16" },
+                open: { d: "M6 6L18 18M6 18L18 6" },
+              }}
+              transition={{ duration: 0.3 }}
+            />
+          </motion.svg>
+        )}
+      </motion.div>
+    </button>
             </div>
             <div className=" nav-theme-switch flex absolute inset-y-0 left-0 items-center">
               {themeSwitch}

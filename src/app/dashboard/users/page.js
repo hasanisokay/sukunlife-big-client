@@ -14,7 +14,7 @@ const usersPageAdmin = async ({ searchParams }) => {
   const user = await getUserDataFromToken();
   if (user?.role === "admin") {
     const users = await getAllUsers(page, limit, keyword, sort, filter);
-    if (users.status === 200) {
+    if (users?.status === 200) {
       return <UserManagementPageAdmin u={users?.users} />;
     } else {
       return <NotFound />;

@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/themes/material_blue.css';
 
-const DatePickerWithDisableDates = ({ availableDates, onChangeHandler }) => {
+const DatePickerWithDisableDates = ({ availableDates, onChangeHandler, labelText }) => {
     const inputRef = useRef(null);
 
     useEffect(() => {
@@ -26,7 +26,7 @@ const DatePickerWithDisableDates = ({ availableDates, onChangeHandler }) => {
                 htmlFor="datepicker"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-                Date
+                {labelText || 'Date'}
             </label>
             <input
                 id="datepicker"

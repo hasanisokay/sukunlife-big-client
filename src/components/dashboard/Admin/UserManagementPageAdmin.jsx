@@ -1,29 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import SearchBar from '@/components/search/SearchBar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast, ToastContainer } from 'react-toastify';
+import { Flip, toast, ToastContainer } from 'react-toastify';
+import { SERVER } from '@/constants/urls.mjs';
 
 const UserManagementPageAdmin = ({ u }) => {
   const [users, setUsers] = useState(u);
-  const [searchTerm, setSearchTerm] = useState('');
+  const memorizedUsers = useMemo(() => users, [users])
   const [selectedUserCourses, setSelectedUserCourses] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    setUsers(u)
+  }, [u])
   // Mock API call to toggle user status
   const toggleUserStatus = async (userId, currentStatus) => {
     try {
       const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
-      const response = await fetch(`/api/users/${userId}/status`, {
+      const response = await fetch(`${SERVER}/api/admin/${userId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
+        credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to update status');
-      return newStatus;
+      const resData = await response.json();
+      if (resData.status === 200) {
+        toast.success(resData.message)
+        return newStatus;
+      } else {
+        toast.error(resData.message)
+      }
+      return null
     } catch (error) {
-      console.error(error);
       toast.error('Failed to update user status');
       throw error;
     }
@@ -33,15 +43,21 @@ const UserManagementPageAdmin = ({ u }) => {
   const toggleUserRole = async (userId, currentRole) => {
     try {
       const newRole = currentRole === 'user' ? 'admin' : 'user';
-      const response = await fetch(`/api/users/${userId}/role`, {
+      const response = await fetch(`${SERVER}/api/admin/${userId}/role`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
+        credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to update role');
-      return newRole;
+      const resData = await response.json();
+      if (resData.status === 200) {
+        toast.success(resData.message)
+        return newRole;
+      } else {
+        toast.error(resData.message)
+      }
+      return null
     } catch (error) {
-      console.error(error);
       toast.error('Failed to update user role');
       throw error;
     }
@@ -50,14 +66,16 @@ const UserManagementPageAdmin = ({ u }) => {
   // Handle status change with instant UI update
   const handleStatusChange = async (userId, currentStatus) => {
     const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user._id === userId ? { ...user, status: newStatus } : user
-      )
-    );
+
     try {
-      await toggleUserStatus(userId, currentStatus);
-      toast.success(`User ${newStatus === 'blocked' ? 'blocked' : 'unblocked'} successfully`);
+      const updateResult = await toggleUserStatus(userId, currentStatus);
+      if (updateResult) {
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user._id === userId ? { ...user, status: newStatus } : user
+          )
+        );
+      }
     } catch {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
@@ -70,14 +88,15 @@ const UserManagementPageAdmin = ({ u }) => {
   // Handle role change with instant UI update
   const handleRoleChange = async (userId, currentRole) => {
     const newRole = currentRole === 'user' ? 'admin' : 'user';
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user._id === userId ? { ...user, role: newRole } : user
-      )
-    );
     try {
-      await toggleUserRole(userId, currentRole);
-      toast.success(`User role changed to ${newRole} successfully`);
+      const updateResult = await toggleUserRole(userId, currentRole);
+      if (updateResult) {
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user._id === userId ? { ...user, role: newRole } : user
+          )
+        );
+      }
     } catch {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
@@ -93,17 +112,11 @@ const UserManagementPageAdmin = ({ u }) => {
     setIsModalOpen(true);
   };
 
-  // Filter users based on search term
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-gray-100 w-full dark:bg-gray-900">
       <div>
-        <SearchBar onSearch={(term) => setSearchTerm(term)} />
+        <SearchBar />
 
         {/* Users Table */}
         <motion.div
@@ -140,7 +153,7 @@ const UserManagementPageAdmin = ({ u }) => {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               <AnimatePresence>
-                {filteredUsers.map((user) => (
+                {memorizedUsers?.map((user) => (
                   <motion.tr
                     key={user._id}
                     initial={{ opacity: 0 }}
@@ -160,11 +173,10 @@ const UserManagementPageAdmin = ({ u }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          user.role === 'admin'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${user.role === 'admin'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                          }`}
                       >
                         {user.role}
                       </span>
@@ -179,11 +191,10 @@ const UserManagementPageAdmin = ({ u }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          user.status === 'active'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status === 'active'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}
                       >
                         {user.status}
                       </span>
@@ -191,21 +202,19 @@ const UserManagementPageAdmin = ({ u }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm flex space-x-2">
                       <button
                         onClick={() => handleStatusChange(user._id, user.status)}
-                        className={`px-3 py-1 rounded-md text-white font-medium ${
-                          user.status === 'active'
-                            ? 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800'
-                            : 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800'
-                        }`}
+                        className={`px-3 py-1 rounded-md text-white font-medium ${user.status === 'active'
+                          ? 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800'
+                          : 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800'
+                          }`}
                       >
                         {user.status === 'active' ? 'Block' : 'Unblock'}
                       </button>
                       <button
                         onClick={() => handleRoleChange(user._id, user.role)}
-                        className={`px-3 py-1 rounded-md text-white font-medium ${
-                          user.role === 'user'
-                            ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
-                            : 'bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-800'
-                        }`}
+                        className={`px-3 py-1 rounded-md text-white font-medium ${user.role === 'user'
+                          ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
+                          : 'bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-800'
+                          }`}
                       >
                         {user.role === 'user' ? 'Make Admin' : 'Make User'}
                       </button>
@@ -268,7 +277,7 @@ const UserManagementPageAdmin = ({ u }) => {
           )}
         </AnimatePresence>
       </div>
-      <ToastContainer />
+      <ToastContainer transition={Flip} />
     </div>
   );
 };
