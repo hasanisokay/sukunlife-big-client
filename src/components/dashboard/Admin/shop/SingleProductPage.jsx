@@ -92,11 +92,9 @@ const SingleProductPage = ({ product }) => {
                                 setSelectedThumbnailIndex(e?.activeIndex)
                                 thumbsSwiper?.slideTo(e?.activeIndex)
                             }}
-                            navigation
                             thumbs={{ swiper: thumbsSwiper }}
                             modules={[Navigation, Thumbs]}
                             className="rounded-lg"
-
                             onContextMenu={handleImageContextMenu} // Prevent right-click
                         >
                             {product?.images.map((image, index) => (
