@@ -89,7 +89,7 @@ const Homepage = ({ topProducts }) => {
                       alt={product.title}
                     />
                     <div className="p-6 flex flex-col flex-grow">
-                      <h3 className="text-xl md:text-2xl font-semibold mb-3 dark:text-white line-clamp-2 h-16 overflow-hidden">
+                      <h3 className="text-xl md:text-2xl font-semibold mb-3 dark:text-white line-clamp-2 h-20 overflow-hidden">
                         {product.title}
                       </h3>
                       <p className="text-xl md:text-2xl font-bold mt-2 flex items-center">
