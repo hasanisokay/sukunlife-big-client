@@ -106,11 +106,11 @@ export async function generateMetadata() {
       'book appointment',
       "ruqyah session"
     ],
-    viewport: {
-      width: "device-width",
-      initialScale: 1,
-      maximumScale: 1,
-    },
+    // viewport: {
+    //   width: "device-width",
+    //   initialScale: 1,
+    //   maximumScale: 1,
+    // },
     // verification: {
     //   google: "google-verification-code",
     // },

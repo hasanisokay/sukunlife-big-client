@@ -286,3 +286,7 @@ svg.star-svg {
     display: flex;
   }
 }
+
+.navbar-background {
+  background-color: var(--navbar-bg-color); /* Use CSS variables for dynamic theming */
+}

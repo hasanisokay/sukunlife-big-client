@@ -12,6 +12,7 @@ const ProductImage = ({ src, alt,}) => {
         src={imageError ? productFallbackImage : src}
         alt={alt}
         fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         className="object-cover"
         blurDataURL={fallbackBlurDataURL}
         onError={() => setImageError(true)} // Fallback on error

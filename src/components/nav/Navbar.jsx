@@ -42,6 +42,8 @@ const Navbar = () => {
     setCartItems(cart?.length || 0)
   }, [cart])
 
+
+
   useEffect(() => {
     try {
       const cartInStorage = localStorage.getItem('cart')
@@ -87,22 +89,17 @@ const Navbar = () => {
   }, [menuOpen, userMenuOpen]);
 
 
-  const handleLogOut = async() => {
+  const handleLogOut = async () => {
     await fetch("/api/logout")
     await logOut();
     dispatch(setUserData(null));
     window.location.reload();
   };
 
-  // const getLinkClass = (path) => {
-  //   return path === currentPath
-  //     ? "text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-  //     : "dark:text-white text-black dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white transition-colors";
-  // };
   const getLinkClass = (path) => {
     return path === currentPath
       ? "text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-      : "relative dark:text-white text-black px-3 py-2 rounded-md text-sm font-medium group transition-colors";
+      : "relative  px-3 py-2 rounded-md text-sm font-medium group transition-colors";
   };
 
   const themeSwitch = (
@@ -146,57 +143,57 @@ const Navbar = () => {
   );
 
   return (
-    <div ref={navRef} className="h-[64px] montserrat-font">
+    <div ref={navRef} className="h-[64px] montserrat-font ">
       <div className="dark:bg-[#0c0c0e] sticky top-0 z-50 w-full bg-gray-700 supports-[backdrop-filter]:bg-background/60 shadow-lg">
         <nav
-          className={`fixed  top-0 left-0 w-full mx-auto px-2 sm:px-6 lg:px-8 z-50 transition-transform duration-300 bg-opacity-75 backdrop-blur-md shadow-md border-b border-gray-500/20 ${visible ? "transform-none shadow-[0_4px_20px_rgba(0,0,0,0.3)]" : "-translate-y-full shadow-none"
+          className={`fixed  top-0 left-0 w-full mx-auto px-2 bg-gray-100 dark:bg-[#111827]  sm:px-6 lg:px-8 z-50 transition-transform duration-300  shadow-md border-b border-gray-500/20 ${visible ? "transform-none shadow-[0_4px_20px_rgba(0,0,0,0.3)]" : "-translate-y-full shadow-none"
             }`}
           aria-label="Global"
         >
           <div className="relative flex items-center justify-between h-16">
             <div className="absolute inset-y-0 right-0 flex items-center nav-theme-switch-lg">
-            <button
-      type="button"
-      onClick={toggleMenu}
-      className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
-      aria-controls="mobile-menu"
-      aria-expanded={menuOpen ? "true" : "false"}
-    >
-      <span className="sr-only">Open main menu</span>
-      <motion.div
-        animate={menuOpen ? "open" : "closed"}
-        variants={{
-          open: { rotate: 180, scale: 1.1 },
-          closed: { rotate: 0, scale: 1 },
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        {menuOpen ? (
-          <span className="text-red-500 text-2xl">✖</span>
-        ) : (
-          <motion.svg
-            className="h-6 w-6"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <motion.path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              initial={{ d: "M4 6h16M4 12h16M4 18h16" }} // Set default path
-              animate={menuOpen ? "open" : "closed"}
-              variants={{
-                closed: { d: "M4 6h16M4 12h16M4 18h16" },
-                open: { d: "M6 6L18 18M6 18L18 6" },
-              }}
-              transition={{ duration: 0.3 }}
-            />
-          </motion.svg>
-        )}
-      </motion.div>
-    </button>
+              <button
+                type="button"
+                onClick={toggleMenu}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
+                aria-controls="mobile-menu"
+                aria-expanded={menuOpen ? "true" : "false"}
+              >
+                <span className="sr-only">Open main menu</span>
+                <motion.div
+                  animate={menuOpen ? "open" : "closed"}
+                  variants={{
+                    open: { rotate: 180, scale: 1.1 },
+                    closed: { rotate: 0, scale: 1 },
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {menuOpen ? (
+                    <span className="text-red-500 text-2xl">✖</span>
+                  ) : (
+                    <motion.svg
+                      className="h-6 w-6"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <motion.path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        initial={{ d: "M4 6h16M4 12h16M4 18h16" }} // Set default path
+                        animate={menuOpen ? "open" : "closed"}
+                        variants={{
+                          closed: { d: "M4 6h16M4 12h16M4 18h16" },
+                          open: { d: "M6 6L18 18M6 18L18 6" },
+                        }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </motion.svg>
+                  )}
+                </motion.div>
+              </button>
             </div>
             <div className=" nav-theme-switch flex absolute inset-y-0 left-0 items-center">
               {themeSwitch}

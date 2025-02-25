@@ -37,39 +37,73 @@ const singleTagPage = async ({ params, searchParams }) => {
 export default singleTagPage;
 
 export async function generateMetadata({ params }) {
-  const host = await hostname();
-  const p = await params;
-  let tag = p.tag;
-  if(tag){
-    tag = decodeURIComponent(tag)
-  }
-  const blogCoverUrl = `${host}${blogCover.src}`;
-
-  let metadata = {
-    title: `${capitalize(tag)} - ${websiteName}`,
-    description: `${capitalize(tag)} ট্যাগের পোস্টগুলি পড়ুন।`,
-    keywords: ["সুকুনলাইফ ব্লগ"],
-    url: tag ? `${host}/blog/tags/${tag}` : `${host}/blog/tags`,
-    canonical: tag ? `${host}/blog/tags/${tag}` : `${host}/blog/tags`,
-  };
-
   try {
-    metadata.other = {
-      "twitter:image": blogCoverUrl || "",
-      "twitter:card": "summary_large_image",
-      "twitter:title": metadata.title,
-      "twitter:description": metadata.description,
-      "og:title": metadata.title,
-      "og:description": metadata.description,
-      "og:url": `${host}/blog/tags/${tag}`,
-      "og:image": blogCoverUrl || "",
-      "og:type": "article",
-      "og:site_name": websiteName,
-      "og:locale": "bn_BD",
-    };
-  } catch (error) {
-    console.log("error occured")
-  }
+    const host = await hostname();
+    const p = await params;
+    let tag = p.tag ? decodeURIComponent(p.tag) : null;
+    const blogCoverUrl = `${host}${blogCover.src}`;
+    const baseUrl = tag ? `${host}/blog/tags/${tag}` : `${host}/blog/tags`;
 
-  return metadata;
+    const metadata = {
+      title: tag ? `${capitalize(tag)} Blog` : `Blog Tags`,
+      description: tag
+        ? `Read Sukunlife blog posts tagged with ${capitalize(tag)}. Explore now!`
+        : "Browse all blog tags at Sukunlife. Find topics you love!",
+      keywords: [
+        "sukunlife blog",
+        "blog tags",
+        "articles",
+        "insights",
+        ...(tag ? [tag, `${tag} blog`, `${tag} posts`] : []),
+      ],
+      alternates: {
+        canonical: baseUrl,
+      },
+      openGraph: {
+        title: tag ? `${capitalize(tag)} - ${websiteName} Blog` : `Blog Tags - ${websiteName}`,
+        description: tag
+          ? `Discover blog posts tagged ${capitalize(tag)} on Sukunlife. Read now!`
+          : "Explore Sukunlife blog tags and find inspiring content!",
+        url: baseUrl,
+        siteName: websiteName,
+        images: [
+          {
+            url: blogCoverUrl,
+            width: 1200,
+            height: 630,
+            alt: tag ? `${capitalize(tag)} Blog Cover` : `${websiteName} Blog Tags`,
+          },
+        ],
+        locale: "bn_BD",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: tag ? `${capitalize(tag)} - ${websiteName} Blog` : `Blog Tags - ${websiteName}`,
+        description: tag
+          ? `Check out ${capitalize(tag)} tagged posts on Sukunlife!`
+          : "Find all blog tags on Sukunlife!",
+        images: [blogCoverUrl],
+      },
+    };
+
+    // Remove duplicates and limit keywords
+    metadata.keywords = [...new Set(metadata.keywords)]
+      .filter(kw => kw && kw.length > 2)
+      .slice(0, 10);
+
+    return metadata;
+  } catch (error) {
+    console.error("Blog tag metadata generation failed:", error);
+    const host = await hostname();
+    const tag = params?.tag ? decodeURIComponent(params.tag) : null;
+    const baseUrl = tag ? `${host}/blog/tags/${tag}` : `${host}/blog/tags`;
+    return {
+      title: tag ? `${capitalize(tag)} - ${websiteName}` : `Blog Tags - ${websiteName}`,
+      description: "Explore blog tags at Sukunlife.",
+      alternates: {
+        canonical: baseUrl,
+      },
+    };
+  }
 }

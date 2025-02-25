@@ -19,36 +19,70 @@ const tagsPage = async () => {
 };
 
 export default tagsPage;
+
 export async function generateMetadata() {
-  const host = await hostname();
-  const blogCoverUrl = `${host}${blogCover.src}`;
-  const tagsData = await getAllBlogTags();
-  const tags = tagsData.tags;
-  let metadata = {
-    title: `Blog Tags - ${websiteName}`,
-    description: `ট্যাগ অনুযায়ী ব্লগ পোস্টগুলি পড়ুন।`,
-    keywords: tags || ["সুকুনলাইফ ব্লগ"],
-    url: `${host}/blog/tags`,
-    canonical: `${host}/blog/tags`,
-  };
-
   try {
-    metadata.other = {
-      "twitter:image": blogCoverUrl || "",
-      "twitter:card": "summary_large_image",
-      "twitter:title": metadata.title,
-      "twitter:description": metadata.description,
-      "og:title": metadata.title,
-      "og:description": metadata.description,
-      "og:url": `${host}/blog/tags`,
-      "og:image": blogCoverUrl || "",
-      "og:type": "article",
-      "og:site_name": websiteName,
-      "og:locale": "bn_BD",
-    };
-  } catch (error) {
-  
-  }
+    const host = await hostname();
+    const blogCoverUrl = `${host}${blogCover.src}`;
+    const tagsData = await getAllBlogTags();
+    const tags = tagsData?.tags || [];
 
-  return metadata;
+    const metadata = {
+      title: `Blog Tags`,
+      description:
+        "Explore Sukunlife blog posts by tags. Find topics you love now!",
+      keywords: [
+        "sukunlife blog",
+        "blog tags",
+        "articles",
+        "insights",
+        "blog categories",
+        ...(tags.length > 0 ? tags : []),
+      ],
+      alternates: {
+        canonical: `${host}/blog/tags`,
+      },
+      openGraph: {
+        title: `Blog Tags - ${websiteName}`,
+        description:
+          "Browse Sukunlife blog tags and discover inspiring content!",
+        url: `${host}/blog/tags`,
+        siteName: websiteName,
+        images: [
+          {
+            url: blogCoverUrl,
+            width: 1200,
+            height: 630,
+            alt: `${websiteName} Blog Tags`,
+          },
+        ],
+        locale: "bn_BD",
+        type: "website", // Changed to "website" as it's a collection page
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `Blog Tags - ${websiteName}`,
+        description:
+          "Find Sukunlife blog posts by tags. Explore now!",
+        images: [blogCoverUrl],
+      },
+    };
+
+    // Remove duplicates and limit keywords
+    metadata.keywords = [...new Set(metadata.keywords)]
+      .filter(kw => kw && kw.length > 2)
+      .slice(0, 15); // Slightly higher limit due to dynamic tags
+
+    return metadata;
+  } catch (error) {
+    console.error("Blog tags metadata generation failed:", error);
+    const host = await hostname();
+    return {
+      title: `Blog Tags - ${websiteName}`,
+      description: "Browse blog tags at Sukunlife.",
+      alternates: {
+        canonical: `${host}/blog/tags`,
+      },
+    };
+  }
 }
