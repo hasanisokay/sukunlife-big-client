@@ -31,33 +31,63 @@ const coursesPage = async ({ searchParams }) => {
 };
 
 export default coursesPage;
-
 export async function generateMetadata() {
   try {
     const host = await hostname();
     const courseCoverUrl = `${host}${courseCover.src}`;
-    let metadata = {
-      title: `Courses - ${websiteName}`,
-      description: "Explore sukunlife courses.",
-      keywords: ["সুকুনলাইফ কোর্স, sukunlife, courses"],
-      url: `${host}/courses`,
-      canonical: `${host}/courses`,
+
+    const metadata = {
+      title: `Online Courses - Learn with ${websiteName}`,
+      description: "Discover quality online courses at Sukunlife. Learn new skills with expert-led training. Explore our course catalog now!",
+      keywords: [
+        "sukunlife courses",
+        "online learning",
+        "e-learning platform",
+        "educational courses",
+        "online training",
+        "sukunlife",
+        "learn online",
+        "skill development",
+        "course catalog",
+      ],
+      alternates: {
+        canonical: `${host}/courses`,
+      },
+      openGraph: {
+        title: `Online Courses - ${websiteName}`,
+        description: "Explore our diverse range of online courses at Sukunlife. Start learning today with expert instructors!",
+        url: `${host}/courses`,
+        siteName: websiteName,
+        images: [
+          {
+            url: courseCoverUrl,
+            width: 1200,
+            height: 630,
+            alt: `${websiteName} Course Catalog`,
+          },
+        ],
+        locale: "bn_BD",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `Online Courses - ${websiteName}`,
+        description: "Discover expert-led online courses at Sukunlife. Start your learning journey today!",
+        images: [courseCoverUrl],
+      },
     };
-    metadata.other = {
-      "twitter:image": courseCoverUrl || "",
-      "twitter:card": "summary_large_image",
-      "twitter:title": metadata.title,
-      "twitter:description": metadata.description,
-      "og:title": metadata.title,
-      "og:description": metadata.description,
-      "og:url": `${host}/courses`,
-      "og:image": courseCoverUrl || "",
-      "og:type": "article",
-      "og:site_name": websiteName,
-      "og:locale": "bn_BD",
-    };
+
     return metadata;
   } catch (error) {
-    console.log("error occured")
+    console.error("Metadata generation failed:", error);
+    // Return fallback metadata in case of error
+    return {
+      title: `Courses - ${websiteName}`,
+      description: "Explore online courses at Sukunlife.",
+      alternates: {
+        canonical: `${await hostname()}/courses`,
+      },
+    };
   }
 }
+

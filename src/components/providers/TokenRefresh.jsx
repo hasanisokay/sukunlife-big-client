@@ -5,7 +5,7 @@ import { setCartData } from "@/store/slices/cartSlice";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
-const TokenRefreh = ({ children, refreshToken = false }) => {
+const TokenRefresh = ({ children, refreshToken = false }) => {
     // return children
     const dispatch = useDispatch();
     const refreshAccessToken = async () => {
@@ -37,4 +37,4 @@ const TokenRefreh = ({ children, refreshToken = false }) => {
     return children;
 };
 
-export default TokenRefreh;
+export default TokenRefresh;

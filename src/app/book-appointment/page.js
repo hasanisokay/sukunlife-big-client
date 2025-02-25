@@ -22,11 +22,21 @@ export async function generateMetadata() {
   const appointmentCoverUrl = `${host}${appointmentCover.src}`;
 
   const metadata = {
-    title: `Book Appointment - ${websiteName}`,
-    description: "Book an appointment.",
-    keywords: ["appointment"],
+    title: `Book Appointment`,
+    description: "Schedule your appointment with ease at SukunLife. Book now for personalized consultations and expert guidance tailored to your needs.",
     url: `${host}/book-appointment`,
-    canonical: `${host}/book-appointment`,
+    alternates: {
+      canonical: `${host}/book-appointment`,
+    },
+    keywords: [
+      "book appointment",
+      "schedule consultation",
+      "sukunlife appointment",
+      "online booking",
+      "consultation",
+      "personal growth",
+      "appointment scheduling",
+    ],
     openGraph: {
       title: `Book Appointment - ${websiteName}`,
       description: "Book an appointment.",
@@ -46,7 +56,7 @@ export async function generateMetadata() {
     twitter: {
       card: "summary_large_image",
       title: `Book Appointment - ${websiteName}`,
-      description: "Book an appointment.",
+      description: "Schedule your appointment with ease at SukunLife. Book now for personalized consultations and expert guidance tailored to your needs.",
       images: [appointmentCoverUrl],
     },
   };

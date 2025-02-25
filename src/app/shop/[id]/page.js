@@ -18,64 +18,98 @@ const page = async ({ params }) => {
 };
 
 export default page;
+
+
 export async function generateMetadata({ params }) {
   try {
     const host = await hostname();
     const p = await params;
     const productId = p.id;
-    let productData = await getSingleProduct(productId);
-    if (productData?.status === 200) {
-      const product = productData?.product;
-      const productCoverPhoto = `${host}${productCover.src}`;
-      const description = product?.description
-        ?.replace(/<[^>]+>/g, " ")
-        .slice(0, 200);
+    const productData = await getSingleProduct(productId);
+    const product = productData?.status === 200 ? productData.product : null;
+    const productCoverPhoto = `${host}${productCover.src}`;
 
-      let metadata = {
-        title: `${product?.title} - ${websiteName}`,
-        description: description || "Detailed description of the product.",
-        keywords: ["সুকুনলাইফ", "sukunlife"],
-        url: `${host}/shop/${productId}`,
+    const fallbackDescription = product?.description
+      ?.replace(/<[^>]+>/g, " ")
+      .slice(0, 160)
+      .trim() || "Shop this product at Sukunlife.";
+
+    const metadata = {
+      title: `${product?.title || "Product"}`,
+      description:
+        product?.seoDescription ||
+        fallbackDescription ||
+        "Discover this premium product at Sukunlife. Shop now!",
+      keywords: [
+        "sukunlife product",
+        "online shopping",
+        "e-commerce",
+        ...(product?.title?.split(" ").filter(kw => kw.length > 3) || []),
+      ],
+      alternates: {
         canonical: `${host}/shop/${productId}`,
-      };
-      if (product) {
-        if (product?.tags?.length > 2) {
-          const keywords = product?.tags.split(",");
-          metadata.keywords.push(...keywords);
-        } else {
-          const titleKeywords = product?.title
-            .split(" ")
-            .filter((kw) => kw.length > 3);
-          metadata.keywords.push(...titleKeywords);
-        }
-        metadata.other = {
-          "twitter:image":
-            product?.images?.length > 0 ? product.images[0] : productCoverPhoto,
-          "twitter:card": "summary_large_image",
-          "twitter:title": metadata.title,
-          "twitter:description": metadata.description,
-          "og:title": metadata.title,
-          "og:description": metadata.description,
-          "og:url": `${host}/shop/${productId}`,
-          "og:image":
-            product?.images?.length > 0 ? product.images[0] : productCoverPhoto,
-          "og:type": "website",
-          "og:site_name": websiteName,
-          "og:locale": "en_US",
-        };
-      }
-      return metadata;
-    } else {
-      let metadata = {
-        title: `Product Not Found - ${websiteName}`,
-        description: "Detailed description of the product.",
-        keywords: ["সুকুনলাইফ", "sukunlife"],
+      },
+      openGraph: {
+        title: `${product?.title || "Product"} - ${websiteName}`,
+        description:
+          product?.seoDescription ||
+          fallbackDescription ||
+          "Buy this quality product from Sukunlife. Explore now!",
         url: `${host}/shop/${productId}`,
-        canonical: `${host}/shop/${productId}`,
-      };
-      return metadata;
+        siteName: websiteName,
+        images: [
+          {
+            url: product?.images?.[0] || productCoverPhoto,
+            width: 1200,
+            height: 630,
+            alt: `${product?.title || "Product"} Image`,
+          },
+        ],
+        locale: "bn_BD", 
+        type:"website"
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${product?.title || "Product"} - ${websiteName}`,
+        description:
+          product?.seoDescription ||
+          fallbackDescription ||
+          "Check out this product at Sukunlife!",
+        images: [product?.images?.[0] || productCoverPhoto],
+      },
+    };
+
+    // Enhance keywords with tags if available
+    if (product?.tags?.length > 0) {
+      const tagKeywords = product.tags.split(",").map(tag => tag.trim());
+      metadata.keywords.push(...tagKeywords);
     }
+
+    // Remove duplicates and limit keywords
+    metadata.keywords = [...new Set(metadata.keywords)]
+      .filter(kw => kw && kw.length > 2)
+      .slice(0, 10);
+
+    // Handle not found case
+    if (!product) {
+      metadata.title = `Product Not Found - ${websiteName}`;
+      metadata.description = "This product is unavailable. Explore more at Sukunlife.";
+      metadata.openGraph.title = metadata.title;
+      metadata.openGraph.description = metadata.description;
+      metadata.twitter.title = metadata.title;
+      metadata.twitter.description = metadata.description;
+    }
+
+    return metadata;
   } catch (error) {
-    console.log("error occured")
+    console.error("Product metadata generation failed:", error);
+    const host = await hostname();
+    return {
+      title: `Product - ${websiteName}`,
+      description: "Explore products at Sukunlife.",
+      alternates: {
+        canonical: `${host}/shop/${params?.id || ""}`,
+      },
+    };
   }
 }

@@ -14,6 +14,7 @@ const CartPage = () => {
     const user = useSelector((state) => state.user.userData);
     const [courseInCart, setCourseInCart] = useState(false);
     const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
     const [typedVoucher, setTypedVoucher] = useState("");
     const [voucherMessage, setVoucherMessage] = useState('')
     const [voucherError, setVoucherError] = useState('')
@@ -96,7 +97,11 @@ const CartPage = () => {
         (total, item) => total + item.price * item.quantity,
         0
     );
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
+    if (!isClient) return null
 
     return (
         <div className={`min-h-screen dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900 p-8`}>

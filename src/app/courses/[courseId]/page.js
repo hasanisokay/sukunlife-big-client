@@ -25,52 +25,84 @@ export async function generateMetadata({ params }) {
     const host = await hostname();
     const p = await params;
     const courseId = p.courseId;
-    let courseData = await getCoursePublic(courseId);
+    const courseData = await getCoursePublic(courseId);
     const course = courseData?.course;
     const courseCoverUrl = `${host}${courseCover.src}`;
 
-    const description = course?.description
+    // Fallback description with HTML stripped and limited to 160 characters
+    const fallbackDescription = course?.description
       ?.replace(/<[^>]+>/g, " ")
-      .slice(0, 200);
+      .slice(0, 160)
+      .trim() || "Learn with this expertly designed course at Sukunlife.";
 
-    let metadata = {
-      title: `${course?.title} - ${websiteName}`,
+    const metadata = {
+      title: `${course?.title || "Course"}`,
       description:
         course?.seoDescription ||
-        description ||
-        "Detailed description of the course.",
-      keywords: ["সুকুনলাইফ কোর্স"],
-      url: `${host}/courses/${courseId}`,
-      canonical: `${host}/courses/${courseId}`,
+        fallbackDescription ||
+        "Explore this comprehensive course at Sukunlife to enhance your skills.",
+      keywords: [
+        "sukunlife course",
+        "online course",
+        "e-learning",
+        "skill development",
+        ...(course?.title?.split(" ").filter(kw => kw.length > 3) || []),
+      ],
+      alternates: {
+        canonical: `${host}/courses/${courseId}`,
+      },
+      openGraph: {
+        title: `${course?.title || "Course"} - ${websiteName}`,
+        description:
+          course?.seoDescription ||
+          fallbackDescription ||
+          "Join this Sukunlife course to master new skills with expert guidance.",
+        url: `${host}/courses/${courseId}`,
+        siteName: websiteName,
+        images: [
+          {
+            url: course?.coverPhotoUrl || courseCoverUrl,
+            width: 1200,
+            height: 630,
+            alt: `${course?.title || "Course"} Cover Image`,
+          },
+        ],
+        locale: "bn_BD",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${course?.title || "Course"} - ${websiteName}`,
+        description:
+          course?.seoDescription ||
+          fallbackDescription ||
+          "Discover this Sukunlife course for expert-led learning.",
+        images: [course?.coverPhotoUrl || courseCoverUrl],
+      },
     };
-    if (course) {
-      if (course?.tags?.length > 2) {
-        const keywords = course?.tags.split(",");
-        metadata.keywords.push(...keywords);
-      } else {
-        const titleKeywords = course?.title
-          ?.split(" ")
-          ?.filter((kw) => kw.length > 3);
-        metadata.keywords.push(...titleKeywords);
-      }
-      metadata.other = {
-        "twitter:image": course?.coverPhotoUrl || courseCoverUrl || "",
-        "twitter:card": "summary_large_image",
-        "twitter:title": metadata.title,
-        "twitter:description": metadata.description,
-        "og:title": metadata.title,
-        "og:description": metadata.description,
-        "og:url": `${host}/courses/${courseId}`,
-        "og:image": course?.coverPhotoUrl || courseCoverUrl || "",
-        "og:type": "website",
-        "og:site_name": websiteName,
-        "og:locale": "en_US",
-      };
+
+    // Enhance keywords with course tags if available
+    if (course?.tags?.length > 0) {
+      const tagKeywords = course.tags.split(",").map(tag => tag.trim());
+      metadata.keywords.push(...tagKeywords);
     }
+
+    // Remove duplicates from keywords and limit to reasonable length
+    metadata.keywords = [...new Set(metadata.keywords)]
+      .filter(kw => kw && kw.length > 2)
+      .slice(0, 10);
+
     return metadata;
   } catch (error) {
-    console.log("error occured")
+    console.error("Failed to generate course metadata:", error);
+    // Fallback metadata
+    const host = await hostname();
+    return {
+      title: `Course - ${websiteName}`,
+      description: "Explore this course at Sukunlife.",
+      alternates: {
+        canonical: `${host}/courses/${p?.courseId || ""}`,
+      },
+    };
   }
-
-
 }
