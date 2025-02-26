@@ -56,7 +56,7 @@ const CourseCard = ({ course }) => {
       whileHover="hover"
     >
       {/* Image Section with Overlay */}
-      <div className="relative w-80 h-56 overflow-hidden group">
+      <div className="relative w-80 h-56 overflow-hidden group ">
         <Image
           width={600}
           height={400}
@@ -68,14 +68,13 @@ const CourseCard = ({ course }) => {
           blurDataURL={fallbackBlurDataURL}
           onError={() => setImageError(true)}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 to-transparent opacity-0 group-active:opacity-100 group-focus:opacity-100   group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* "What You'll Learn" Overlay */}
         <motion.div
-          className="absolute top-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 shadow-lg p-4 z-10 hidden group-hover:block border-t border-indigo-200 dark:border-indigo-900"
+          className="absolute top-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 shadow-lg p-4 z-10 hidden group-active:block group-hover:block border-t border-indigo-200 dark:border-indigo-900"
           variants={overlayVariants}
-          initial="hidden"
-          whileHover="visible"
+
         >
           <h3 className="text-md font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
             What You'll Learn

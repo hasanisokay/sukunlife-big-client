@@ -27,6 +27,7 @@ const TokenRefresh = ({ children, refreshToken = false }) => {
                 dispatch(setCartData(cart));
             }
         } catch {
+            console.log('not refreshed')
         }
     }
     useEffect(() => {
