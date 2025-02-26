@@ -28,7 +28,7 @@ export async function generateMetadata() {
   try {
     const host = await hostname();
     let metadata = {
-      title: `My Orders - ${websiteName}`,
+      title: `My Orders`,
       description: "All orders by user.",
       keywords: ["Dashboard, sukunlife, orders"],
       url: `${host}/dashboard/o`,
