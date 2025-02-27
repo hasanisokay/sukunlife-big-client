@@ -72,7 +72,7 @@ const CourseCard = ({ course }) => {
 
         {/* "What You'll Learn" Overlay */}
         <motion.div
-          className="absolute top-0 left-0 right-0 bg-white/95 dark:bg-gray-800/95 shadow-lg p-4 z-10 hidden group-active:block group-hover:block border-t border-indigo-200 dark:border-indigo-900"
+          className="absolute top-0 left-0 right-0 bottom-1 bg-white/95 dark:bg-gray-800/95 shadow-lg p-4 z-10 hidden group-active:block group-hover:block border-t border-indigo-200 dark:border-indigo-900"
           variants={overlayVariants}
 
         >
@@ -86,7 +86,7 @@ const CourseCard = ({ course }) => {
                   <span className="text-emerald-500 dark:text-emerald-400 mr-2 text-[12px]">
                     ✓
                   </span>
-                  {item.text}
+                  <span className="line-clamp-2">{item.text}</span>
                 </li>
               ))
             ) : (
