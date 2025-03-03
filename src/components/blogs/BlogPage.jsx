@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import LoadMoreButton from "../ui/btn/LoadMoreButton";
 import SingleBlogCard from "./SingleBlogCard";
 
-const BlogPage = ({ b, limit, page }) => {
+const BlogPage = ({ b, page }) => {
     const [blogs, setBlogs] = useState(b.blogs);
     const memorizedBlogs = useMemo(() => blogs, [blogs])
     useEffect(() => {

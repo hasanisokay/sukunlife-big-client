@@ -40,6 +40,9 @@ const AppointmentCard = ({ appointment, isSelected, onSelect }) => {
                     <span className="font-medium">Date:</span> {appointment?.date}
                 </p>
                 <p className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium">Consultant:</span> {appointment?.consultant ||"any"}
+                </p>
+                <p className="text-gray-700 dark:text-gray-300">
                     <span className="font-medium">Time:</span> {convertTo12HourFormat(appointment?.time)}
                 </p>
                 <p className="text-gray-700 dark:text-gray-300">
