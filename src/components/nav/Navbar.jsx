@@ -224,7 +224,10 @@ const Navbar = () => {
                 Courses
               </Link>
               <Link href="/book-appointment" className={getLinkClass("/book-appointment")}>
-                Book Appointment
+                Appointment
+              </Link>
+              <Link href="/resources" className={getLinkClass("/resources")}>
+                Resources
               </Link>
               <Link href="/blog" className={getLinkClass("/blog")}>
                 Blog
@@ -334,6 +337,9 @@ const Navbar = () => {
                   </Link>
                   <Link href="/blog" className={getLinkClass("/blog")}>
                     Blog
+                  </Link>
+                  <Link href="/resources" className={getLinkClass("/resources")}>
+                    Resources
                   </Link>
                   {user ? (
                     <>

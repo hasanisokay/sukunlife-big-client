@@ -11,7 +11,7 @@ const PaginationDefault = ({ p, totalPages }) => {
     const router = useRouter();
     const renderPageNumbers = () => {
         const pages = [];
-        for (let i = 1; i <= totalPages; i++) {
+        for (let i = 1; i < totalPages; i++) {
             if (i === totalPages || i === 1 || Math.abs(page - i) < 3 || Math.abs(totalPages - i) < 2) {
                 pages.push(
                     <div key={i}>
@@ -49,7 +49,7 @@ const PaginationDefault = ({ p, totalPages }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
     return (
-        <div className="flex bg-inherit flex-wrap h-auto mt-4 mb-1 items-center mx-auto">
+        <div className="flex bg-inherit flex-wrap h-auto mt-4 mb-1 items-center mx-auto max-w-full">
             { renderPageNumbers()}
         </div>
     );

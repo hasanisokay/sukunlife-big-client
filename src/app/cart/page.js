@@ -1,4 +1,4 @@
-import courseCover from "@/../public/images/cart.jpg";
+import cartCover from "@/../public/images/cart.jpg";
 import CartPage from "@/components/cart/CartPage";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
@@ -12,7 +12,7 @@ export default page;
 export async function generateMetadata({ params }) {
   try {
     const host = await hostname();
-    const cartCoverUrl = `${host}${courseCover.src}`;
+    const cartCoverUrl = `${host}${cartCover.src}`;
 
     const metadata = {
       title: `Shopping Cart`,

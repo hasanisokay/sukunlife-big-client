@@ -46,14 +46,14 @@ const AdminSidebar = () => {
     };
 
     return (
-        <div 
-        className={`${isSidebarOpen ? "w-full z-10 md:min-w-64 md:w-64 md:relative fixed md:min-h-full min-h-fit bg-gray-200 dark:bg-gray-800":"max-w-0 md:w-0 h-0 min-h-0 max-h-0 bg-none"}`}
+        <div
+            className={`${isSidebarOpen ? "w-full z-10 md:min-w-64 md:w-64 md:relative fixed md:min-h-full min-h-fit bg-gray-200 dark:bg-gray-800" : "max-w-0 md:w-0 h-0 min-h-0 max-h-0 bg-none"}`}
         >
             {!isSidebarOpen && <button
                 onClick={toggleSidebar}
                 className="fixed opacity-30 hover:opacity-100"
             >
-                <SidebarSVG transform={false}/>
+                <SidebarSVG transform={false} />
             </button>}
             <nav
                 className={`bg-gray-200 dark:bg-gray-800 p-4 overflow-y-auto space-y-4 fixed left-0 h-[calc(100vh-70px)]  md:w-64 w-full z-50 transform  transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -82,6 +82,20 @@ const AdminSidebar = () => {
                             <Link href="/dashboard/shop" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/shop")}`}>All Items</Link>
                             <Link href="/dashboard/shop/add" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/shop/add")}`}>Add Items</Link>
 
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <button
+                        onClick={() => toggleMenu('resources')}
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+                    >
+                        Resources
+                    </button>
+                    {activeMenu === 'resources' && (
+                        <div className="ml-4 space-y-2">
+                            <Link href="/dashboard/resources" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/resources")}`}>All Resources</Link>
+                            <Link href="/dashboard/resources/add" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/resources/add")}`}>Add Resource</Link>
                         </div>
                     )}
                 </div>
@@ -118,7 +132,10 @@ const AdminSidebar = () => {
                 </div>
 
                 <div>
-                <Link href="/dashboard/users" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/users")}`}>Users</Link>
+                    <Link href="/dashboard/users" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/users")}`}>Users</Link>
+                </div>
+                <div>
+                    <Link href="/dashboard/settings" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/settings")}`}>Settings</Link>
                 </div>
 
                 <div>
