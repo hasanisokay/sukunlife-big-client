@@ -2,13 +2,34 @@ import VideoPage from "@/components/resources/VideoPage";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import videoCover from "@/../public/images/video.jpg";
+import PaginationDefault from "@/components/paginations/PaginationDefault";
+import getResources from "@/utils/getResources.mjs";
+import NotFound from "@/components/not-found/NotFound";
 
-const page = () => {
-    return <VideoPage />
+const videoPage = async ({ searchParams }) => {
+  try {
+    const s = await searchParams;
+    const page = s?.page || 1;
+    const limit = s?.limit || 20;
+    const keyword = s?.keyword || "";
+    const sort = s?.sort || "newest";
+    const videoData = await getResources(page, limit, keyword, sort, "video");
+    if (videoData?.status === 200) {
+      return (
+        <div className="overflow-hidden">
+          <VideoPage videos={videoData?.resources} />
+          <PaginationDefault p={page} totalPages={videoData?.totalPages} />
+        </div>
+      );
+    } else {
+      return <NotFound />;
+    }
+  } catch {
+    return <NotFound />;
+  }
 };
 
-export default page;
-
+export default videoPage;
 
 export async function generateMetadata() {
   try {
@@ -62,7 +83,7 @@ export async function generateMetadata() {
 
     // Remove duplicates and limit keywords
     metadata.keywords = [...new Set(metadata.keywords)]
-      .filter(kw => kw && kw.length > 2)
+      .filter((kw) => kw && kw.length > 2)
       .slice(0, 10);
 
     return metadata;

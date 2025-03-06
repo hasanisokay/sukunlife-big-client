@@ -2,12 +2,33 @@ import AudioPage from "@/components/resources/AudioPage";
 import hostname from "@/constants/hostname.mjs";
 import audioCover from "@/../public/images/audio.jpg";
 import { websiteName } from "@/constants/names.mjs";
-const page = async() => {
-    return <AudioPage />
+import NotFound from "@/components/not-found/NotFound";
+import getResources from "@/utils/getResources.mjs";
+import PaginationDefault from "@/components/paginations/PaginationDefault";
+const audioPage = async ({ searchParams }) => {
+  try {
+    const s = await searchParams;
+    const page = s?.page || 1;
+    const limit = s?.limit || 20;
+    const keyword = s?.keyword || "";
+    const sort = s?.sort || "newest";
+    const audiodata = await getResources(page, limit, keyword, sort, "audio");
+    if (audiodata?.status === 200) {
+      return (
+        <div className="overflow-hidden">
+          <AudioPage audios={audiodata?.resources} />
+          <PaginationDefault p={page} totalPages={audiodata?.totalPages} />
+        </div>
+      );
+    } else {
+      return <NotFound />;
+    }
+  } catch {
+    return <NotFound />;
+  }
 };
 
-export default page;
-
+export default audioPage;
 
 export async function generateMetadata() {
   try {
@@ -61,7 +82,7 @@ export async function generateMetadata() {
 
     // Remove duplicates and limit keywords
     metadata.keywords = [...new Set(metadata.keywords)]
-      .filter(kw => kw && kw.length > 2)
+      .filter((kw) => kw && kw.length > 2)
       .slice(0, 10);
 
     return metadata;
