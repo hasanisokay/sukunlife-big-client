@@ -20,7 +20,7 @@ const pdfPage = async ({ searchParams }) => {
           <PaginationDefault p={page} totalPages={pdfData?.totalPages} />
         </div>
       );
-    } else if (pdfData.status === 404) {
+    } else if (pdfData?.status === 404) {
       <p className="text-center mt-10">No pdf found.</p>;
     } else {
       return <NotFound />;

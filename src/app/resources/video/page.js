@@ -21,6 +21,8 @@ const videoPage = async ({ searchParams }) => {
           <PaginationDefault p={page} totalPages={videoData?.totalPages} />
         </div>
       );
+    } else if (videoData?.status === 404) {
+      <p className="text-center mt-10">No video found.</p>;
     } else {
       return <NotFound />;
     }

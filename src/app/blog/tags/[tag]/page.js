@@ -23,7 +23,7 @@ const singleTagPage = async ({ params, searchParams }) => {
     if (blogs?.status === 200) {
       return (
         <>
-          <BlogPage b={blogs} limit={limit} page={page} />
+          <BlogPage b={blogs} limit={limit} page={page} selectedTag={decodeURIComponent(tag)} />
         </>
       );
     } else {

@@ -20,7 +20,10 @@ const audioPage = async ({ searchParams }) => {
           <PaginationDefault p={page} totalPages={audiodata?.totalPages} />
         </div>
       );
-    } else {
+    } else if (audiodata?.status === 404) {
+      <p className="text-center mt-10">No audio found.</p>;
+    }
+    else {
       return <NotFound />;
     }
   } catch {

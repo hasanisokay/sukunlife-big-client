@@ -16,7 +16,6 @@ const publicBlogPage = async ({ searchParams }) => {
     const skip = 0;
 
     const blogs = await getAllBlog(page, limit, keyword, tags, sort, skip);
-    console.log(blogs)
     if (blogs?.status === 200) {
       return (
         <>

@@ -2,9 +2,9 @@
 
 import { SERVER } from "@/constants/urls.mjs";
 
-const getTopReviews = async () => {
+const getTopCourses = async () => {
 try {
-    const res = await fetch(`${SERVER}/api/public/top-reviews`,{
+    const res = await fetch(`${SERVER}/api/public/top-courses?limit=10`,{
         next: { revalidate: 3600 },
       });
     const data = await res.json();
@@ -14,4 +14,4 @@ try {
   }
 };
 
-export default getTopReviews;
+export default getTopCourses;
