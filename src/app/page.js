@@ -10,9 +10,7 @@ const page = async () => {
   let topCourses;
   let recentBlogs;
   try {
-    const res = await fetch(`${SERVER}/api/public/top-sold-items?limit=10`, {
-      next: { revalidate: 3600 },
-    });
+    const res = await fetch(`${SERVER}/api/public/top-sold-items?limit=10`);
     const data = await res.json();
     if (data.status === 200) {
       topProducts = data.data;
