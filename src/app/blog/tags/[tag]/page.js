@@ -6,6 +6,7 @@ import React from "react";
 import blogCover from "@/../public/images/blog.jpg";
 import hostname from "@/constants/hostname.mjs";
 import capitalize from "@/utils/capitalize.mjs";
+import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 
 const singleTagPage = async ({ params, searchParams }) => {
   try {
@@ -20,10 +21,11 @@ const singleTagPage = async ({ params, searchParams }) => {
     if (!tag) return <NotFound />;
 
     const blogs = await getAllBlog(page, limit, keyword, tag, sort, skip);
+    const tags = await getAllBlogTags();
     if (blogs?.status === 200) {
       return (
         <>
-          <BlogPage b={blogs} limit={limit} page={page} selectedTag={decodeURIComponent(tag)} />
+          <BlogPage b={blogs} tags={tags?.tags} limit={limit} page={page} selectedTag={decodeURIComponent(tag)} />
         </>
       );
     } else {

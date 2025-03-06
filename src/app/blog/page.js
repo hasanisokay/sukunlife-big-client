@@ -4,6 +4,7 @@ import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import getAllBlog from "@/utils/getAllBlog.mjs";
 import blogCover from "@/../public/images/blog.jpg";
+import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 
 const publicBlogPage = async ({ searchParams }) => {
   try {
@@ -16,10 +17,12 @@ const publicBlogPage = async ({ searchParams }) => {
     const skip = 0;
 
     const blogs = await getAllBlog(page, limit, keyword, tags, sort, skip);
+    const tagsData = await getAllBlogTags();
+    
     if (blogs?.status === 200) {
       return (
         <>
-          <BlogPage b={blogs} limit={limit} page={page} />
+          <BlogPage b={blogs} tags={tagsData?.tags} limit={limit} page={page} />
         </>
       );
     } else {

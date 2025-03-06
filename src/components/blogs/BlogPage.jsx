@@ -13,21 +13,10 @@ const WaveSVG = () => (
   </svg>
 );
 
-const BlogPage = ({ b, page , selectedTag }) => {
+const BlogPage = ({ b, page , selectedTag, tags }) => {
 
   const [blogs, setBlogs] = useState(b.blogs);
   const memorizedBlogs = useMemo(() => blogs, [blogs]);
-  const [tags, setTags] = useState(null);
-
-  const predefinedTags = [
-    "রুকইয়াহ",
-  ];
-  useEffect(() => {
-    (async () => {
-      const t = await getAllBlogTags();
-      setTags(t?.tags || predefinedTags);
-    })();
-  }, []);
 
   useEffect(() => {
     setBlogs(b?.blogs);
@@ -67,7 +56,7 @@ const BlogPage = ({ b, page , selectedTag }) => {
               Explore by Tags
             </h3>
             <div className="flex flex-wrap justify-center gap-3">
-              {tags.map((tag, index) => (
+              {tags?.map((tag, index) => (
                 <Link key={index} href={`/blog/tags/${encodeURIComponent(tag)}`} >
                 <span
                   className={`
