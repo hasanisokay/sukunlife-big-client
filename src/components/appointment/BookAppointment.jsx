@@ -11,6 +11,7 @@ import { SERVER } from "@/constants/urls.mjs";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import { useRouter } from "next/navigation";
 import convertTo12HourFormat from "@/utils/convertTo12HourFormat.mjs";
+import { TakaSVG } from "../svg/SvgCollection";
 
 // Zod schema
 const schema = z
@@ -19,7 +20,7 @@ const schema = z
         mobile: z.string().min(11, { message: "Mobile number must be at least 11 digits" }),
         service: z.string().min(1, { message: "Service is required" }),
         address: z.string().min(1, { message: "Address is required" }),
-        date: z.string().min(4, { message: "Date is required" }), // Expecting a string
+        date: z.string().min(4, { message: "Date is required" }),
         time: z.string().min(1, { message: "Time is required" }),
         consultant: z.string().optional(),
         problem: z.string().min(1, { message: "Problem description is required" }),
@@ -41,10 +42,10 @@ const schema = z
     );
 
 const serviceOptions = [
-    { value: "ruqyah", label: "Ruqyah", price: "3500৳", description: "Traditional spiritual healing session" },
-    { value: "hijamah", label: "Hijamah", price: "2000৳", description: "Therapeutic cupping therapy" },
-    { value: "counselling", label: "Counselling", price: "700৳", description: "Professional guidance and support" },
-    { value: "emergency_ruqyah", label: "Emergency Ruqyah (Online)", price: "5000৳", description: "Urgent online spiritual session" },
+    { value: "ruqyah", label: "Ruqyah", price: "3500", description: "Traditional spiritual healing session" },
+    { value: "hijamah", label: "Hijamah", price: "2000", description: "Therapeutic cupping therapy" },
+    { value: "counselling", label: "Counselling", price: "700", description: "Professional guidance and support" },
+    { value: "emergency_ruqyah", label: "Emergency Ruqyah (Online)", price: "5000", description: "Urgent online spiritual session" },
 ];
 
 const BookAppointment = ({ dates, status }) => {
@@ -70,7 +71,7 @@ const BookAppointment = ({ dates, status }) => {
     const [selectedConsultant, setSelectedConsultant] = useState("");
     const [showTransactionField, setShowTransactionField] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
-    const [flippedCard, setFlippedCard] = useState(null); // Track flipped card
+    const [hoveredCard, setHoveredCard] = useState(null);
     const user = useSelector((state) => state.user.userData);
     const router = useRouter();
 
@@ -120,16 +121,16 @@ const BookAppointment = ({ dates, status }) => {
         const year = dateObj.getFullYear();
         const month = String(dateObj.getMonth() + 1).padStart(2, "0");
         const day = String(dateObj.getDate()).padStart(2, "0");
-        const formattedDate = `${day}-${month}-${year}`; // Ensure string format: "dd-mm-yyyy"
+        const formattedDate = `${day}-${month}-${year}`;
         const filteredData = dates?.filter((d) => d.date === formattedDate)?.[0] || {};
         const times = filteredData.times || [];
         const consultants = filteredData.consultants || ["Default Consultant"];
-        setValue("date", formattedDate); // Set as string
+        setValue("date", formattedDate);
         setAvailableTimes(times);
         setAvailableConsultants(consultants);
         setSelectedTime("");
         setSelectedConsultant("");
-        return formattedDate; // Return string for Controller
+        return formattedDate;
     };
 
     const handleTimeClick = (time) => {
@@ -142,14 +143,10 @@ const BookAppointment = ({ dates, status }) => {
         setValue("consultant", consultant);
     };
 
-    const handleCardFlip = (serviceValue) => {
-        setFlippedCard(flippedCard === serviceValue ? null : serviceValue);
-    };
-
     const handleCardSelect = (service) => {
         setSelectedService(service);
         setValue("service", service.value);
-        setFlippedCard(null);
+        setHoveredCard(null);
     };
 
     if (status !== 200) {
@@ -165,7 +162,6 @@ const BookAppointment = ({ dates, status }) => {
     }
 
     return (
-
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-teal-50 dark:from-indigo-900 dark:via-gray-900 dark:to-teal-900 text-gray-800 dark:text-gray-100">
             <WaveSVG />
             <motion.div
@@ -181,47 +177,49 @@ const BookAppointment = ({ dates, status }) => {
                     Book an Appointment
                 </h2>
 
-
                 {!selectedService ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         {serviceOptions.map((service) => (
                             <div
                                 key={service.value}
-                                className="relative w-full h-52 cursor-pointer"
+                                className="relative w-full h-32 cursor-pointer"
+                                onMouseEnter={() => setHoveredCard(service.value)}
+                                onMouseLeave={() => setHoveredCard(null)}
+                                onClick={() => handleCardSelect(service)}
                             >
                                 <motion.div
                                     className="relative w-full h-full"
-                                    whileHover={{ scale: 1.05 }} // Scale on hover for desktop
-                                    whileTap={{ scale: 0.95 }} // Feedback on tap
-                                    onClick={() => handleCardFlip(service.value)} // Flip only on click/tap
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
                                     transition={{ duration: 0.3 }}
                                 >
                                     <motion.div
                                         className="absolute inset-0"
-                                        animate={{ rotateY: flippedCard === service.value ? 180 : 0 }}
+                                        animate={{ rotateY: hoveredCard === service.value ? 180 : 0 }}
                                         transition={{ duration: 0.5 }}
                                         style={{ transformStyle: "preserve-3d" }}
                                     >
-                                        {/* Front Side: Only Name */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-teal-500 dark:from-indigo-600 dark:to-teal-600 rounded-lg flex items-center justify-center text-white text-xl font-semibold text-center p-4" style={{ backfaceVisibility: "hidden" }}>
-                                            {service.label}
+                                        {/* Front Side */}
+                                        <div
+                                            className="absolute inset-0 rounded-lg flex items-center justify-center text-white text-lg font-semibold text-center p-4"
+                                            style={{
+                                                background: "linear-gradient(to bottom right, #2e3e23, #4a5e3a)",
+                                                backfaceVisibility: "hidden",
+                                            }}
+                                        >
+                                            <span className="line-clamp-2">{service.label}</span>
                                         </div>
-                                        {/* Back Side: Price, Description, and Book Now */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-teal-600 dark:from-indigo-700 dark:to-teal-700 rounded-lg flex flex-col items-center justify-center text-white p-4" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
-
-                                            <p className="text-lg font-semibold">{service.price}</p>
-                                            <p className="text-sm text-center">{service.description}</p>
-                                            <motion.button
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.9 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Prevent flip toggle
-                                                    handleCardSelect(service);
-                                                }}
-                                                className="mt-2 px-4 py-2 bg-white text-indigo-600 rounded-lg font-medium hover:bg-gray-100 dark:bg-gray-200 dark:text-indigo-800 dark:hover:bg-gray-300"
-                                            >
-                                                Book Now
-                                            </motion.button>
+                                        {/* Back Side */}
+                                        <div
+                                            className="absolute inset-0 rounded-lg flex flex-col items-center justify-center text-white p-4"
+                                            style={{
+                                                background: "linear-gradient(to bottom right, #2e3e23, #4a5e3a)",
+                                                backfaceVisibility: "hidden",
+                                                transform: "rotateY(180deg)",
+                                            }}
+                                        >
+                                            <p className="text-base font-semibold mb-1 flex items-center"><TakaSVG color={"#fff"}/> {service.price}</p>
+                                            <p className="text-sm text-center line-clamp-2 mb-2">{service.description}</p>
                                         </div>
                                     </motion.div>
                                 </motion.div>
@@ -230,13 +228,13 @@ const BookAppointment = ({ dates, status }) => {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center md:flex-row flex-col gap-2 mb-4">
                             <motion.button
                                 type="button"
                                 onClick={() => setSelectedService(null)}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1"
+                                className="text-[#2e3e23] hover:text-[#4a5e3a] dark:text-[#4a5e3a] dark:hover:text-[#2e3e23] flex items-center gap-1"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -256,7 +254,7 @@ const BookAppointment = ({ dates, status }) => {
                             <input
                                 {...register("name")}
                                 type="text"
-                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all"
+                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
                                 placeholder="Enter your name"
                             />
                             {errors.name && (
@@ -272,7 +270,7 @@ const BookAppointment = ({ dates, status }) => {
                             <input
                                 {...register("mobile")}
                                 type="text"
-                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all"
+                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
                                 placeholder="Enter your mobile number"
                             />
                             {errors.mobile && (
@@ -288,7 +286,7 @@ const BookAppointment = ({ dates, status }) => {
                             <input
                                 {...register("address")}
                                 type="text"
-                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all"
+                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
                                 placeholder="Enter your address"
                             />
                             {errors.address && (
@@ -306,8 +304,8 @@ const BookAppointment = ({ dates, status }) => {
                                         labelText={'Select Date'}
                                         availableDates={uniqueDateStrings}
                                         onChangeHandler={(date) => {
-                                            const formattedDate = handleDateChange(date); // Get formatted string
-                                            field.onChange(formattedDate); // Pass string to Controller
+                                            const formattedDate = handleDateChange(date);
+                                            field.onChange(formattedDate);
                                         }}
                                     />
                                 )}
@@ -331,10 +329,11 @@ const BookAppointment = ({ dates, status }) => {
                                             onClick={() => handleTimeClick(time)}
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
-                                            className={`p-2 rounded-lg text-sm font-medium transition-colors ${selectedTime === time
-                                                ? "bg-indigo-500 text-white dark:bg-indigo-600"
-                                                : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                                                }`}
+                                            className={`p-2 rounded-lg text-sm font-medium transition-colors ${
+                                                selectedTime === time
+                                                    ? "bg-[#2e3e23] text-white"
+                                                    : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                                            }`}
                                         >
                                             {convertTo12HourFormat(time)}
                                         </motion.button>
@@ -360,10 +359,11 @@ const BookAppointment = ({ dates, status }) => {
                                             onClick={() => handleConsultantClick(consultant)}
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
-                                            className={`p-2 rounded-lg text-sm font-medium transition-colors ${selectedConsultant === consultant
-                                                ? "bg-indigo-500 text-white dark:bg-indigo-600"
-                                                : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                                                }`}
+                                            className={`p-2 rounded-lg text-sm font-medium transition-colors ${
+                                                selectedConsultant === consultant
+                                                    ? "bg-[#2e3e23] text-white"
+                                                    : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                                            }`}
                                         >
                                             {consultant}
                                         </motion.button>
@@ -382,7 +382,7 @@ const BookAppointment = ({ dates, status }) => {
                             </label>
                             <textarea
                                 {...register("problem")}
-                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all"
+                                className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
                                 placeholder="Describe your problem"
                                 rows={4}
                             />
@@ -405,10 +405,11 @@ const BookAppointment = ({ dates, status }) => {
                                     }}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className={`flex-1 p-3 rounded-lg font-medium transition-colors ${showTransactionField
-                                        ? "bg-indigo-500 text-white hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700"
-                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                        }`}
+                                    className={`flex-1 p-3 rounded-lg font-medium transition-colors ${
+                                        showTransactionField
+                                            ? "bg-[#2e3e23] text-white hover:bg-[#4a5e3a]"
+                                            : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                    }`}
                                 >
                                     Pay 500 TK Now
                                 </motion.button>
@@ -421,10 +422,11 @@ const BookAppointment = ({ dates, status }) => {
                                     }}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className={`flex-1 p-3 rounded-lg font-medium transition-colors ${!showTransactionField
-                                        ? "bg-indigo-500 text-white hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700"
-                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                        }`}
+                                    className={`flex-1 p-3 rounded-lg font-medium transition-colors ${
+                                        !showTransactionField
+                                            ? "bg-[#2e3e23] text-white hover:bg-[#4a5e3a]"
+                                            : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                    }`}
                                 >
                                     Pay Later
                                 </motion.button>
@@ -446,7 +448,7 @@ const BookAppointment = ({ dates, status }) => {
                                     <input
                                         {...register("transactionNumber")}
                                         type="text"
-                                        className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all"
+                                        className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
                                         placeholder="Enter transaction number"
                                     />
                                     {errors.transactionNumber && (
@@ -464,12 +466,12 @@ const BookAppointment = ({ dates, status }) => {
                                 type="checkbox"
                                 {...register("termsAgreed")}
                                 onClick={() => setShowTermsModal(true)}
-                                className="h-4 w-4 text-indigo-600 border-gray-300 rounded dark:border-gray-600"
+                                className="h-4 w-4 text-[#2e3e23] border-gray-300 rounded dark:border-gray-600"
                             />
                             <label className="text-sm text-gray-700 dark:text-gray-300">
                                 I agree to the{" "}
                                 <span
-                                    className="text-indigo-500 hover:underline cursor-pointer dark:text-indigo-400"
+                                    className="text-[#2e3e23] hover:underline cursor-pointer dark:text-[#4a5e3a]"
                                     onClick={() => setShowTermsModal(true)}
                                 >
                                     Terms & Conditions
@@ -485,7 +487,7 @@ const BookAppointment = ({ dates, status }) => {
                             type="submit"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="w-full p-3 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-colors"
+                            className="w-full p-3 bg-[#2e3e23] text-white rounded-lg font-medium hover:bg-[#4a5e3a] transition-colors"
                         >
                             Book Appointment
                         </motion.button>
@@ -534,7 +536,7 @@ const BookAppointment = ({ dates, status }) => {
                                             setValue("termsAgreed", true);
                                             setShowTermsModal(false);
                                         }}
-                                        className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+                                        className="px-4 py-2 bg-[#2e3e23] text-white rounded-lg hover:bg-[#4a5e3a]"
                                     >
                                         Agree
                                     </button>
