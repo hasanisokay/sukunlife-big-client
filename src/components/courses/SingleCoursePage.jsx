@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import addToCart from '../cart/functions/addToCart.mjs';
 import { setCartData } from '@/store/slices/cartSlice';
 import { Flip, toast, ToastContainer } from 'react-toastify';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import courseCover from "@/../public/images/course.jpg";
 
@@ -22,7 +21,6 @@ const SingleCoursePage = ({ course }) => {
     const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
     const [itemAddedToCart, setItemAddedToCart] = useState(false);
     const dispatch = useDispatch()
-    const router = useRouter();
     const user = useSelector((state) => state.user.userData);
     const cart = useSelector((state) => state.cart.cartData);
     const coursesEnrolled = useSelector((state) => state.user.enrolledCourses);
@@ -346,6 +344,26 @@ const SingleCoursePage = ({ course }) => {
                     </motion.div>
                 )}
             </AnimatePresence>
+                  {/* Fixed Cart Icon */}
+                  {cart?.length > 0 && (
+                    <Link href="/cart" passHref>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        className="fixed bottom-8 right-8 bg-[#2e3e23] text-white p-4 rounded-full shadow-lg hover:bg-[#4a5e3b] transition-all duration-300 z-50"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h18l-2 9H5L3 3zm0 0l2 9m0 0l2 6h10l2-6m-8 0h4" />
+                        </svg>
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {cart.length}
+                        </span>
+                      </motion.div>
+                    </Link>
+                  )}
             <ToastContainer transition={Flip} />
         </div>
     );

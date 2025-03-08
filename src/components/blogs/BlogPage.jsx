@@ -8,13 +8,12 @@ import Link from "next/link";
 
 // SVG Decorative Element
 const WaveSVG = () => (
-  <svg className="absolute top-0 left-0 w-full h-32 text-orange-100 dark:text-orange-800" fill="currentColor" viewBox="0 0 1440 120">
+  <svg className="absolute top-0 left-0 w-full h-32 text-green-100 dark:text-green-800" fill="currentColor" viewBox="0 0 1440 120">
     <path d="M1440 0H0v60c200 30 400 60 720 60s520-30 720-60V0z" />
   </svg>
 );
 
-const BlogPage = ({ b, page , selectedTag, tags }) => {
-
+const BlogPage = ({ b, page, selectedTag, tags }) => {
   const [blogs, setBlogs] = useState(b.blogs);
   const memorizedBlogs = useMemo(() => blogs, [blogs]);
 
@@ -23,7 +22,7 @@ const BlogPage = ({ b, page , selectedTag, tags }) => {
   }, [b, selectedTag]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50 dark:from-orange-900 dark:via-gray-900 dark:to-teal-900 text-gray-800 dark:text-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-teal-50 dark:from-green-900 dark:via-gray-900 dark:to-teal-900 text-gray-800 dark:text-gray-100">
       {/* Decorative Wave Background */}
       <WaveSVG />
 
@@ -31,7 +30,7 @@ const BlogPage = ({ b, page , selectedTag, tags }) => {
       <div className="mt-12 space-y-10 relative z-10 px-6">
         {/* Header Section */}
         <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide text-orange-600 dark:text-orange-300 flex items-center justify-center">
+          <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide text-[#2e3e23] dark:text-green-300 flex items-center justify-center">
             <svg className="w-10 h-10 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l5 5v11a2 2 0 01-2 2z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 4v5h5" />
@@ -50,27 +49,27 @@ const BlogPage = ({ b, page , selectedTag, tags }) => {
         {tags && (
           <section className="max-w-4xl mx-auto mb-12">
             <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center justify-center gap-2">
-              <svg className="w-6 h-6 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-[#2e3e23] dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h10M7 11h7m-7 4h10" />
               </svg>
               Explore by Tags
             </h3>
             <div className="flex flex-wrap justify-center gap-3">
               {tags?.map((tag, index) => (
-                <Link key={index} href={`/blog/tags/${encodeURIComponent(tag)}`} >
-                <span
-                  className={`
-                    px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer
-                    ${
-                      selectedTag === tag
-                        ? "bg-gradient-to-r from-orange-500 to-orange-700 text-white shadow-md scale-105 hover:scale-110 hover:shadow-lg dark:from-orange-600 dark:to-orange-800"
-                        : "bg-orange-100 text-orange-600 dark:bg-orange-800 dark:text-orange-200 hover:bg-orange-200 dark:hover:bg-orange-700"
-                    }
-                  `}
-                >
-                  {tag}
-                </span>
-              </Link>
+                <Link key={index} href={`/blog/tags/${encodeURIComponent(tag)}`}>
+                  <span
+                    className={`
+                      px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer
+                      ${
+                        selectedTag === tag
+                          ? "bg-gradient-to-r from-[#2e3e23] to-[#4a5e3b] text-white shadow-md scale-105 hover:scale-110 hover:shadow-lg dark:from-green-600 dark:to-green-800"
+                          : "bg-green-100 text-[#2e3e23] dark:bg-green-800 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-700"
+                      }
+                    `}
+                  >
+                    {tag}
+                  </span>
+                </Link>
               ))}
             </div>
           </section>

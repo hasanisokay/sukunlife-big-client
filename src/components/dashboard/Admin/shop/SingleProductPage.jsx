@@ -22,6 +22,7 @@ import ProductImage from "@/components/home/ProductImage";
 import ImageWithFallback from "./ImageWithFallback";
 
 const SingleProductPage = ({ product }) => {
+      const cartItems = useSelector((state) => state.cart.cartData);
     const [selectedColor, setSelectedColor] = useState(product?.colorVariants[0]);
     const [selectedSize, setSelectedSize] = useState(product?.sizeVariants[0]);
     const [quantity, setQuantity] = useState(1);
@@ -374,6 +375,26 @@ const SingleProductPage = ({ product }) => {
                     </div>
                 </div>
             </div>
+                  {/* Fixed Cart Icon */}
+                  {cartItems?.length > 0 && (
+                    <Link href="/cart" passHref>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        className="fixed bottom-8 right-8 bg-[#2e3e23] text-white p-4 rounded-full shadow-lg hover:bg-[#4a5e3b] transition-all duration-300 z-50"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h18l-2 9H5L3 3zm0 0l2 9m0 0l2 6h10l2-6m-8 0h4" />
+                        </svg>
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                          {cartItems.length}
+                        </span>
+                      </motion.div>
+                    </Link>
+                  )}
             <ToastContainer transition={Flip} />
         </div >
     );

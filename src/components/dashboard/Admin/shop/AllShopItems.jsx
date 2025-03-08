@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -15,12 +14,13 @@ import ProductImage from "@/components/home/ProductImage";
 
 // SVG Decorative Element
 const WaveSVG = () => (
-  <svg className="absolute top-0 left-0 w-full h-32 text-purple-100 dark:text-purple-800" fill="currentColor" viewBox="0 0 1440 120">
+  <svg className="absolute top-0 left-0 w-full h-32 text-green-100 dark:text-green-800" fill="currentColor" viewBox="0 0 1440 120">
     <path d="M1440 0H0v60c200 30 400 60 720 60s520-30 720-60V0z" />
   </svg>
 );
 
 const AllShopItems = ({ p, totalCount }) => {
+  const cartItems = useSelector((state) => state.cart.cartData);
   const [products, setProducts] = useState(p);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -137,7 +137,7 @@ const AllShopItems = ({ p, totalCount }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-teal-50 dark:from-purple-900 dark:via-gray-900 dark:to-teal-900 text-gray-800 dark:text-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-teal-50 dark:from-green-900 dark:via-gray-900 dark:to-teal-900 text-gray-800 dark:text-gray-100">
       {/* Decorative Wave Background */}
       <WaveSVG />
 
@@ -145,17 +145,17 @@ const AllShopItems = ({ p, totalCount }) => {
       <div className="max-w-7xl mx-auto p-8 relative z-10" ref={containerRef}>
         {/* Header Section */}
         <header className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide text-purple-600 dark:text-purple-300 flex items-center justify-center">
+          <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide text-[#2e3e23] dark:text-green-300 flex items-center justify-center">
             <svg className="w-10 h-10 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h18l-2 9H5L3 3zm0 0l2 9m0 0l2 6h10l2-6m-8 0h4" />
             </svg>
-            Shop All Products
+            Products
           </h1>
           <p className="text-lg md:text-xl mt-4 text-gray-600 dark:text-gray-300 flex items-center justify-center">
             <svg className="w-6 h-6 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432 .917-4.995 2.638-4.995 5.458v10.391h-5.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433 .917-4.996 2.638-4.996 5.458v10.391h-5z" />
             </svg>
-            Discover our curated collection of unique products.
+            Discover our collection of unique products.
           </p>
         </header>
 
@@ -175,7 +175,7 @@ const AllShopItems = ({ p, totalCount }) => {
                   animate="visible"
                   whileHover="hover"
                   custom={index}
-                  className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300 border border-purple-100 dark:border-purple-800 group"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl overflow-hidden transition-all duration-300 border border-green-100 dark:border-green-800 group"
                 >
                   {/* Image Container */}
                   <div className="relative h-56 overflow-hidden">
@@ -190,7 +190,7 @@ const AllShopItems = ({ p, totalCount }) => {
                   {/* Product Details */}
                   <div className="p-5 flex flex-col justify-between h-64">
                     <div>
-                      <h2 className="min-h-[56px] text-lg font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-200">
+                      <h2 className="min-h-[56px] text-lg font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-[#2e3e23] dark:group-hover:text-green-400 transition-colors duration-200">
                         {product.title}
                       </h2>
                       <div className="mt-3">
@@ -213,7 +213,7 @@ const AllShopItems = ({ p, totalCount }) => {
                           e.preventDefault();
                           handleAddToCart(product, false);
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300"
+                        className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-[#2e3e23] to-[#4a5e3b] text-white rounded-lg hover:from-[#4a5e3b] hover:to-[#2e3e23] transition-all duration-300"
                       >
                         <AddCartSVG className="w-5 h-5" /> Add
                       </motion.button>
@@ -243,7 +243,7 @@ const AllShopItems = ({ p, totalCount }) => {
             exit={{ opacity: 0 }}
             className="flex justify-center mt-12"
           >
-            <div className="w-8 h-8 border-4 border-purple-500 rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-4 border-[#2e3e23] rounded-full animate-spin"></div>
             <p className="ml-4 text-gray-600 dark:text-gray-400">Loading more products...</p>
           </motion.div>
         )}
@@ -268,6 +268,27 @@ const AllShopItems = ({ p, totalCount }) => {
       <svg className="absolute bottom-0 left-0 w-full h-32 text-teal-100 dark:text-teal-800" fill="currentColor" viewBox="0 0 1440 120">
         <path d="M1440 120H0V60C200 30 400 0 720 0s520 30 720 60v60z" />
       </svg>
+
+      {/* Fixed Cart Icon */}
+      {cartItems?.length > 0 && (
+        <Link href="/cart" passHref>
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            className="fixed bottom-8 right-8 bg-[#2e3e23] text-white p-4 rounded-full shadow-lg hover:bg-[#4a5e3b] transition-all duration-300 z-50"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h18l-2 9H5L3 3zm0 0l2 9m0 0l2 6h10l2-6m-8 0h4" />
+            </svg>
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {cartItems.length}
+            </span>
+          </motion.div>
+        </Link>
+      )}
 
       <ToastContainer transition={Flip} />
     </div>
