@@ -4,6 +4,8 @@ import getAllBlog from "@/utils/getAllBlog.mjs";
 import getTopCourses from "@/utils/gettopCourses.mjs";
 import getTopReviews from "@/utils/getTopReviews.mjs";
 
+export const revalidate = 3600;
+
 const page = async () => {
   let topProducts;
   let topReviews;
