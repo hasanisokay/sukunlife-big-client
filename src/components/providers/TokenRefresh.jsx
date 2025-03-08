@@ -18,13 +18,24 @@ const TokenRefresh = ({ children, refreshToken = false }) => {
                 credentials: "include",
             });
             const data = await res.json()
-            dispatch(setUserData(data?.user))
-            dispatch(setCartData(data?.user?.cart));
-            dispatch(setEnrolledCourses(data?.user?.enrolledCourses));
+            if (data?.status === 200) {
+                const accessToken = data?.accessToken;
+                await fetch("/api/refresh", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ accessToken })
+                })
+                dispatch(setUserData(data?.user))
+                dispatch(setCartData(data?.user?.cart));
+                dispatch(setEnrolledCourses(data?.user?.enrolledCourses));
 
-            if (data?.user?.cart?.length < 1 || data.status !== 200) {
-                let cart = JSON.parse(localStorage.getItem("cart")) || [];
-                dispatch(setCartData(cart));
+                if (data?.user?.cart?.length < 1 || data.status !== 200) {
+                    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+                    dispatch(setCartData(cart));
+                }
             }
         } catch {
             console.log('not refreshed')
