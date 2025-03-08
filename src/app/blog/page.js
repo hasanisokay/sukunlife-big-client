@@ -6,6 +6,8 @@ import getAllBlog from "@/utils/getAllBlog.mjs";
 import blogCover from "@/../public/images/blog.jpg";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 
+export const revalidate = 360;
+
 const publicBlogPage = async ({ searchParams }) => {
   try {
     const s = await searchParams;

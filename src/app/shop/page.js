@@ -6,6 +6,8 @@ import getAllProducts from "@/utils/getAllProducts.mjs";
 import shopCover from "@/../public/images/shop.jpg";
 import { websiteName } from "@/constants/names.mjs";
 
+export const revalidate = 360;
+
 const shopPage = async ({ searchParams }) => {
   try {
     const s = await searchParams;

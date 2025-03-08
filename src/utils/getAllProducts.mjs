@@ -11,7 +11,7 @@ const getAllProducts = async (
 ) => {
   try {
     const res = await fetch(
-      `${SERVER}/api/public/products?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}&&skip=${skip}&&category=${category}`
+      `${SERVER}/api/public/products?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}&&skip=${skip}&&category=${category}`,{next:{revalidate:360}}
     );
     const data = await res.json();
     return data;

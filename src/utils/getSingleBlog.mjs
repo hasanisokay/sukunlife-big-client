@@ -8,12 +8,13 @@ const getSingleBlog = async (blogUrl) => {
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   try {
     const res = await fetch(`${SERVER}/api/public/blog/${blogUrl}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${accessToken?.value || ""}`, 
-        'Content-Type': 'application/json', 
+        Authorization: `Bearer ${accessToken?.value || ""}`,
+        "Content-Type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
+      next: { revalidate: 3600 },
     });
     const data = await res.json();
     return data;
