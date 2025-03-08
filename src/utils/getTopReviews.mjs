@@ -4,7 +4,7 @@ import { SERVER } from "@/constants/urls.mjs";
 
 const getTopReviews = async () => {
 try {
-    const res = await fetch(`${SERVER}/api/public/top-reviews`);
+    const res = await fetch(`${SERVER}/api/public/top-reviews`,{next:{revalidate:3600}});
     const data = await res.json();
     return data;
   } catch {

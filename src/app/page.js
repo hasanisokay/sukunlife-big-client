@@ -7,21 +7,20 @@ import getTopReviews from "@/utils/getTopReviews.mjs";
 export const revalidate = 3600;
 
 const page = async () => {
-  let topProducts;
-  let topReviews;
-  let topCourses;
-  let recentBlogs;
   try {
-    const res = await fetch(`${SERVER}/api/public/top-sold-items?limit=10`);
-    const data = await res.json();
-    if (data.status === 200) {
-      topProducts = data.data;
-    }
-    topReviews = await getTopReviews();
-    topCourses = await getTopCourses();
-    recentBlogs = await getAllBlog(1, 5);
-  } catch {
-  } finally {
+    const [topProductsRes, topReviews, topCourses, recentBlogs] =
+      await Promise.all([
+        fetch(`${SERVER}/api/public/top-sold-items?limit=10`, {
+          next: { revalidate: 3600 },
+        }).then((res) => res.json()),
+        getTopReviews(),
+        getTopCourses(),
+        getAllBlog(1, 5),
+      ]);
+
+    const topProducts =
+      topProductsRes?.status === 200 ? topProductsRes.data : [];
+
     return (
       <Homepage
         recentBlogs={recentBlogs?.blogs}
@@ -31,6 +30,9 @@ const page = async () => {
         courseReviews={topReviews?.courseReviews}
       />
     );
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return <Homepage />;
   }
 };
 
