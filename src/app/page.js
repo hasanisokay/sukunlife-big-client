@@ -14,9 +14,11 @@ const page = async () => {
       topCourses,
       recentBlogs,
     ] = await Promise.all([
-      fetch(`${SERVER}/api/public/top-sold-items?limit=10`, {
-        next: { revalidate: 3600 },
-      }).then((res) => res.json()),
+      fetch(`${SERVER}/api/public/top-sold-items?limit=10`, 
+      //   {
+      //   next: { revalidate: 3600 },
+      // }
+    ).then((res) => res.json()),
       getTopReviews(),
       getTopCourses(),
       getAllBlog(1, 5),
