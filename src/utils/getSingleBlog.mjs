@@ -14,7 +14,7 @@ const getSingleBlog = async (blogUrl) => {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      next: { revalidate: 3600 },
+      // next: { revalidate: 3600 },
     });
     const data = await res.json();
     return data;
