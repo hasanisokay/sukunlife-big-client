@@ -6,7 +6,6 @@ import PaginationDefault from "@/components/paginations/PaginationDefault";
 import NotFound from "@/components/not-found/NotFound";
 import getResources from "@/utils/getResources.mjs";
 
-export const revalidate = 360;
 
 const pdfPage = async ({ searchParams }) => {
   try {

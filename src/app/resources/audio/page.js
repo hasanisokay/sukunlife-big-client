@@ -6,7 +6,7 @@ import NotFound from "@/components/not-found/NotFound";
 import getResources from "@/utils/getResources.mjs";
 import PaginationDefault from "@/components/paginations/PaginationDefault";
 
-export const revalidate = 360;
+
 
 const audioPage = async ({ searchParams }) => {
   try {

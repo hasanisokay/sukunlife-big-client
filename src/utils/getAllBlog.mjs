@@ -23,7 +23,6 @@ const getAllBlog = async (
           "Content-Type": "application/json",
         },
         credentials: "include",
-        // next: { revalidate: 360 },
       }
     );
     const data = await res.json();

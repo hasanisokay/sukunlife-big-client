@@ -6,7 +6,6 @@ import PaginationDefault from "@/components/paginations/PaginationDefault";
 import getResources from "@/utils/getResources.mjs";
 import NotFound from "@/components/not-found/NotFound";
 
-export const revalidate = 360;
 
 const videoPage = async ({ searchParams }) => {
   try {

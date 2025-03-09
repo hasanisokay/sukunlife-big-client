@@ -4,7 +4,6 @@ const getAllBlogTags = async () => {
   try {
     const res = await fetch(`${SERVER}/api/public/all-blog-tags`, {
       credentials: "include",
-      next: { revalidate: 360 },
     });
     const data = await res.json();
     return data;

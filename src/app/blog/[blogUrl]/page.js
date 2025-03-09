@@ -5,7 +5,7 @@ import { websiteName } from "@/constants/names.mjs";
 import getSingleBlog from "@/utils/getSingleBlog.mjs";
 import blogCover from "@/../public/images/blog.jpg";
 
-export const revalidate = 3600;
+
 
 const singleBlogPage = async ({ params }) => {
   try {

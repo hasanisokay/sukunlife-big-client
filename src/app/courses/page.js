@@ -5,7 +5,7 @@ import getAllCoursePublic from "@/utils/getAllCoursePublic.mjs";
 import courseCover from "@/../public/images/course.jpg";
 import { websiteName } from "@/constants/names.mjs";
 
-export const revalidate = 3600;
+
 
 const coursesPage = async ({ searchParams }) => {
   try {

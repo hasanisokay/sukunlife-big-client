@@ -5,7 +5,7 @@ import productCover from "@/../public/images/product.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 
-export const revalidate = 360;
+
 
 const page = async ({ params }) => {
   try {

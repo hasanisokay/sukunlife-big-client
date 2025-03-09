@@ -4,7 +4,7 @@ import getAllBlog from "@/utils/getAllBlog.mjs";
 import getTopCourses from "@/utils/gettopCourses.mjs";
 import getTopReviews from "@/utils/getTopReviews.mjs";
 
-// export const revalidatdsadae = 3600;
+
 
 const page = async () => {
   try {
@@ -15,9 +15,6 @@ const page = async () => {
       recentBlogs,
     ] = await Promise.all([
       fetch(`${SERVER}/api/public/top-sold-items?limit=10`, 
-      //   {
-      //   next: { revalidate: 3600 },
-      // }
     ).then((res) => res.json()),
       getTopReviews(),
       getTopCourses(),

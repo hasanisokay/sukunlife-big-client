@@ -12,9 +12,7 @@ const getAllCoursePublic = async (
   try {
     const res = await fetch(
       `${SERVER}/api/public/courses?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}&&skip=${skip}`,
-      {
-        next: { revalidate: 3600 },
-      }
+   
     );
     const data = await res.json();
     return data;

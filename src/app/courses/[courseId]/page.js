@@ -5,7 +5,7 @@ import courseCover from "@/../public/images/course.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 
-export const revalidate = 3600;
+
 
 const singleCoursePage = async ({ params }) => {
   try {

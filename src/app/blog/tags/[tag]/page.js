@@ -8,7 +8,7 @@ import hostname from "@/constants/hostname.mjs";
 import capitalize from "@/utils/capitalize.mjs";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 
-export const revalidate = 360;
+
 
 const singleTagPage = async ({ params, searchParams }) => {
   try {
