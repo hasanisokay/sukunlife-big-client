@@ -1,4 +1,4 @@
-import UserOrdersPage from "@/components/dashboard/user/UserOrdersPage";
+import UserAppointmentPage from "@/components/dashboard/user/UserAppointmentPage";
 import NotFound from "@/components/not-found/NotFound";
 import hostname from "@/constants/hostname.mjs";
 import getUserOrders from "@/utils/getUserOrders.mjs";
@@ -6,11 +6,11 @@ import getUserOrders from "@/utils/getUserOrders.mjs";
 const page = async () => {
   try {
     let orders;
-    orders = await getUserOrders(false);
+    orders = await getUserOrders(true);
     if (orders?.status === 200) {
       return (
         <>
-          <UserOrdersPage initialOrders={orders?.orders} />
+          <UserAppointmentPage initialOrders={orders?.appointments} />
         </>
       );
     } else {
@@ -27,11 +27,11 @@ export async function generateMetadata() {
   try {
     const host = await hostname();
     let metadata = {
-      title: `My Orders`,
-      description: "All orders by user.",
-      keywords: ["Dashboard, sukunlife, orders"],
+      title: `Appointments`,
+      description: "All appointments by user.",
+      keywords: ["Dashboard, sukunlife, appointments"],
       url: `${host}/dashboard/o`,
-      canonical: `${host}/dashboard/o`,
+      canonical: `${host}/dashboard/a`,
     };
     return metadata;
   } catch (error) {

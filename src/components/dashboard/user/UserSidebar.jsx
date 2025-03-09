@@ -1,5 +1,5 @@
 'use client'
-import { BookSVG, CartSVG, CrossSVG, MenuSVG, SettingsSVG, UserSVG } from "@/components/svg/SvgCollection";
+import { AppointmentSVG, BookSVG, CartSVG, CrossSVG, MenuSVG, SettingsSVG, UserSVG } from "@/components/svg/SvgCollection";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from 'framer-motion';
 import { useState } from "react";
@@ -18,6 +18,7 @@ const UserSidebar = () => {
         { name: 'Dashboard', icon: <UserSVG />, path: '/dashboard' },
         { name: 'Courses', icon: <BookSVG />, path: '/dashboard/c' },
         { name: 'Orders', icon: <CartSVG />, path: '/dashboard/o' },
+        { name: 'Appointments', icon: <AppointmentSVG />, path: '/dashboard/a' },
         { name: 'Settings', icon: <SettingsSVG />, path: '/dashboard/settings' }
     ];
     if(pathname.includes("/dashboard/c/")){

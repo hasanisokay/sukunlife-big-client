@@ -92,6 +92,8 @@ const BookAppointment = ({ dates, status }) => {
                 ...restData,
                 advancePayment: d.advancePayment ?? false,
                 transactionNumber: d.advancePayment ? d.transactionNumber : "",
+                consultant:selectedConsultant,
+                reviewed:false
             };
 
             if (user) {
@@ -128,8 +130,8 @@ const BookAppointment = ({ dates, status }) => {
         setValue("date", formattedDate);
         setAvailableTimes(times);
         setAvailableConsultants(consultants);
-        setSelectedTime("");
-        setSelectedConsultant("");
+        setSelectedTime(times[0]);
+        setSelectedConsultant(consultants[0]);
         return formattedDate;
     };
 
@@ -352,7 +354,7 @@ const BookAppointment = ({ dates, status }) => {
                                     Select Consultant
                                 </label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    {availableConsultants.map((consultant, index) => (
+                                    {availableConsultants?.map((consultant, index) => (
                                         <motion.button
                                             key={index}
                                             type="button"

@@ -115,6 +115,20 @@ const AdminSidebar = () => {
                         </div>
                     )}
                 </div>
+                <div>
+                    <button
+                        onClick={() => toggleMenu('appointments')}
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+                    >
+                        Appointments
+                    </button>
+                    {activeMenu === 'appointments' && (
+                        <div className="ml-4 space-y-2">
+                            <Link href="/dashboard/appointments" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments")}`}>All Appointments</Link>
+                            <Link href="/dashboard/appointments/schedule" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments/schedule")}`}>Schedule Management</Link>
+                        </div>
+                    )}
+                </div>
 
                 <div>
                     <button
@@ -138,20 +152,7 @@ const AdminSidebar = () => {
                     <Link href="/dashboard/settings" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/settings")}`}>Settings</Link>
                 </div>
 
-                <div>
-                    <button
-                        onClick={() => toggleMenu('appointments')}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-                    >
-                        Appointments
-                    </button>
-                    {activeMenu === 'appointments' && (
-                        <div className="ml-4 space-y-2">
-                            <Link href="/dashboard/appointments" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments")}`}>All Appointments</Link>
-                            <Link href="/dashboard/appointments/schedule" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments/schedule")}`}>Schedule Management</Link>
-                        </div>
-                    )}
-                </div>
+         
             </nav>
         </div>
     );

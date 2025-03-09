@@ -4,8 +4,8 @@ import { NextResponse } from "next/server";
 
 export const POST = async (req) => {
   try {
-    const ACCESS_COOKIE_MAX_AGE = 2 * 60 * 60 * 1000;
-    const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+    const ACCESS_COOKIE_MAX_AGE = 2 * 60 * 60; // 2 hours in seconds
+    const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
     const body = await req.json();
     const { accessToken, refreshToken } = body;

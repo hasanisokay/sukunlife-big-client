@@ -11,6 +11,7 @@ import ProductImage from "./ProductImage";
 import CourseCard from "../courses/CourseCard";
 import SingleBlogCard from "../blogs/SingleBlogCard";
 import { TakaSVG } from "../svg/SvgCollection";
+import formatDate from "@/utils/formatDate.mjs";
 
 // SVG Icons
 const BookSVG = () => (
@@ -56,12 +57,18 @@ const BlogSVG = () => (
   </svg>
 );
 
+const ReviewSVG = () => (
+  <svg className="w-10 h-10 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5v-2a2 2 0 012-2h10a2 2 0 012 2v2h-4m-6 0h6m-9-12h12a2 2 0 012 2v2H5V6a2 2 0 012-2z" />
+  </svg>
+);
+
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
 };
 
-const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentBlogs }) => {
+const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews, topCourses, recentBlogs }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-pink-50 dark:from-teal-800 dark:via-gray-900 dark:to-pink-900 text-gray-800 dark:text-gray-100">
       {/* Decorative SVG Background Element */}
@@ -81,9 +88,9 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
             <BookSVG />
             <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide">Book Your Appointment</h1>
           </div>
-          <p className="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300 flex items-center justify-center">
+          <p className="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300 flex items-center flex-wrap justify-center">
             <QuoteSVG />
-            Sessions to guide you toward clarity and spiritual well-being.
+            Ruqyah & Hijama sessions to guide you toward clarity and spiritual well-being.
           </p>
           <Link href="/book-appointment">
             <motion.button
@@ -98,6 +105,72 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
         </div>
       </motion.div>
 
+      {/* Section: Appointment Reviews - Keeping Original */}
+      {appointmentReviews?.length > 0 && (
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          viewport={{ once: true }}
+          className="py-20 px-6 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-700 dark:to-indigo-700 relative z-10"
+        >
+          <div className="text-center max-w-4xl mx-auto mb-12">
+            <div className="flex justify-center items-center mb-6">
+              <ReviewSVG />
+              <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide">Session Reviews</h1>
+            </div>
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 flex items-center flex-wrap justify-center">
+              <QuoteSVG />
+              Hear from those who’ve experienced our sessions
+            </p>
+          </div>
+
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={20}
+            slidesPerView={1}
+            autoplay={{ delay: 4000 }}
+            pagination={{ clickable: true }}
+            loop
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+          >
+            {appointmentReviews.map((review) => (
+              <SwiperSlide key={review._id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md h-64 flex flex-col justify-between border-t-4 border-blue-500"
+                >
+                  <div>
+                    <div className="flex items-center mb-3">
+                      <span className="font-semibold capitalize text-blue-600 dark:text-blue-300">{review.name}</span>
+                      <div className="flex ml-2">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <StarSVG key={i} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-5">{review.comment}</p>
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {formatDate(review.date)}
+                    </p>
+                  </div>
+                </motion.div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </motion.div>
+      )}
+
       {/* Section 2: Self Diagnose Test */}
       <motion.div
         variants={sectionVariants}
@@ -111,7 +184,7 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
             <TestSVG />
             <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide">Self Diagnose Test</h1>
           </div>
-          <p className="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300 flex items-center justify-center">
+          <p className="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300 flex flex-wrap items-center justify-center">
             <QuoteSVG />
             Take a quick test to assess your well-being.
           </p>
@@ -142,7 +215,7 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
               <CourseSVG />
               <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide">Browse Our Courses</h1>
             </div>
-            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 flex items-center justify-center">
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 flex flex-wrap items-center justify-center">
               <QuoteSVG />
               Elevate your skills with expert-led courses.
             </p>
@@ -183,6 +256,7 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
             </Swiper>
           </div>
 
+          {/* Course Reviews - New Design */}
           {courseReviews?.length > 0 && (
             <div className="mt-12">
               <h3 className="text-2xl md:text-3xl font-semibold text-center mb-8 flex items-center justify-center">
@@ -207,25 +281,27 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md h-48 flex flex-col justify-between"
+                      className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg h-64 flex flex-col justify-between border-l-4 border-teal-500 relative overflow-hidden"
                     >
-                      <div>
-                        <div className="flex items-center mb-2">
-                          <span className="font-semibold">{review.reviews[0].name}</span>
+                      {/* Decorative Corner */}
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-teal-200 dark:bg-teal-700 opacity-30 rounded-bl-full" />
+                      <div className="relative z-10">
+                        <div className="flex items-center mb-3">
+                          <span className="font-semibold text-teal-600 dark:text-teal-300 capitalize">{review.reviews[0].name}</span>
                           <div className="flex ml-2">
                             {[...Array(review.reviews[0].rating)].map((_, i) => (
                               <StarSVG key={i} />
                             ))}
                           </div>
                         </div>
-                        <p className="text-gray-600 dark:text-gray-300 line-clamp-3">{review.reviews[0].comment}</p>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm italic line-clamp-4">"{review.reviews[0].comment}"</p>
                       </div>
                       {review.reviews[0].date && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center mt-2">
                           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          {new Date(review.reviews[0].date).toLocaleDateString()}
+                          {formatDate(review.reviews[0].date)}
                         </p>
                       )}
                     </motion.div>
@@ -251,7 +327,7 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
               <ShopSVG />
               <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide">Explore Our Shop</h1>
             </div>
-            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 flex items-center justify-center">
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 flex flex-wrap items-center justify-center">
               <QuoteSVG />
               Discover unique products curated just for you.
             </p>
@@ -269,7 +345,6 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
 
           <div className="mt-12">
             <h3 className="text-2xl md:text-3xl font-semibold text-center mb-8 flex items-center justify-center">
-              {/* <ShopSVG className="w-6 h-6 mr-2" /> */}
               Top Picks
             </h3>
             <Swiper
@@ -316,6 +391,7 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
             </Swiper>
           </div>
 
+          {/* Shop Reviews - New Design */}
           {shopReviews?.length > 0 && (
             <div className="mt-12">
               <h3 className="text-2xl md:text-3xl font-semibold text-center mb-8 flex items-center justify-center">
@@ -340,18 +416,25 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
-                      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md h-48 flex flex-col justify-between"
+                      className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md h-64 flex flex-col justify-between border-r-4 border-purple-500 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900 dark:to-gray-800"
                     >
                       <div>
-                        <div className="flex items-center mb-2">
-                          <span className="font-semibold">{review.reviews[0].name}</span>
-                          <div className="flex ml-2">
-                            {[...Array(review.reviews[0].rating)].map((_, i) => (
-                              <StarSVG key={i} />
-                            ))}
+                        <div className="flex items-center mb-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-200 dark:bg-purple-700 flex items-center justify-center mr-3">
+                            <span className="text-purple-600 dark:text-purple-300 font-bold text-lg">
+                              {review.reviews[0].name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-purple-600 dark:text-purple-300 capitalize">{review.reviews[0].name}</span>
+                            <div className="flex mt-1">
+                              {[...Array(review.reviews[0].rating)].map((_, i) => (
+                                <StarSVG key={i} />
+                              ))}
+                            </div>
                           </div>
                         </div>
-                        <p className="text-gray-600 dark:text-gray-300 line-clamp-3">{review.reviews[0].comment}</p>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-4">{review.reviews[0].comment}</p>
                       </div>
                     </motion.div>
                   </SwiperSlide>
@@ -361,53 +444,55 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
           )}
         </motion.div>
       )}
- {/* Section 5: Recent Blogs */}
- {recentBlogs?.length > 0 && (
-  <motion.div
-    variants={sectionVariants}
-    initial="hidden"
-    animate="visible"
-    viewport={{ once: true }}
-    className="py-16 px-6 bg-gradient-to-r from-teal-100 to-orange-100 dark:from-teal-700 dark:to-orange-700 relative z-10"
-  >
-    <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 font-serif flex items-center justify-center">
-      <BlogSVG />
-      Latest Blogs
-    </h2>
-    <Swiper
-      modules={[Autoplay, Pagination]}
-      spaceBetween={30}
-      slidesPerView={1}
-      autoplay={{ delay: 3500 }}
-      pagination={{ clickable: true }}
-      loop
-      breakpoints={{
-        640: { slidesPerView: 2 },
-        1024: { slidesPerView: 3 },
-      }}
-    >
-      {recentBlogs.map((blog) => (
-        <SwiperSlide key={blog._id}>
-          <SingleBlogCard b={blog} />
-        </SwiperSlide>
-      ))}
-    </Swiper>
-    {/* Read All Blogs Button */}
-    <div className="flex justify-center mt-12">
-      <motion.a
-        href="/blog"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="px-6 py-3 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg font-medium hover:from-teal-600 hover:to-orange-600 transition-all duration-300 flex items-center gap-2"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-        </svg>
-        Read All Blogs
-      </motion.a>
-    </div>
-  </motion.div>
-)}
+
+      {/* Section 5: Recent Blogs */}
+      {recentBlogs?.length > 0 && (
+        <motion.div
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          viewport={{ once: true }}
+          className="py-16 px-6 bg-gradient-to-r from-teal-100 to-orange-100 dark:from-teal-700 dark:to-orange-700 relative z-10"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 font-serif flex items-center justify-center">
+            <BlogSVG />
+            Latest Blogs
+          </h2>
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={30}
+            slidesPerView={1}
+            autoplay={{ delay: 3500 }}
+            pagination={{ clickable: true }}
+            loop
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+          >
+            {recentBlogs.map((blog) => (
+              <SwiperSlide key={blog._id}>
+                <SingleBlogCard b={blog} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+          {/* Read All Blogs Button */}
+          <div className="flex justify-center mt-12">
+            <motion.a
+              href="/blog"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-3 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg font-medium hover:from-teal-600 hover:to-orange-600 transition-all duration-300 flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+              Read All Blogs
+            </motion.a>
+          </div>
+        </motion.div>
+      )}
+
       {/* Decorative SVG Footer Element */}
       <svg className="absolute bottom-0 left-0 w-full h-32 text-pink-100 dark:text-pink-900" fill="currentColor" viewBox="0 0 1440 120">
         <path d="M1440 120H0V60C200 30 400 0 720 0s520 30 720 60v60z" />
@@ -426,7 +511,7 @@ const Homepage = ({ topProducts, shopReviews, courseReviews, topCourses, recentB
             whileTap={{ scale: 0.95 }}
             className="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center"
           >
-            <BookSVG  />
+            <BookSVG />
           </motion.button>
         </Link>
       </motion.div>

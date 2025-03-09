@@ -8,21 +8,25 @@ export const revalidate = 3600;
 
 const page = async () => {
   try {
-    const [topProductsRes, topReviews, topCourses, recentBlogs] =
-      await Promise.all([
-        fetch(`${SERVER}/api/public/top-sold-items?limit=10`, {
-          next: { revalidate: 3600 },
-        }).then((res) => res.json()),
-        getTopReviews(),
-        getTopCourses(),
-        getAllBlog(1, 5),
-      ]);
+    const [
+      topProductsRes,
+      topReviews,
+      topCourses,
+      recentBlogs,
+    ] = await Promise.all([
+      fetch(`${SERVER}/api/public/top-sold-items?limit=10`, {
+        next: { revalidate: 3600 },
+      }).then((res) => res.json()),
+      getTopReviews(),
+      getTopCourses(),
+      getAllBlog(1, 5),
+    ]);
 
     const topProducts =
       topProductsRes?.status === 200 ? topProductsRes.data : [];
-
     return (
       <Homepage
+        appointmentReviews={topReviews?.appointmentReviews}
         recentBlogs={recentBlogs?.blogs}
         topCourses={topCourses?.courses}
         topProducts={topProducts}

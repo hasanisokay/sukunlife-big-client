@@ -506,3 +506,19 @@ export const LeftArrowSVG = ({ color, width, height, classes }) => {
     ></path>
   </svg>
 };
+export const AppointmentSVG = ({ color, width, height, classes }) => {
+  const theme = useSelector(state => state.theme.mode);
+  return <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={` ${classes}`}
+    width={width || "24"}
+    height={height || "24"}    
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <g id="SVGRepo_iconCarrier" stroke={color ? color : theme === "light" ? "#323232" : "#fff"} strokeWidth="2">
+      <path d="M3 10.312C3 5.938 3.938 5 8.312 5h7.376C20.062 5 21 5.938 21 10.312v5.376C21 20.062 20.062 21 15.688 21H8.312C3.938 21 3 20.062 3 15.688z"></path>
+      <path strokeLinecap="round" d="M6 5V3M18 5V3M7 9h10"></path>
+    </g>
+  </svg>
+};

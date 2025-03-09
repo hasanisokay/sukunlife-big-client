@@ -163,7 +163,10 @@ const ScheduleAppointment = ({ dates = [] }) => {
     const handleAddConsultant = (index, name) => {
         setAddedDates(prev => {
             const updatedDates = [...prev];
-            updatedDates[index].consultants.push(name);
+            // Only add if the consultant isn't already in the list
+            if (!updatedDates[index].consultants.includes(name)) {
+                updatedDates[index].consultants = [...updatedDates[index].consultants, name];
+            }
             return updatedDates;
         });
     };

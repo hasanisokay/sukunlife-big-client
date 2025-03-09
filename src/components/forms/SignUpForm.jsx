@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { SERVER } from "@/constants/urls.mjs";
-import { toast, ToastContainer } from "react-toastify";
+import { Flip, toast, ToastContainer } from "react-toastify";
 
 const signupSchema = z
   .object({
@@ -51,6 +51,7 @@ export default function SignupForm() {
       },
     });
     const data = await res.json();
+    console.log(data)
     if (data?.status === 200) {
       toast.success(data?.message)
       window.location.href = "/login"
@@ -188,7 +189,7 @@ export default function SignupForm() {
           </p>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer transition={Flip} />
     </div>
   );
 }
