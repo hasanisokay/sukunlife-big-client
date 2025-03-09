@@ -123,7 +123,6 @@ export default async function RootLayout({ children }) {
   const refreshToken = await checkToken();
   const storedTheme = await getThemeCookie();
   const userData = await getUserDataFromToken();
-console.log(userData)
   // Dispatch initial state
   store.dispatch(setUserData(userData || null));
   store.dispatch(setTheme(storedTheme || "light")); // Default to light if undefined
