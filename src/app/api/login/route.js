@@ -11,13 +11,14 @@ export const POST = async (req) => {
     const { accessToken, refreshToken } = body;
     const cookieStore = await cookies();
 
-     cookieStore.set({
+    cookieStore.set({
       name: ACCESS_TOKEN,
       value: accessToken,
       httpOnly: true,
       sameSite: "none",
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       maxAge: ACCESS_COOKIE_MAX_AGE,
+      path: "/",
     });
 
     cookieStore.set({
@@ -25,8 +26,9 @@ export const POST = async (req) => {
       value: refreshToken,
       httpOnly: true,
       sameSite: "none",
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       maxAge: REFRESH_COOKIE_MAX_AGE,
+      path: "/",
     });
     return NextResponse.json({
       status: 200,
