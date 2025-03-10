@@ -92,9 +92,7 @@ const SettingsPage = () => {
                 credentials: 'include'
             });
             const resData = await res.json();
-            
-            console.log(resData)
-            return
+
             if (resData.status === 200) {
                 setIsEditingPassword(false);
                 toast.success('Password Updated Successfully.')
