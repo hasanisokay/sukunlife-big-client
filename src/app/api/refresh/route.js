@@ -14,7 +14,7 @@ export const POST = async (req) => {
       name: ACCESS_TOKEN,
       value: accessToken,
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none",
       secure: process.env.NODE_ENV === "production",
       maxAge: ACCESS_COOKIE_MAX_AGE,
     });

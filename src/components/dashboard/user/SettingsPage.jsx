@@ -30,7 +30,6 @@ const SettingsPage = () => {
 
 
     const refreshAccessToken = async () => {
-        console.log('refreshing')
         try {
             const res = await fetch(`${SERVER}/api/auth/refresh`, {
                 method: "POST",
@@ -93,6 +92,9 @@ const SettingsPage = () => {
                 credentials: 'include'
             });
             const resData = await res.json();
+            
+            console.log(resData)
+            return
             if (resData.status === 200) {
                 setIsEditingPassword(false);
                 toast.success('Password Updated Successfully.')
