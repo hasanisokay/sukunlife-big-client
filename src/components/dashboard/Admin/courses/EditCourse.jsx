@@ -9,6 +9,8 @@ import DatePicker from '@/components/ui/datepicker/Datepicker';
 import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
+import checkCourseId from '@/server-functions/checkCourseId.mjs';
+import editCourse from '@/server-functions/editCourse.mjs';
 
 
 const EditCourse = ({ course }) => {
@@ -43,17 +45,7 @@ const EditCourse = ({ course }) => {
         const date = getDateObjWithoutTime(dateObj);
         data.addedOn = date;
         data.updatedOn = getDateObjWithoutTime(now);
-
-        const res = await fetch(`${SERVER}/api/admin/course/${course._id}`, {
-            credentials: "include",
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ ...data, modules, coverPhotoUrl, learningItems })
-        });
-        const d = await res.json();
-        return
+        const d = await editCourse(data, modules, coverPhotoUrl, learningItems, course._id);
         if (d?.status === 200) {
             toast.success(d.message);
             window.location.href = "/dashboard/courses"
@@ -356,10 +348,7 @@ const EditCourse = ({ course }) => {
     const checkIdAvailability = async (id) => {
         setCheckingId(true);
         try {
-            const res = await fetch(`${SERVER}/api/admin/check-course-id?id=${id}`, {
-                credentials: "include",
-            });
-            const data = await res.json();
+            const data = await checkCourseId(id);
             setIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
             setIdAvailable(data?.isAvailable);
         } catch (error) {

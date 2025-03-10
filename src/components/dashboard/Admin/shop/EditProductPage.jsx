@@ -8,6 +8,8 @@ import CreatableSelect from 'react-select/creatable';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import uploadImage from '@/utils/uploadImage.mjs'; // Import the uploadImage function
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
+import checkProductId from '@/server-functions/checkProductId.mjs';
+import editProduct from '@/server-functions/editProduct.mjs';
 
 const EditProductPage = ({ product }) => {
     const { register, handleSubmit, control, formState: { errors }, setValue } = useForm({
@@ -62,10 +64,7 @@ const EditProductPage = ({ product }) => {
         }
         setCheckingProductId(true);
         try {
-            const res = await fetch(`${SERVER}/api/admin/check-product-id?id=${id}`, {
-                credentials: "include",
-            });
-            const data = await res.json();
+            const data = await checkProductId(id);
             setProductIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
             setProductIdAvailable(data?.isAvailable);
         } catch (error) {
@@ -95,11 +94,11 @@ const EditProductPage = ({ product }) => {
 
     const onSubmit = async (data) => {
         try {
-            const sku = product.sku; 
+            const sku = product.sku;
             const productData = {
                 ...data,
                 description,
-                updatedOn : new Date(),
+                updatedOn: new Date(),
                 category: data?.category?.value || "",
                 images,
                 weight,
@@ -110,14 +109,7 @@ const EditProductPage = ({ product }) => {
                 sku,
                 _id: product._id,
             };
-
-            const res = await fetch(`${SERVER}/api/admin/products/${product._id}`, {
-                credentials: "include",
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(productData),
-            });
-            const resData = await res.json();
+            const resData = await editProduct(productData, product._id);
             if (resData?.status === 200) {
                 toast.success(resData.message);
                 window.location.href = "/dashboard/shop"
@@ -413,7 +405,7 @@ const EditProductPage = ({ product }) => {
                                 placeholder="Price"
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                             />
-                             <button
+                            <button
                                 onClick={() => removeVariantPrice(index)}
                                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                             >

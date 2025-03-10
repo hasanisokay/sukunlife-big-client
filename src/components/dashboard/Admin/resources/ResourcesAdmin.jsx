@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import formatDate from '@/utils/formatDate.mjs';
-import { SERVER } from '@/constants/urls.mjs';
 import SearchBar from '@/components/search/SearchBar';
+import deleteBulkResource from '@/server-functions/deleteBulkResource.mjs';
 
 const ResourcesAdmin = ({ resources: initialResources }) => {
     // State for resources (managed locally to reflect deletions)
@@ -53,13 +53,7 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
         }
         try {
             setStatus('Deleting resources...');
-            const response = await fetch(`${SERVER}/api/admin/resources/bulk-delete`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids: selectedResources }),
-                credentials: 'include',
-            });
-            const resData = await response.json();
+            const resData = await deleteBulkResource(selectedResource)
             if (resData.status === 200) {
                 // Update local resources state to remove deleted items
                 setResources((prev) =>

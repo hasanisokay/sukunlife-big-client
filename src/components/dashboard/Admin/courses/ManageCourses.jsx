@@ -7,6 +7,7 @@ import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import { DeleteSVG } from '@/components/svg/SvgCollection';
 import SearchBar from '@/components/search/SearchBar';
+import deleteCourse from '@/server-functions/deleteCourse.mjs';
 
 const ManageCourses = ({ courses }) => {
     const [previousCourses, setPreviousCourses] = useState(courses.courses);
@@ -36,14 +37,7 @@ const ManageCourses = ({ courses }) => {
     }
     const handleCourseDelete = async () => {
         try {
-            const res = await fetch(`${SERVER}/api/admin/course/${selectedCourseId}`, {
-                credentials: 'include',
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-            const data = await res.json();
+            const data = await deleteCourse(selectedCourseId);
             if (data?.status === 200) {
                 toast.success(data?.message);
                 setPreviousCourses((prev) => prev.filter((c) => c.courseId !== selectedCourseId));

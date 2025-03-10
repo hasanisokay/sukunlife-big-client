@@ -5,6 +5,7 @@ import { Rating } from 'react-simple-star-rating';
 import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import { useSelector } from 'react-redux';
+import addAppointmentReview from '@/server-functions/addAppointmentReview.mjs';
 
 
 const UserAppointmentPage = ({ initialOrders }) => {
@@ -19,22 +20,7 @@ const UserAppointmentPage = ({ initialOrders }) => {
     const handleReviewSubmit = async () => {
         if (!selectedAppointment || !user) return;
         try {
-            const response = await fetch(`${SERVER}/api/user/appointment-review`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    appointmentId: selectedAppointment?._id,
-                    rating: rating, 
-                    comment: reviewComment,
-                    userId: user._id,
-                    name: user.name,
-                }),
-            });
-            const resData = await response.json();
-
+            const resData = await addAppointmentReview(selectedAppointment?._id, rating, reviewComment, user._id, user.name,);
             if (resData.status === 200) {
                 toast.success(resData?.message)
                 setAppointments(prev => prev.map(app =>
@@ -164,7 +150,7 @@ const UserAppointmentPage = ({ initialOrders }) => {
                     </div>
                 </div>
             )}
-            <ToastContainer transition={Flip}/>
+            <ToastContainer transition={Flip} />
         </div>
     );
 };

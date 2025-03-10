@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import RichTextEditor from '@/components/editor/RichTextEditor';
-import { SERVER } from '@/constants/urls.mjs';
+import editResource from '@/server-functions/editResource.mjs';
 
 const EditResourcePage = ({ resource }) => {
 
@@ -66,19 +66,8 @@ const EditResourcePage = ({ resource }) => {
         }
 
         try {
-            setStatus(`Saving ${resource.type} resource...`);
-            const response = await fetch(`${SERVER}/api/admin/edit-resource/${resource._id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type: resource.type,
-                    title: formData.title,
-                    description: formData.description,
-                    links: formData.links,
-                }),
-                credentials:'include'
-            });
-            const resData = await response.json();
+            setStatus(`Saving ${resource.type} resource...`);     
+            const resData = await editResource(resource._id, resource.type, formData.title, formData.description, formData.links );
             if (resData.status === 200) {
                 setStatus(`${resource.type} resource updated successfully!`);
                 window.location.href = '/dashboard/resources'

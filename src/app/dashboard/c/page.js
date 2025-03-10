@@ -1,7 +1,6 @@
 import UserCoursePage from "@/components/dashboard/user/UserCoursePage";
 import NotFound from "@/components/not-found/NotFound";
 import hostname from "@/constants/hostname.mjs";
-import { websiteName } from "@/constants/names.mjs";
 import getEnrolledCoursesDetails from "@/utils/getUserEnrolledCoursesDetails.mjs";
 
 const userCoursePage = async () => {

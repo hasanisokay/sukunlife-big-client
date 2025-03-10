@@ -12,6 +12,7 @@ import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 import generateUniqueIds from "@/utils/generateUniqueIds.mjs";
+import editBlog from "@/server-functions/editBlog.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -73,15 +74,7 @@ const EditBlog = ({ blog }) => {
 
   const onSubmit = async (d) => {
     try {
-      const res = await fetch(`${SERVER}/api/admin/update-a-blog/${blog?._id}`, {
-        credentials: "include",
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(d),
-      });
-      const data = await res.json();
+      const data = await editBlog(blog?._id, d);
       if (data?.status === 200) {
         toast.success("Blog updated successfully!");
         window.location.href = '/dashboard/blogs'

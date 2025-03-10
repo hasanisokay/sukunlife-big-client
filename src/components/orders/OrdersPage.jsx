@@ -6,6 +6,8 @@ import { SERVER } from "@/constants/urls.mjs";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import SortOrders from "./SortOrders";
 import formatDate from "@/utils/formatDate.mjs";
+import approveOrder from "@/server-functions/approveOrder.mjs";
+import deleteBulkOrders from "@/server-functions/deleteBulkOrders.mjs";
 
 const OrdersPage = ({ orders: initialOrders, page, limit, filter }) => {
     const [sortType, setSortType] = useState("all"); // 'all', 'course', 'product'
@@ -48,15 +50,8 @@ const OrdersPage = ({ orders: initialOrders, page, limit, filter }) => {
             if (userId) body.userId = userId;
 
             // Send the PUT request to approve the order
-            const response = await fetch(`${SERVER}/api/admin/approve-order/${orderId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify(body),
-            });
-
-            const resData = await response.json();
-            if (resData.status === 200) {
+            const resData = await approveOrder(orderId, body);
+            if (resData?.status === 200) {
                 toast.success(resData?.message);
 
                 // Optionally, update the local state to reflect the approved status
@@ -77,13 +72,7 @@ const OrdersPage = ({ orders: initialOrders, page, limit, filter }) => {
     // Handle bulk delete
     const handleBulkDelete = async () => {
         try {
-            const response = await fetch(`${SERVER}/api/admin/bulk-delete-orders`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ orderIds: selectedOrders }),
-                credentials: 'include'
-            });
-            const resData = await response.json();
+            const resData = await deleteBulkOrders(selectedOrders );
             if (resData.status === 200) {
                 // Remove deleted orders from the local state
                 setOrders((prevOrders) =>

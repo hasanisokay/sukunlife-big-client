@@ -5,6 +5,7 @@ import Spinner2 from "@/components/loaders/Spinner2";
 import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal";
 import SearchBar from "@/components/search/SearchBar";
 import { SERVER } from "@/constants/urls.mjs";
+import deleteBlog from "@/server-functions/deleteBlog.mjs";
 import formatDate from "@/utils/formatDate.mjs";
 // import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -55,11 +56,7 @@ const AdminBlogsPage = ({ blogs }) => {
         setShowDeleteModal(false);
         setFetchingBlog(true)
         try {
-            const res = await fetch(`${SERVER}/api/admin/blog/${selectedBlog?._id}`, {
-                credentials: 'include',
-                method: "DELETE",
-            });
-            const data = await res.json();
+            const data = await deleteBlog(selectedBlog?._id);
             if (data?.status === 200) {
                 toast.success(data?.message);
                 setInitialBlogs((prev) => prev.filter(b => b?._id !== selectedBlog?._id))

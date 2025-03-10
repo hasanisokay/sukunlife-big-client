@@ -7,6 +7,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import formatDateWithTime from '@/utils/formatDateWithTime.mjs';
 import convertTo12HourFormat from '@/utils/convertTo12HourFormat.mjs';
 import formatDate from '@/utils/formatDate.mjs';
+import deleteBulkSchedule from '@/server-functions/deleteBulkSchedule.mjs';
+import deleteDate from '@/server-functions/deleteDate.mjs';
+import addScheduleDate from '@/server-functions/addScheduleDate.mjs';
 
 const ScheduleAppointment = ({ dates = [] }) => {
     const [previousDates, setPreviousDates] = useState(dates);
@@ -65,13 +68,7 @@ const ScheduleAppointment = ({ dates = [] }) => {
         if (!window.confirm("Are you sure you want to delete the selected dates and times?")) return;
         const dateIds = Object.keys(selectedItems);
         const times = Object.values(selectedItems).flat();
-        const res = await fetch(`${SERVER}/api/admin/schedules`, {
-            method: "DELETE",
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dateIds, times })
-        });
-        const data = await res.json();
+        const data = await deleteBulkSchedule(dateIds, times);
         if (data?.status === 200) {
             toast.success(data.message);
             setPreviousDates(prev =>
@@ -96,15 +93,7 @@ const ScheduleAppointment = ({ dates = [] }) => {
     const handleDeleteDate = async (index, isPrevious = false, id = null) => {
         if (isPrevious) {
             const dateIds = [id];
-            const res = await fetch(`${SERVER}/api/admin/schedules`, {
-                method: "DELETE",
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ dateIds })
-            });
-            const data = await res.json();
+            const data = await deleteDate(dateIds);
             if (data?.status === 200) {
                 toast.success(data.message)
                 setPreviousDates((prev) => prev.filter((d, i) => d._id !== id));
@@ -140,17 +129,7 @@ const ScheduleAppointment = ({ dates = [] }) => {
 
             return acc;
         }, []);
-
-        const res = await fetch(`${SERVER}/api/admin/add-appointment-dates`, {
-            method: "POST",
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formattedDates)
-        });
-
-        const data = await res.json();
+        const data = await addScheduleDate(formattedDates);
         if (data?.status === 200) {
             toast.success(data?.message);
             setAddedDates([]); 

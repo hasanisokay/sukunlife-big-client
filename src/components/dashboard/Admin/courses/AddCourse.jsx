@@ -9,6 +9,8 @@ import { Flip, toast, ToastContainer } from 'react-toastify';
 import DatePicker from '@/components/ui/datepicker/Datepicker';
 import { AddSVG, ClipboardSVG, QuizSVG, VideoSVG } from '@/components/svg/SvgCollection';
 import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
+import addNewCourse from '@/server-functions/addNewCourse.mjs';
+import checkCourseId from '@/server-functions/checkCourseId.mjs';
 
 const AddCourse = () => {
     const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
@@ -27,15 +29,7 @@ const AddCourse = () => {
         data.addedOn = date;
         data.reviews = [];
         data.studentIds = [];
-        const res = await fetch(`${SERVER}/api/admin/add-new-course`, {
-            credentials: "include",
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ ...data, modules, coverPhotoUrl, learningItems })
-        });
-        const d = await res.json();
+        const d = await addNewCourse(data, modules, coverPhotoUrl, learningItems);
         if (d?.status === 200) {
             toast.success(d?.message);
             // return;
@@ -66,10 +60,7 @@ const AddCourse = () => {
     const checkIdAvailability = async (id) => {
         setCheckingId(true);
         try {
-            const res = await fetch(`${SERVER}/api/admin/check-course-id?id=${id}`, {
-                credentials: "include",
-            });
-            const data = await res.json();
+            const data = await checkCourseId(id);
             setIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
             setIdAvailable(data?.isAvailable);
         } catch (error) {

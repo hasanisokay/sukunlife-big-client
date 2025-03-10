@@ -16,6 +16,7 @@ import {
 import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
 import { setEnrolledCourses } from '@/store/slices/authSlice';
+import updateCourseProgress from '@/server-functions/updateCourseProgress.mjs';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -43,7 +44,7 @@ const UserSingleCoursePage = ({ course }) => {
       setActiveModuleIndex(enrollment?.lastSync?.module);
       setActiveItemIndex(enrollment?.lastSync?.item);
       setExpandedModule(enrollment?.lastSync?.module);
-    }else{
+    } else {
       setExpandedModule(0)
     }
   }, [enrolledCourses, course._id]);
@@ -88,19 +89,7 @@ const UserSingleCoursePage = ({ course }) => {
     const newPercentage = calculatePercentage(moduleIdx, itemIdx);
     if (newPercentage <= progress.percentage) return;
     try {
-      await fetch(`${SERVER}/api/user/update-progress`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          module: moduleIdx,
-          courseId: course._id,
-          item: itemIdx,
-          percentage: newPercentage,
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: 'include'
-      });
+      await updateCourseProgress(moduleIdx, course._id, itemIdx, newPercentage)
       const newProgressData = enrolledCourses.map(c =>
         c._id === course._id
           ? { ...c, module: moduleIdx, item: itemIdx, percentage: newPercentage }

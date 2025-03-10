@@ -5,6 +5,8 @@ import SearchBar from '@/components/search/SearchBar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import { SERVER } from '@/constants/urls.mjs';
+import toggleUserStatus from '@/server-functions/toggleUserStatus.mjs';
+import toggleUserRole from '@/server-functions/toggleUserRole.mjs';
 
 const UserManagementPageAdmin = ({ u }) => {
   const [users, setUsers] = useState(u);
@@ -16,17 +18,11 @@ const UserManagementPageAdmin = ({ u }) => {
     setUsers(u)
   }, [u])
   // Mock API call to toggle user status
-  const toggleUserStatus = async (userId, currentStatus) => {
+  const toggleStatus = async (userId, currentStatus) => {
     try {
       const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
-      const response = await fetch(`${SERVER}/api/admin/${userId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-        credentials: 'include'
-      });
-      const resData = await response.json();
-      if (resData.status === 200) {
+      const resData = await toggleUserStatus(userId, newStatus);
+      if (resData?.status === 200) {
         toast.success(resData.message)
         return newStatus;
       } else {
@@ -40,16 +36,10 @@ const UserManagementPageAdmin = ({ u }) => {
   };
 
   // Mock API call to toggle user role
-  const toggleUserRole = async (userId, currentRole) => {
+  const toggleRole = async (userId, currentRole) => {
     try {
       const newRole = currentRole === 'user' ? 'admin' : 'user';
-      const response = await fetch(`${SERVER}/api/admin/${userId}/role`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole }),
-        credentials: 'include'
-      });
-      const resData = await response.json();
+      const resData = await toggleUserRole(userId, newRole);
       if (resData.status === 200) {
         toast.success(resData.message)
         return newRole;
@@ -68,7 +58,7 @@ const UserManagementPageAdmin = ({ u }) => {
     const newStatus = currentStatus === 'active' ? 'blocked' : 'active';
 
     try {
-      const updateResult = await toggleUserStatus(userId, currentStatus);
+      const updateResult = await toggleStatus(userId, currentStatus);
       if (updateResult) {
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
@@ -89,7 +79,7 @@ const UserManagementPageAdmin = ({ u }) => {
   const handleRoleChange = async (userId, currentRole) => {
     const newRole = currentRole === 'user' ? 'admin' : 'user';
     try {
-      const updateResult = await toggleUserRole(userId, currentRole);
+      const updateResult = await toggleRole(userId, currentRole);
       if (updateResult) {
         setUsers((prevUsers) =>
           prevUsers.map((user) =>

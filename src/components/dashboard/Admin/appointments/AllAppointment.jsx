@@ -7,6 +7,7 @@ import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal
 import { SERVER } from "@/constants/urls.mjs";
 import AppointmentCard from "./AppointmentCard";
 import LoadMoreButton from "@/components/ui/btn/LoadMoreButton";
+import deleteBulkAppointment from "@/server-functions/deleteBulkdeleteBulkAppointment.mjs";
 
 
 const AllAppointment = ({ a, page, limit }) => {
@@ -37,15 +38,7 @@ const AllAppointment = ({ a, page, limit }) => {
         setShowDeleteModal(false);
         setLoading(true);
         try {
-            const res = await fetch(`${SERVER}/api/admin/appointments`, {
-                credentials: 'include',
-                method: "DELETE",
-                body: JSON.stringify({ ids: selectedIds }),
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-            const data = await res.json();
+            const data = await deleteBulkAppointment(selectedIds);
             if (data?.status === 200) {
                 toast.success(data?.message);
                 setAppointments(updatedAppointments);

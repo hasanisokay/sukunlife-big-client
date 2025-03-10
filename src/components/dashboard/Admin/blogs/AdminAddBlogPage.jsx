@@ -12,6 +12,8 @@ import { Flip, toast, ToastContainer } from "react-toastify";
 import uploadImage from "@/utils/uploadImage.mjs";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 import generateUniqueIds from "@/utils/generateUniqueIds.mjs";
+import addNewBlog from "@/server-functions/addNewBlog.mjs";
+import checkBlogUrl from "@/server-functions/checkBlogUrl.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -79,10 +81,7 @@ const AdminAddBlogPage = () => {
   const checkUrlAvailability = async (url) => {
     setCheckingUrl(true);
     try {
-      const res = await fetch(`${SERVER}/api/admin/check-blog-url?url=${url}`, {
-        credentials: "include",
-      });
-      const data = await res.json();
+      const data = await checkBlogUrl(url);
       setUrlCheckMessage(data?.isAvailable ? "URL is available!" : "URL is already taken.");
       setUrlAvailable(data?.isAvailable);
     } catch (error) {
@@ -98,16 +97,7 @@ const AdminAddBlogPage = () => {
         toast.error("Blog Url must be unique.")
         return
       }
-
-      const res = await fetch(`${SERVER}/api/admin/add-new-blog`, {
-        credentials: "include",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(d)
-      });
-      const data = await res.json();
+      const data = await addNewBlog(d);
       if (data?.status === 200) {
         toast.success(data.message)
         reset();

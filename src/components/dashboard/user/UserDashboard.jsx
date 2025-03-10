@@ -5,19 +5,16 @@ import { SERVER } from '@/constants/urls.mjs';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import getUserOrders from '@/utils/getUserOrders.mjs';
 
 const UserDashboard = () => {
     const enrolledCourses = useSelector((state) => state.user.enrolledCourses);
     const [userOrderCount, setUserOrderCount] = useState(0);
     const [userAppointmentCount, setUserAppointmentCount] = useState(0);
-    
+
     useEffect(() => {
         (async () => {
-            const res = await fetch(`${SERVER}/api/user/user-orders?countOnly=true`, {
-                credentials: 'include'
-            })
-            const data = await res.json();
-            console.log(data)
+            const data = await getUserOrders(false, true)
             if (data.status === 200) {
                 setUserOrderCount(data?.orderCount)
                 setUserAppointmentCount(data?.appointmentCount)
@@ -27,7 +24,7 @@ const UserDashboard = () => {
             }
         })()
     }, [])
-    
+
     return (
         <div className='w-full min-w-[200px]'>
             <h2 className="text-3xl font-bold mb-8 dark:text-white">Dashboard Overview</h2>

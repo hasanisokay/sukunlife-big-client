@@ -8,10 +8,12 @@ import CreatableSelect from 'react-select/creatable';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import uploadImage from '@/utils/uploadImage.mjs'; // Import the uploadImage function
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
+import checkProductId from '@/server-functions/checkProductId.mjs';
+import addNewProduct from '@/server-functions/addNewProduct.mjs';
 
 const AddShopItem = () => {
     const { register, handleSubmit, control, formState: { errors } } = useForm({
-        defaultValues:{
+        defaultValues: {
             addedOn: new Date()
         }
     });
@@ -47,10 +49,7 @@ const AddShopItem = () => {
     const checkUrlAvailability = async (id) => {
         setCheckingProductId(true);
         try {
-            const res = await fetch(`${SERVER}/api/admin/check-product-id?id=${id}`, {
-                credentials: "include",
-            });
-            const data = await res.json();
+            const data = await checkProductId(id)
             setProductIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
             setProductIdAvailable(data?.isAvailable);
         } catch (error) {
@@ -117,15 +116,11 @@ const AddShopItem = () => {
                 variantPrices,
                 sku,
             };
-
-            const res = await fetch(`${SERVER}/api/admin/add-new-product`, {
-                credentials: "include", method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(productData)
-            });
-            const resData = await res.json();
-            if (resData.status === 200) {
-                toast.success(resData.message)
+            const resData = await addNewProduct(productData);
+            if (resData?.status === 200) {
+                toast.success(resData?.message)
             } else {
-                toast.error(resData.message)
+                toast.error(resData?.message)
             }
         } catch (e) {
             console.log(e)
@@ -405,7 +400,7 @@ const AddShopItem = () => {
                                 placeholder="Price"
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                             />
-                              <button
+                            <button
                                 onClick={() => removeVariantPrice(index)}
                                 type='button'
                                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"

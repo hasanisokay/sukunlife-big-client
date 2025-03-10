@@ -3,6 +3,7 @@ import { useState } from 'react';
 import RichTextEditor from '@/components/editor/RichTextEditor';
 import { SERVER } from '@/constants/urls.mjs';
 import { toast, ToastContainer } from 'react-toastify';
+import addNewResource from '@/server-functions/addNewResource.mjs';
 
 const AddResource = () => {
     // State to track selected resource type
@@ -61,18 +62,7 @@ const AddResource = () => {
 
         try {
             setStatus(`Saving ${selectedType} resource...`);
-            const response = await fetch(`${SERVER}/api/admin/add-new-resource`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type: selectedType,
-                    title: resource.title,
-                    description: resource.description,
-                    links: resource.links,
-                }),
-                credentials: 'include'
-            });
-            const resData = await response.json();
+            const resData = await addNewResource(selectedType, resource?.title, resource?.description, resource?.links);
             if (resData?.status === 200) {
                 toast.success(resData?.message);
                 setStatus(`${selectedType} resource saved successfully!`);
@@ -191,10 +181,10 @@ const AddResource = () => {
                             <button
                                 onClick={handleSubmit}
                                 className={`py-2 px-4 rounded-md text-white ${selectedType === 'pdf'
-                                        ? 'bg-red-500 hover:bg-red-600'
-                                        : selectedType === 'video'
-                                            ? 'bg-blue-500 hover:bg-blue-600'
-                                            : 'bg-green-500 hover:bg-green-600'
+                                    ? 'bg-red-500 hover:bg-red-600'
+                                    : selectedType === 'video'
+                                        ? 'bg-blue-500 hover:bg-blue-600'
+                                        : 'bg-green-500 hover:bg-green-600'
                                     }`}
                             >
                                 Save {selectedType} Resource

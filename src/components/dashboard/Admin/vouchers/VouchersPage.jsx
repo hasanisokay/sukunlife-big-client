@@ -2,6 +2,8 @@
 
 import DatePicker from '@/components/ui/datepicker/Datepicker';
 import { SERVER } from '@/constants/urls.mjs';
+import addNewVoucher from '@/server-functions/addNewVoucher.mjs';
+import deleteVoucher from '@/server-functions/deleteVoucher.mjs';
 import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 
@@ -26,15 +28,7 @@ const VouchersPage = ({ vouchers: initialVouchers = [] }) => {
         e.preventDefault();
         if (!newVoucher.code || !newVoucher.value) return;
         try {
-            const res = await fetch(`${SERVER}/api/admin/new-voucher`, {
-                credentials: "include",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(newVoucher)
-            });
-            const d = await res.json();
+            const d = await addNewVoucher(newVoucher)
             if (d.status === 200) {
                 toast.success(d.message);
                 setVouchers((prev) => [...prev, newVoucher]);
@@ -59,14 +53,7 @@ const VouchersPage = ({ vouchers: initialVouchers = [] }) => {
 
     const handleDeleteVoucher = async (code) => {
         try {
-            const res = await fetch(`${SERVER}/api/admin/voucher/${code}`, {
-                credentials: "include",
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-            });
-            const d = await res.json();
+            const d = await deleteVoucher(code);
             if (d.status === 200) {
                 toast.success(d.message);
                 setVouchers((prev) => prev.filter((voucher) => voucher.code !== code));

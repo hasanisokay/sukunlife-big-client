@@ -8,9 +8,8 @@ const editResourcePage = async ({ searchParams }) => {
     const id = s.id;
     const res = await fetch(`${SERVER}/api/public/resource/${id}`);
     const data = await res.json();
-    console.log(data)
     if (data?.status === 200) {
-        return <EditResourcePage resource={data?.resource}/>
+      return <EditResourcePage resource={data?.resource} />;
     } else {
       return <NotFound />;
     }
@@ -20,3 +19,16 @@ const editResourcePage = async ({ searchParams }) => {
 };
 
 export default editResourcePage;
+
+export async function generateMetadata() {
+  try {
+    let metadata = {
+      title: `Edit Resource`,
+      description: "Edit resources.",
+      keywords: ["Dashboard, sukunlife,"],
+    };
+    return metadata;
+  } catch (error) {
+    console.log("error occured");
+  }
+}
