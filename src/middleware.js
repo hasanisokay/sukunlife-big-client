@@ -24,17 +24,7 @@ export async function middleware(request) {
     loginUrl.searchParams.set("redirectTo", pathName);
     return NextResponse.redirect(loginUrl);
   }
-
-  // if (pathName.includes("/api") && token) {
-  //   const payload = await verifyToken(token);
-  //   if (!payload) {
-  //     await logOut();
-  //     const loginUrl = new URL("/login", request.url);
-  //     loginUrl.searchParams.set("redirectTo", pathName);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
-  // }
-
+  
   return NextResponse.next();
 }
 

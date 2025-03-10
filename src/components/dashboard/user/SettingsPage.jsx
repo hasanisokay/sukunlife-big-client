@@ -9,6 +9,8 @@ import { EditSVG, UploadSVG } from "@/components/svg/SvgCollection";
 import formatDate from "@/utils/formatDate.mjs";
 import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
+import changePassword from '@/utils/changePassword.mjs';
+import updateUserPhoto from '@/utils/updateUserPhoto.mjs';
 
 const SettingsPage = () => {
     const user = useSelector((state) => state.user.userData);
@@ -39,6 +41,15 @@ const SettingsPage = () => {
                 credentials: "include",
             });
             const data = await res.json()
+            const accessToken = data?.accessToken;
+            await fetch("/api/refresh", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: "include",
+                body: JSON.stringify({ accessToken })
+            })
             dispatch(setUserData(data?.user))
         } catch {
         }
@@ -48,19 +59,8 @@ const SettingsPage = () => {
             setLoading(true);
             const file = e.target.files[0];
             if (!file) return;
-
             const imageUrl = await uploadImage(file);
-            const res = await fetch(`${SERVER}/api/user/update-user-info`, {
-                method: "PUT",
-                body: JSON.stringify({
-                    photoUrl: imageUrl
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-            const resData = await res.json();
+            const resData = await updateUserPhoto(imageUrl)
             if (resData.status === 200) {
                 await refreshAccessToken();
             }
@@ -80,23 +80,11 @@ const SettingsPage = () => {
         }
         try {
             setPasswordError("");
-            const res = await fetch(`${SERVER}/api/user/update-user-info`, {
-                method: "PUT",
-                body: JSON.stringify({
-                    currentPassword: passwordData.currentPassword,
-                    newPassword: passwordData.newPassword
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-            const resData = await res.json();
-
+            const resData = await changePassword(passwordData.currentPassword, passwordData.newPassword)
             if (resData.status === 200) {
                 setIsEditingPassword(false);
                 toast.success('Password Updated Successfully.')
-            }else{
+            } else {
                 toast.error(resData.message)
                 setPasswordError(resData.message);
             }
