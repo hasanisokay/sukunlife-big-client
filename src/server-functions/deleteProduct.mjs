@@ -3,21 +3,19 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants/names.mjs";
 import { SERVER } from "@/constants/urls.mjs";
 import { cookies } from "next/headers";
 
-const deleteBulkResource = async (selectedResources) => {
+const deleteProduct = async (productId) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   const refreshToken = cookieStore.get(REFRESH_TOKEN);
-console.log(selectedResources)
+
   try {
-    const res = await fetch(`${SERVER}/api/admin/resources/bulk-delete`, {
+    const res = await fetch(`${SERVER}/api/admin/products/${productId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${accessToken?.value || ""}`,
         "X-Refresh-Token": refreshToken?.value || "",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ids: selectedResources }),
-      credentials: "include",
     });
     const data = await res.json();
     return data;
@@ -26,4 +24,4 @@ console.log(selectedResources)
   }
 };
 
-export default deleteBulkResource;
+export default deleteProduct;

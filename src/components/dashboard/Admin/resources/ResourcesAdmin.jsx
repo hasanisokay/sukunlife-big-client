@@ -12,27 +12,20 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
     useEffect(() => {
         setResources(initialResources)
     }, [initialResources])
-    // State for selected filter
-    const [filter, setFilter] = useState('all'); // 'all', 'pdf', 'video', 'audio'
 
-    // State for selected resources (for bulk delete)
+    const [filter, setFilter] = useState('all');
     const [selectedResources, setSelectedResources] = useState([]);
-
-    // State for API feedback
     const [status, setStatus] = useState('');
-
-    // State for modal
     const [selectedResource, setSelectedResource] = useState(null);
-
-    // Filter resources based on selected type
     const filteredResources = resources.filter((resource) =>
         filter === 'all' ? true : resource.type === filter
     );
 
     // Handle checkbox selection
     const handleSelect = (id) => {
-        setSelectedResources((prev) =>
-            prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+        setSelectedResources((prev) =>{
+            return prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+        }
         );
     };
 
@@ -44,7 +37,7 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
             setSelectedResources(filteredResources.map((r) => r._id));
         }
     };
-
+    console.log(selectedResource)
     // Handle bulk delete
     const handleBulkDelete = async () => {
         if (selectedResources.length === 0) {
@@ -52,8 +45,9 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
             return;
         }
         try {
+            console.log(selectedResource)
             setStatus('Deleting resources...');
-            const resData = await deleteBulkResource(selectedResource)
+            const resData = await deleteBulkResource(selectedResources)
             if (resData.status === 200) {
                 // Update local resources state to remove deleted items
                 setResources((prev) =>
@@ -146,7 +140,7 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
                 {/* Resources Table */}
                 <div className="lg:min-w-[1000px] md:min-w-[600px] min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                        <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 ">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     <input

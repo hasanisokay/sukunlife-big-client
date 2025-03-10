@@ -9,6 +9,7 @@ import { TakaSVG } from '@/components/svg/SvgCollection';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
 import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
+import deleteProduct from '@/server-functions/deleteProduct.mjs';
 
 
 const ManageProducts = ({ p, totalCount }) => {
@@ -89,11 +90,7 @@ const ManageProducts = ({ p, totalCount }) => {
     // Function to handle delete action
     const handleDeleteProduct = async (productId) => {
         try {
-            // Call your delete API here
-            const response = await fetch(`${SERVER}/api/admin/products/${productId}`, {
-                method: 'DELETE', credentials: 'include'
-            });
-            const data = await response.json();
+            const data = await deleteProduct(productId);
             if (data.status === 200) {
                 toast.success(data?.message)
                 setProducts((prev) => prev.filter(product => product?.productId !== productId));

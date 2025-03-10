@@ -5,6 +5,9 @@ import { useState } from 'react';
 import { Rating } from 'react-simple-star-rating';
 import { SERVER } from '@/constants/urls.mjs';
 import formatDate from "@/utils/formatDate.mjs";
+import deleteAppointmentReview from "@/server-functions/deleteAppointmentReview.mjs";
+import getAppointmentReview from "@/server-functions/getAppointmentReview.mjs";
+
 
 const AppointmentCard = ({ appointment, isSelected, onSelect }) => {
     const [showViewReviewModal, setShowViewReviewModal] = useState(false);
@@ -12,12 +15,8 @@ const AppointmentCard = ({ appointment, isSelected, onSelect }) => {
 
     const handleViewReview = async () => {
         try {
-            const response = await fetch(`${SERVER}/api/admin/appointments/review/${appointment._id}`, {
-                method: 'GET',
-                credentials: 'include',
-            });
-            const data = await response.json();
-            if (response.ok) {
+            const data = await getAppointmentReview(appointment._id);
+            if (data.status === 200) {
                 setReviewData(data.review);
                 setShowViewReviewModal(true);
             }
@@ -27,12 +26,8 @@ const AppointmentCard = ({ appointment, isSelected, onSelect }) => {
     };
     const handleDelteAppointmentReview = async () => {
         try {
-            const response = await fetch(`${SERVER}/api/admin/appointments/review/${appointment._id}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            });
-            const data = await response.json();
-            if (response.ok) {
+            const data = await deleteAppointmentReview(appointment._id);
+            if (data.status === 200) {
                 setReviewData(null);
                 setShowViewReviewModal(true);
                 window.location.reload();

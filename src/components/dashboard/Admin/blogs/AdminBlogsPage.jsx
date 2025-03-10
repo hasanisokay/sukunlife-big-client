@@ -6,6 +6,7 @@ import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal
 import SearchBar from "@/components/search/SearchBar";
 import { SERVER } from "@/constants/urls.mjs";
 import deleteBlog from "@/server-functions/deleteBlog.mjs";
+import getBlogContent from "@/server-functions/getBlogContent.mjs";
 import formatDate from "@/utils/formatDate.mjs";
 // import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -27,10 +28,7 @@ const AdminBlogsPage = ({ blogs }) => {
     const handleViewContent = async (blog) => {
         setFetchingBlog(true)
         try {
-            const res = await fetch(`${SERVER}/api/admin/blog/${blog?.blogUrl}`, {
-                credentials: 'include',
-            });
-            const data = await res.json();
+            const data = await getBlogContent(blog?.blogUrl);
             if (data?.status === 200) {
                 setSelectedBlog(data?.blog);
                 setShowContentModal(true)
