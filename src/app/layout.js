@@ -41,7 +41,7 @@ const sacramento = Sacramento({
   variable: "--font-sacramento",
   subsets: ["latin"],
   display: "swap",
-   weight: ["400"],
+  weight: ["400"],
 });
 
 // Metadata configuration
@@ -82,7 +82,7 @@ export async function generateMetadata() {
       title: capitalizedName,
       description: "Empower your learning journey with SukunLife",
       images: [metaImage],
-      // creator: "@sukunlife", 
+      // creator: "@sukunlife",
     },
     robots: {
       index: true,
@@ -110,8 +110,8 @@ export async function generateMetadata() {
       "online learning",
       "live ruqyah",
       "ruqyah support",
-      'book appointment',
-      "ruqyah session"
+      "book appointment",
+      "ruqyah session",
     ],
     // viewport: {
     //   width: "device-width",
@@ -164,7 +164,7 @@ export default async function RootLayout({ children }) {
           <TokenRefresh refreshToken={refreshToken}>
             <ThemeProvider>
               <Navbar />
-              {children}
+              <div className="min-h-[calc(100vh-110px)]">{children}</div>
               <Footer />
             </ThemeProvider>
           </TokenRefresh>
