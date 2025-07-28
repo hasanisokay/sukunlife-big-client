@@ -4,6 +4,7 @@
 :root {
   --text-primary: #1f2937; /* Default text color for light mode */
   --text-secondary: #4b5563; /* Secondary text color for light mode */
+   --text-green: #63953A; 
   --bg-primary: #ffffff; /* Background color for light mode */
   --bg-secondary: #f3f4f6; /* Secondary background for light mode */
   --border-color: #d1d5db; /* Border color for light mode */
@@ -18,6 +19,7 @@
 [data-theme="dark"] {
   --text-primary: #f3f4f6; /* Default text color for dark mode */
   --text-secondary: #9ca3af; /* Secondary text color for dark mode */
+  --text-green: #63953A; /* green text color for dark mode */
   --bg-primary: #1f2937; /* Background color for dark mode */
   --bg-secondary: #111827; /* Secondary background for dark mode */
   --border-color: #374151; /* Border color for dark mode */
@@ -46,6 +48,9 @@ body {
 
 .text-secondary {
   color: var(--text-secondary);
+}
+.text-green {
+  color: var(--text-green);
 }
 
 .bg-primary {
@@ -259,27 +264,17 @@ svg.star-svg {
   animation: pop 0.4s ease-in-out;
 }
 
-@media (max-width: 840px) {
+@media (max-width: 1050px) {
   .nav-items {
     display: none;
   }
-  .logo-lg{
-    display: none;
-  }
 }
-@media (min-width: 841px) {
-  .logo-lg{
-    display: block;
-    margin-left: 24px;
-  }
-  .logo-nav{
-    align-items: center;
-    justify-content: start;
-  }
-  .nav-theme-switch{
+@media (min-width: 1050px) {
+
+  /* .nav-theme-switch {
     display: none;
-  }
-  .nav-theme-switch-lg{
+  } */
+  .nav-theme-switch-lg {
     display: none;
   }
   .nav-items {
@@ -288,5 +283,43 @@ svg.star-svg {
 }
 
 .navbar-background {
-  background-color: var(--navbar-bg-color); /* Use CSS variables for dynamic theming */
+  background-color: var(
+    --navbar-bg-color
+  ); /* Use CSS variables for dynamic theming */
+}
+
+#login_bg_image {
+  background-image: url("./../../public//bgImages/login_page_bg.jpeg");
+  height: 100vh;
+}
+
+.btn-rounded-green {
+  background-color: #63953a;
+  color: #ffffff;
+}
+.btn-rounded-transparent {
+  font-size: 16px;
+  font-family: Montserrat;
+  font-weight: 400;
+  line-height: 37px;
+  letter-spacing: -0.20000000298023224px;
+  text-align: center;
+}
+.btn-rounded-transparent:hover{
+  background-color: #63953a;
+  color: #ffffff;
+  transition: all;
+   transition-duration: 500ms;
+}
+.green-border {
+  border-style: solid; 
+  border-color: #63953A;
+  border-width: 1px; 
+}
+.nav-buttons{
+  font-size: 16px;
+font-family: Montserrat;
+color: #2d2e2e;
+font-weight: 400;
+letter-spacing: 0%;
 }

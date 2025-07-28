@@ -7,7 +7,6 @@ import Link from "next/link";
 import { SERVER } from "@/constants/urls.mjs";
 import SubmitButton from "../ui/btn/SubmitButton";
 
-
 const loginSchema = z.object({
   userIdentifier: z
     .string()
@@ -67,8 +66,9 @@ export default function LoginForm({ redirectTo }) {
   };
 
   return (
-    <div className="flex justify-center md:items-center h-screen bg-primary text-primary">
-      <div className="w-full max-w-md bg-secondary p-6 rounded-lg shadow-md border">
+    // <div className="flex justify-center md:items-center h-screen bg-primary text-primary">
+    <div id="login_bg_image">
+      <div className="w-full max-w-md bg-white opacity-75 p-6 rounded-lg shadow-md border">
         <h2 className="text-2xl font-semibold mb-6">Login</h2>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="mb-4">
