@@ -20,10 +20,8 @@ const Navbar = () => {
   const user = useSelector((state) => state.user.userData);
   const cart = useSelector((state) => state.cart.cartData);
   const dispatch = useDispatch();
-  const theme = useSelector((state) => state.theme.mode);
   const [cartItems, setCartItems] = useState(cart?.length || 0)
   const toggleMenu = () => setMenuOpen(!menuOpen);
-  const toggleUserMenu = () => setUserMenuOpen(!userMenuOpen);
   const handleScroll = () => {
     if (window.scrollY > lastScrollY) {
       setVisible(false);
@@ -108,7 +106,7 @@ const Navbar = () => {
             }`}
           aria-label="Global"
         >
-          <div className="flex min-h-[55px] items-center justify-between relative">
+          <div className="flex min-h-[110px] items-center justify-between relative">
             <div className="absolute inset-y-0 right-0 flex items-center nav-theme-switch-lg">
               <button
                 type="button"

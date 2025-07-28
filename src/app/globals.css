@@ -4,7 +4,7 @@
 :root {
   --text-primary: #1f2937; /* Default text color for light mode */
   --text-secondary: #4b5563; /* Secondary text color for light mode */
-   --text-green: #63953A; 
+  --text-green: #63953a;
   --bg-primary: #ffffff; /* Background color for light mode */
   --bg-secondary: #f3f4f6; /* Secondary background for light mode */
   --border-color: #d1d5db; /* Border color for light mode */
@@ -19,7 +19,7 @@
 [data-theme="dark"] {
   --text-primary: #f3f4f6; /* Default text color for dark mode */
   --text-secondary: #9ca3af; /* Secondary text color for dark mode */
-  --text-green: #63953A; /* green text color for dark mode */
+  --text-green: #63953a; /* green text color for dark mode */
   --bg-primary: #1f2937; /* Background color for dark mode */
   --bg-secondary: #111827; /* Secondary background for dark mode */
   --border-color: #374151; /* Border color for dark mode */
@@ -67,12 +67,12 @@ body {
 
 .link {
   color: var(--link-color);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .link:hover {
   color: var(--link-color);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 /* Button Styles */
@@ -130,7 +130,10 @@ body {
     0px 0px 0px 3.5px rgba(58, 108, 217, 0.5);
   outline: 0;
 }
-
+.btn-submit{
+  background-color: #779341;
+  color: white;
+}
 .btn-cancel {
   background-color: var(--btn-cancel);
   border-color: var(--btn-cancel);
@@ -224,8 +227,11 @@ svg.star-svg {
 .montserrat-font {
   font-family: "Montserrat", sans-serif;
 }
+.sacramento-font {
+  font-family: "Sacramento", sans-serif;
+}
 
-.group:hover::after {
+/* .group:hover::after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -234,7 +240,7 @@ svg.star-svg {
   height: 2px;
   background: linear-gradient(to right, #ffffff, #ef4444);
   animation: underline 0.3s ease forwards;
-}
+} */
 
 @keyframes underline {
   from {
@@ -270,7 +276,6 @@ svg.star-svg {
   }
 }
 @media (min-width: 1050px) {
-
   /* .nav-theme-switch {
     display: none;
   } */
@@ -288,10 +293,10 @@ svg.star-svg {
   ); /* Use CSS variables for dynamic theming */
 }
 
-#login_bg_image {
+/* #login_bg_image {
   background-image: url("./../../public//bgImages/login_page_bg.jpeg");
   height: 100vh;
-}
+} */
 
 .btn-rounded-green {
   background-color: #63953a;
@@ -305,21 +310,25 @@ svg.star-svg {
   letter-spacing: -0.20000000298023224px;
   text-align: center;
 }
-.btn-rounded-transparent:hover{
+.btn-rounded-transparent:hover {
   background-color: #63953a;
   color: #ffffff;
   transition: all;
-   transition-duration: 500ms;
+  transition-duration: 500ms;
 }
 .green-border {
-  border-style: solid; 
-  border-color: #63953A;
-  border-width: 1px; 
+  border-style: solid;
+  border-color: #63953a;
+  border-width: 1px;
 }
-.nav-buttons{
+.nav-buttons {
   font-size: 16px;
-font-family: Montserrat;
-color: #2d2e2e;
-font-weight: 400;
-letter-spacing: 0%;
+  font-family: Montserrat;
+  color: #2d2e2e;
+  font-weight: 400;
+  letter-spacing: 0%;
+}
+
+.font-georgia {
+  font-family: Georgia, "Times New Roman", Times, serif;
 }

@@ -5,9 +5,9 @@ const SubmitButton = ({ loading, styles, onsubmit }) => {
             role="button"
             onSubmit={onsubmit}
             disabled={loading}
-            className={`btn-sm w-full  btn-submit ${styles}`}
+            className={`w-[236px] h-[54px] text-white opacity-100 bg-[#779341] rounded-full ${styles}`}
         >
-            {loading ? <span className="btn-loader"></span> : <span className="inline-block">Login</span>}
+            {loading ? <span className="btn-loader"></span> : <span className="inline-block">Sign In</span>}
         </button>
     );
 };

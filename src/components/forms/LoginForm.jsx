@@ -6,6 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { SERVER } from "@/constants/urls.mjs";
 import SubmitButton from "../ui/btn/SubmitButton";
+import bgImage from "@/../public/bgImages/login_page_bg.jpeg"
+import Image from "next/image";
+import SocialIcons from "../shared/SocialIcons";
 
 const loginSchema = z.object({
   userIdentifier: z
@@ -67,18 +70,32 @@ export default function LoginForm({ redirectTo }) {
 
   return (
     // <div className="flex justify-center md:items-center h-screen bg-primary text-primary">
-    <div id="login_bg_image">
-      <div className="w-full max-w-md bg-white opacity-75 p-6 rounded-lg shadow-md border">
-        <h2 className="text-2xl font-semibold mb-6">Login</h2>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <div className="relative">
+      <div className="max-h-[100vh]">
+        <Image className="w-full min-h-[100vh] z-0" src={bgImage} width={1000} height={1000} alt="login-background-image" />
+      </div>
+      <div className="z-10 w-full absolute lg:top-[100px] top-2 left-1/2 transform -translate-x-1/2  max-w-md bg-white bg-opacity-75 p-6 rounded-3xl shadow-md ">
+        <div className="flex justify-between items-start">
+          <h2 className="text-2xl font-semibold mb-6 font-georgia text-black">Welcome to <span className="text-green">Sukunlife</span></h2>
+          <div className="text-[13px] text-black">
+            <p>No Account?</p>
+            <Link className="text-green hover:underline" href="/signup" >
+              Sign up
+            </Link>
+          </div>
+        </div>
+        <p className="sacramento-font text-[55px] font-medium text-black mb-[46px]">Sign in</p>
+        <SocialIcons />
+        <form className="mt-[52px] montserrat-font tracking-normal" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="mb-4">
             <label
               htmlFor="userIdentifier"
               className="block text-sm font-medium text-secondary"
             >
-              Mobile Number or Email
+              Enter your Mobile Number or Email
             </label>
             <input
+              placeholder="Mobile Number or Email"
               type="text"
               id="userIdentifier"
               {...register("userIdentifier")}
@@ -97,9 +114,10 @@ export default function LoginForm({ redirectTo }) {
               htmlFor="password"
               className="block text-sm font-medium text-secondary"
             >
-              Password
+             Enter your Password
             </label>
             <input
+              placeholder="Password"
               type="password"
               id="password"
               {...register("password")}
@@ -124,21 +142,21 @@ export default function LoginForm({ redirectTo }) {
           >
             {loading ? <span className="btn-loader"></span> : <span className="inline-block">Login</span>}
           </button> */}
-          <SubmitButton
-            loading={loading}
-            onsubmit={handleSubmit(onSubmit)}
-            styles="btn-submit"
-          />
+          <div className="mt-4 text-end text-sm">
+            <Link href="/identity" className="link">
+              Forgot password
+            </Link>
+          </div>
+          <div className="mt-[48px] text-right">
+            <SubmitButton
+              loading={loading}
+              onsubmit={handleSubmit(onSubmit)}
+            // styles="btn-submit"
+            />
+          </div>
         </form>
 
-        <div className="mt-4 flex justify-between text-sm">
-          <Link href="/signup" className="link">
-            Sign up
-          </Link>
-          <Link href="/identity" className="link">
-            Forgot password?
-          </Link>
-        </div>
+
       </div>
       {/* <ToastContainer /> */}
     </div>

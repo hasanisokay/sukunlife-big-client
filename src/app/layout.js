@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Montserrat } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat, Sacramento } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/nav/Navbar";
 import StoreProvider from "@/components/providers/StoreProvider";
@@ -17,6 +17,7 @@ import { websiteName } from "@/constants/names.mjs";
 import sukunLifeImage from "@/../public/images/sukunlife.jpg";
 import capitalize from "@/utils/capitalize.mjs";
 import TokenRefresh from "@/components/providers/TokenRefresh";
+import Footer from "@/components/shared/Footer";
 
 // Font configurations
 const geistSans = Geist({
@@ -35,6 +36,12 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
   display: "swap",
+});
+const sacramento = Sacramento({
+  variable: "--font-sacramento",
+  subsets: ["latin"],
+  display: "swap",
+   weight: ["400"],
 });
 
 // Metadata configuration
@@ -151,13 +158,14 @@ export default async function RootLayout({ children }) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  ${sacramento.variable} antialiased`}
       >
         <StoreProvider initialReduxState={initialReduxState}>
           <TokenRefresh refreshToken={refreshToken}>
             <ThemeProvider>
               <Navbar />
               {children}
+              <Footer />
             </ThemeProvider>
           </TokenRefresh>
         </StoreProvider>
