@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Montserrat, Sacramento } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat, Sacramento, Charis_SIL } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/nav/Navbar";
 import StoreProvider from "@/components/providers/StoreProvider";
@@ -36,6 +36,12 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
   display: "swap",
+});
+const charisSIL = Charis_SIL({
+  variable: "--font-charisSIL",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ['400', '700']
 });
 const sacramento = Sacramento({
   variable: "--font-sacramento",
@@ -158,7 +164,7 @@ export default async function RootLayout({ children }) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  ${sacramento.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  ${sacramento.variable}  ${charisSIL.variable} antialiased`}
       >
         <StoreProvider initialReduxState={initialReduxState}>
           <TokenRefresh refreshToken={refreshToken}>

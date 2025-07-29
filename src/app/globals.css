@@ -227,6 +227,9 @@ svg.star-svg {
 .montserrat-font {
   font-family: "Montserrat", sans-serif;
 }
+.charisSIL-font {
+  font-family: 'Charis SIL',sans-serif 
+}
 .sacramento-font {
   font-family: "Sacramento", sans-serif;
 }
@@ -332,3 +335,5 @@ svg.star-svg {
 .font-georgia {
   font-family: Georgia, "Times New Roman", Times, serif;
 }
+
+

@@ -104,7 +104,7 @@ const SingleCoursePage = ({ course }) => {
         } else {
             toast.success('Added to cart.', { autoClose: 700 })
         }
-        // Add your cart logic here
+
     };
 
     return (

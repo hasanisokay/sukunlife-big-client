@@ -69,7 +69,7 @@ export default function LoginForm({ redirectTo }) {
   };
 
   return (
-    <div className="h-[890px] ">
+    <div className="h-[890px]">
       <div className="absolute top-0 bottom-0 right-0 left-0 h-[900px]">
         <Image className="w-full h-[1000px]  object-cover pointer-events-none select-none" src={bgImage} width={1000} height={1000} alt="login-background-image" />
       </div>

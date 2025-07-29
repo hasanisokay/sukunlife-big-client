@@ -19,6 +19,7 @@ const AddCourse = () => {
     const [idAvailable, setIdAvailable] = useState(false);
     const [modules, setModules] = useState([]);
     const [coverPhotoUrl, setCoverPhotoUrl] = useState([]);
+    const [instructorImage, setInstructorImage] = useState([]);
     const [learningItems, setLearningItems] = useState([{ text: '' }]);
 
     const onSubmit = async (data) => {
@@ -36,6 +37,7 @@ const AddCourse = () => {
             reset();
             setModules([]);
             setCoverPhotoUrl('');
+            setInstructorImage('')
             setIdAvailable(false);
             setIdCheckMessage("");
             setCheckingId(false);
@@ -359,6 +361,13 @@ const AddCourse = () => {
             setCoverPhotoUrl(imageUrl);
         }
     };
+    const handleUploadInstructorImage = async (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const imageUrl = await uploadImage(file);
+            setInstructorImage(imageUrl);
+        }
+    };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-4 bg-white shadow-md rounded-lg">
@@ -374,6 +383,16 @@ const AddCourse = () => {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                 />
                 {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
+            </div>
+            <div className="mb-4">
+                <label htmlFor="duration" className="block text-sm font-medium text-gray-700">Duration (ex: 4 weeks)</label>
+                <input
+                    type="text"
+                    id="duration"
+                    {...register('duration', { required: 'Duration is required' })}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+                {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration.message}</p>}
             </div>
             <div className="mb-4">
                 <label htmlFor="courseId" className="block text-sm font-medium text-gray-700">Course Id</label>
@@ -401,8 +420,23 @@ const AddCourse = () => {
                     {...register('instructor', { required: 'Instructor is required' })}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                 />
-                {errors.instructor && <p className="text-red-500 text-sm mt-1">{errors.instructor.message}</p>}
+                {errors?.instructor && <p className="text-red-500 text-sm mt-1">{errors?.instructor?.message}</p>}
             </div>
+            <div className="mb-4">
+                <label htmlFor="instructorImage" className="block text-sm font-medium text-gray-700">Instructor Image</label>
+                 <input
+                    type="file"
+                    id="instructorImage"
+                    accept="image/*"
+                    onChange={handleUploadInstructorImage}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+                    {coverPhotoUrl?.length > 1 && (
+                    <img src={instructorImage} alt="Instructor" className="mt-2 w- h-48 object-cover rounded-lg" />
+                )}
+            </div>
+
+
             <div className="mb-4">
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
                 <input
@@ -417,7 +451,7 @@ const AddCourse = () => {
                 <Controller
                     name="addedOn"
                     control={control}
-                    rules={{ required: 'Date is required' }}
+                    // rules={{ required: 'Date is required' }}
                     render={({ field }) => (
                         <DatePicker
                             defaultDate={new Date()}
