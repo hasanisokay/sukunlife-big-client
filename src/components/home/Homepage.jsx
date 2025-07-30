@@ -21,6 +21,9 @@ import DotsSVG2 from "../svg/DotsSVG2";
 import SelfDiagnosisSection from "./SelfDiagnoseSection";
 import CoursesSectionHome from "./CoursesSectionHome";
 import ProductSectionHome from "./ProductSectionHome";
+import SelfRuqyahResoursesSectionHome from "./SelfRuqyahResoursesSectionHome";
+import BlogsAndArticleSectionHome from "./BlogsAndArticleSectionHome";
+import TestimonialSectionHome from "./TestimonialSectionHome";
 // SVG Icons
 const BookSVG = () => (
   <svg className="w-10 h-10 mr-3 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,7 +156,7 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
           <h2 className="text-center text-green font-semibold lg:text-[32px]">Little <span className="text-black">About us</span></h2>
           <p className="text-center mt-2 text-gray-700 text-sm sm:text-base">
             At Sukun Life Counselling Service, we are dedicated to providing holistic healing through Islamic spiritual
-            guidance. Whether you seek Ruqaya sessions, self-diagnosis, or more...
+            guidance. Whether you seek Ruqyah sessions, self-diagnosis, or more...
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8 text-center">
             <div>
@@ -176,8 +179,9 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
       <SelfDiagnosisSection />
       <CoursesSectionHome topCourses={topCourses} />
       <ProductSectionHome topProducts={topProducts} />
-
-
+      <SelfRuqyahResoursesSectionHome />
+      <BlogsAndArticleSectionHome recentBlogs={recentBlogs} />
+      <TestimonialSectionHome appointmentReviews={appointmentReviews} shopReviews={shopReviews} courseReviews={courseReviews} />
       <div className=" logo-lg">
         {themeSwitch}
       </div>

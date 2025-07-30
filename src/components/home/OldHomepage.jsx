@@ -149,7 +149,7 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
         <h2 className="text-center text-green-600 font-semibold text-xl">Little <span className="text-black">About us</span></h2>
         <p className="text-center mt-2 text-gray-700 text-sm sm:text-base">
           At Sukun Life Counselling Service, we are dedicated to providing holistic healing through Islamic spiritual
-          guidance. Whether you seek Ruqaya sessions, self-diagnosis, or more...
+          guidance. Whether you seek Ruqyah sessions, self-diagnosis, or more...
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8 text-center">

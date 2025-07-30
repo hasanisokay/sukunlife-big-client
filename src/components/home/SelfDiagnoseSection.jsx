@@ -17,19 +17,19 @@ const SelfDiagnosisSection = () => {
   ];
 
   return (
-    <section className="px-6 py-16 bg-white flex flex-col lg:flex-row items-center justify-around gap-10 max-w-7xl mx-auto">
+    <section className="px-6 py-16  flex flex-col lg:flex-row items-center justify-around gap-10 max-w-7xl mx-auto">
       {/* Left Content */}
       <div className="max-w-xl text-center lg:text-left">
         <h2 className="md:text-[60px] text-[30px] font-bold leading-tight">
           <span className="text-green">Self-Diagnose</span> <br />
-          <span className="text-[#3E2E20]">Your Condition</span>
+          <span className="text-[#3E2E20] dark:text-white">Your Condition</span>
         </h2>
-        <p className="mt-4 text-gray-600 text-sm sm:text-base">
+        <p className="mt-4 text-black dark:text-white text-sm sm:text-base">
           If you're experiencing unexplained health issues, mood swings, or distress, use our Self-Diagnosis Tool
           to identify possible spiritual concerns such as
         </p>
         <a href="https://test.sukunlife.com" target="_blank" rel="noopener noreferrer">
-          <button className="mt-6 btn-rounded-green font-semibold py-3 px-6 rounded-full transition">
+          <button className="mt-6 w-[350px] h-[82px] btn-rounded-green font-semibold rounded-full transition">
             Explore self-healing now!
           </button>
         </a>

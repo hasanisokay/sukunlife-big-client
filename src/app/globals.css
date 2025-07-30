@@ -5,6 +5,9 @@
   --text-primary: #1f2937; /* Default text color for light mode */
   --text-secondary: #4b5563; /* Secondary text color for light mode */
   --text-green: #63953a;
+  --bg-green: #63953a;
+  --text-orange: #f7ca41;
+  --bg-orange: #ffc267;
   --bg-primary: #ffffff; /* Background color for light mode */
   --bg-secondary: #f3f4f6; /* Secondary background for light mode */
   --border-color: #d1d5db; /* Border color for light mode */
@@ -19,7 +22,10 @@
 [data-theme="dark"] {
   --text-primary: #f3f4f6; /* Default text color for dark mode */
   --text-secondary: #9ca3af; /* Secondary text color for dark mode */
-  --text-green: #63953a; /* green text color for dark mode */
+  --text-green: #63953a;
+  --bg-green: #63953a;
+  --text-orange: #ffc267;
+  --bg-orange: #f7ca41;
   --bg-primary: #1f2937; /* Background color for dark mode */
   --bg-secondary: #111827; /* Secondary background for dark mode */
   --border-color: #374151; /* Border color for dark mode */
@@ -51,6 +57,15 @@ body {
 }
 .text-green {
   color: var(--text-green);
+}
+.text-orange {
+  color: var(--text-orange);
+}
+.bg-orange {
+  background-color: var(--bg-orange);
+}
+.bg-green {
+  background-color: var(--bg-green);
 }
 
 .bg-primary {
@@ -130,7 +145,7 @@ body {
     0px 0px 0px 3.5px rgba(58, 108, 217, 0.5);
   outline: 0;
 }
-.btn-submit{
+.btn-submit {
   background-color: #779341;
   color: white;
 }
@@ -228,7 +243,7 @@ svg.star-svg {
   font-family: "Montserrat", sans-serif;
 }
 .charisSIL-font {
-  font-family: 'Charis SIL',sans-serif 
+  font-family: "Charis SIL", sans-serif;
 }
 .sacramento-font {
   font-family: "Sacramento", sans-serif;
@@ -336,4 +351,45 @@ svg.star-svg {
   font-family: Georgia, "Times New Roman", Times, serif;
 }
 
-
+.explore-self-ruqyah-now-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+.btn-explore-self-ruqyah-now2-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+}
+.explore-self-ruqyah-now-wrapper {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+}
+@media (min-width: 1121px) {
+  .btn-explore-self-ruqyah-now {
+    display: block;
+    margin-bottom: 70px;
+    margin-top: 80px;
+  }
+  .self-ruqyah-resources-right-side-div{
+    padding-top: 20px;
+  }
+  .explore-self-ruqyah-now-wrapper {
+    gap: 125px;
+  }
+  .btn-explore-self-ruqyah-now2 {
+    display: none;
+  }
+}
+@media (max-width: 1120px) {
+  .btn-explore-self-ruqyah-now {
+    display: none;
+    margin-bottom: 0px;
+  }
+  .explore-self-ruqyah-now-wrapper {
+    gap: 40px;
+  }
+}
