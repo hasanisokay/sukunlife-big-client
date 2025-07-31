@@ -25,11 +25,11 @@ const page = async () => {
       topProductsRes?.status === 200 ? topProductsRes?.data : [];
     return (
       <Homepage
-        appointmentReviews={topReviews?.appointmentReviews}
-        recentBlogs={recentBlogs?.blogs}
-        topCourses={topCourses?.courses}
-        topProducts={topProducts}
-        shopReviews={topReviews?.shopReviews}
+      recentBlogs={recentBlogs?.blogs}
+      topCourses={topCourses?.courses}
+      topProducts={topProducts}
+      shopReviews={topReviews?.shopReviews}
+      appointmentReviews={topReviews?.appointmentReviews}
         courseReviews={topReviews?.courseReviews}
       />
     );

@@ -3,6 +3,7 @@ import aboutUsBanner from "@/../public/bgImages/about-us.jpg";
 import FeaturesSection from "./FeaturesSection";
 import ServicesSection from "./ServicesSection";
 import TestimonialSectionInAboutUs from "./TestimonialSectionInAboutUs";
+import SukunLifeMission from "../shared/SukunLifeMission";
 
 const AboutUs = () => {
     return (
@@ -49,6 +50,7 @@ const AboutUs = () => {
             <FeaturesSection />
             <ServicesSection />
             <TestimonialSectionInAboutUs />
+        <SukunLifeMission />
         </div>
     );
 };

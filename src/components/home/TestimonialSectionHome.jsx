@@ -2,9 +2,8 @@ import React from 'react';
 import TransparentGreenButton from './TransparentGreenButton';
 import TestimonialCard from './TestimonialCardHome';
 
-const TestimonialSectionHome = ({ appointmentReviews, shopReviews, courseReviews, }) => {
-    // console.log({ appointmentReviews, shopReviews, courseReviews, })
-    const repeatedArray = Array(4).fill(appointmentReviews[0]);
+const TestimonialSectionHome = ({ appointmentReviews, shopReviews, courseReviews, showMoreButton =true }) => {
+    if (!appointmentReviews && !shopReviews && !courseReviews) return;
     return (
         <div className='pt-[144px] px-4 md:pb-[160px] pb-[100px] '>
             <div className=" explore-self-ruqyah-now-wrapper">
@@ -19,12 +18,23 @@ const TestimonialSectionHome = ({ appointmentReviews, shopReviews, courseReviews
                 <div className="md:w-[482px] self-ruqyah-resources-right-side-div">
                 </div>
             </div>
-            <div className='flex justify-center gap-[59px] flex-wrap'>
+            <div className='flex justify-center gap-[59px] flex-wrap py-4'>
                 {appointmentReviews?.length > 0 && appointmentReviews?.map((appointmentReview) => <div key={appointmentReview?._id}>
                     <TestimonialCard testimonial={appointmentReview} />
                 </div>)}
+
+                {courseReviews?.length > 0 && courseReviews?.map((r) => (
+                    <div key={r._id}>
+                        <TestimonialCard testimonial={r?.reviews[0]} />
+                    </div>
+                ))}
+                {shopReviews?.length > 0 && shopReviews?.map((r) => (
+                    <div key={r._id}>
+                        <TestimonialCard testimonial={r?.reviews[0]} />
+                    </div>
+                ))}
             </div>
-            {appointmentReviews?.length > 0 && <TransparentGreenButton hrefLink={'/about-us'} text={'More Testimonial'} />}
+            {showMoreButton && <TransparentGreenButton hrefLink={'/about-us#testimonial'} text={'More Testimonial'} />}
         </div>
     );
 };
