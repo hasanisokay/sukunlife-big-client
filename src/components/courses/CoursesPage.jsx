@@ -4,13 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import LoadMoreButton from "../ui/btn/LoadMoreButton";
 import CourseCard from "./CourseCard";
 import { useSelector } from "react-redux";
-import Link from "next/link";
+import FixedCart from "../shared/FixedCart";
 
 
 const CoursesPage = ({ courses, page }) => {
   const [savedCourses, setSavedCourses] = useState(courses?.courses);
   const memorizedCourses = useMemo(() => savedCourses, [savedCourses]);
-  const cartItems = useSelector((state) => state.cart.cartData);
   const [hasMounted, setHasMounted] = useState(false);
 
 
@@ -57,20 +56,7 @@ const CoursesPage = ({ courses, page }) => {
 
 
       {/* Fixed Cart Icon */}
-      {hasMounted && cartItems?.length > 0 && (
-        <Link href="/cart" passHref>
-          <div
-            className="fixed bottom-8 right-8 bg-[#2e3e23] text-white p-4 rounded-full shadow-lg hover:bg-[#4a5e3b] transition-all duration-300 z-50"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h18l-2 9H5L3 3zm0 0l2 9m0 0l2 6h10l2-6m-8 0h4" />
-            </svg>
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              {cartItems.length}
-            </span>
-          </div>
-        </Link>
-      )}
+      <FixedCart />
     </div>
   );
 };

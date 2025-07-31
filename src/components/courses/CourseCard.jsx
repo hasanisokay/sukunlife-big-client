@@ -87,7 +87,7 @@ const CourseCard = ({ course }) => {
 
         >
           <h3 className="text-md font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
-            What You'll Learn
+            Who This Course is For
           </h3>
           <ul className="space-y-1 text-gray-600 dark:text-gray-300 text-xs max-h-32 overflow-y-auto">
             {course.learningItems?.length > 0 ? (
@@ -132,8 +132,8 @@ const CourseCard = ({ course }) => {
             />
           </div>
           <p className="italic">Duration: {course?.duration || "Not available"}</p>
-          <div className="flex justify-between gap-2">
-            <p className="text-xl text-black font-semibold flex items-center">
+          <div className="flex justify-between items-center gap-2">
+            <p className="text-xl text-black font-semibold flex items-center ">
               <span>Price:</span> &nbsp; <TakaSVG
                 className="w-5 h-5 mr-1"
                 color={theme === "light" ? "#00000" : "#00000"}
@@ -150,7 +150,7 @@ const CourseCard = ({ course }) => {
                 return handleAddToCart(false)
               }}
             >
-              {alreadyEnrolled ? "Continue to course" : itemAddedToCart ? "View Cart" : "Add to cart"}
+              {alreadyEnrolled ? "Continue" : itemAddedToCart ? "View Cart" : "Add to cart"}
             </button>
           </div>
 

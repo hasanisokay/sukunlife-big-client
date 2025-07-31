@@ -6,7 +6,6 @@ import RichTextEditor from '@/components/editor/RichTextEditor';
 import uploadImage from '@/utils/uploadImage.mjs';
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
 import DatePicker from '@/components/ui/datepicker/Datepicker';
-import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
 import checkCourseId from '@/server-functions/checkCourseId.mjs';
@@ -17,24 +16,33 @@ const EditCourse = ({ course }) => {
     const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
     const [modules, setModules] = useState([]);
     const [coverPhotoUrl, setCoverPhotoUrl] = useState('');
+    const [instructorImage, setInstructorImage] = useState('');
     const [checkingId, setCheckingId] = useState(false);
     const [idAvailable, setIdAvailable] = useState(true);
     const [idCheckMessage, setIdCheckMessage] = useState('');
     const [learningItems, setLearningItems] = useState([{ text: '' }]);
-
+    const [additionalMaterials, setAdditionalMaterials] = useState([{ text: '' }]);
+    const [courseIncludes, setCourseIncludes] = useState([{ text: '' }]);
     useEffect(() => {
         if (course) {
             reset(course);
             setModules(course.modules || []);
-            setLearningItems(course.learningItems)
-            setCoverPhotoUrl(course.coverPhotoUrl || '');
+            setLearningItems(course?.learningItems)
+            setCourseIncludes(course?.courseIncludes || [{ text: '' }])
+            setAdditionalMaterials(course?.additionalMaterials || [{ text: '' }])
+            setCoverPhotoUrl(course?.coverPhotoUrl || '');
+            setInstructorImage(course?.instructorImage)
             setValue('courseId', course.courseId || '');
             setValue('price', course.price || '');
             setValue('description', course.description || '');
+            setValue('aboutInstructor', course.aboutInstructor || '');
             setValue('addedOn', course.addedOn ? new Date(course?.addedOn) : new Date());
             setValue('tags', course.tags || '');
             setValue('seoDescription', course.seoDescription || '');
             setValue('instructor', course.instructor || '');
+            setValue('duration', course.duration || '');
+            setValue('instructorDesignation', course.instructorDesignation || '');
+            setValue('shortDescription', course.shortDescription || '');
         }
     }, [course, reset, setValue]);
 
@@ -45,7 +53,7 @@ const EditCourse = ({ course }) => {
         const date = getDateObjWithoutTime(dateObj);
         data.addedOn = date;
         data.updatedOn = getDateObjWithoutTime(now);
-        const d = await editCourse(data, modules, coverPhotoUrl, learningItems, course._id);
+        const d = await editCourse(data, modules, coverPhotoUrl, learningItems, course._id, instructorImage, additionalMaterials, courseIncludes);
         if (d?.status === 200) {
             toast.success(d.message);
             window.location.href = "/dashboard/courses"
@@ -61,6 +69,24 @@ const EditCourse = ({ course }) => {
         setModules(updatedModules);
     };
 
+    const handleLearningInputChange = (e, index) => {
+        const updatedItems = learningItems.map((item, idx) =>
+            idx === index ? { ...item, text: e.target.value } : item
+        );
+        setLearningItems(updatedItems);
+    };
+    const handleAdditionalMaterialsInputChange = (e, index) => {
+        const updatedItems = additionalMaterials?.map((item, idx) =>
+            idx === index ? { ...item, text: e.target.value } : item
+        );
+        setAdditionalMaterials(updatedItems);
+    };
+    const handleCourseIncludesInputChange = (e, index) => {
+        const updatedItems = courseIncludes?.map((item, idx) =>
+            idx === index ? { ...item, text: e.target.value } : item
+        );
+        setCourseIncludes(updatedItems);
+    };
     const handleModuleTitleChange = (moduleId, title) => {
         const updatedModules = modules.map((module, index) => {
             if (index === moduleId) {
@@ -344,7 +370,13 @@ const EditCourse = ({ course }) => {
         }
     };
 
-
+    const handleUploadInstructorImage = async (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const imageUrl = await uploadImage(file);
+            setInstructorImage(imageUrl);
+        }
+    };
     const checkIdAvailability = async (id) => {
         setCheckingId(true);
         try {
@@ -375,7 +407,26 @@ const EditCourse = ({ course }) => {
                 />
                 {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
             </div>
-
+            <div className="mb-4">
+                <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700">Short Description</label>
+                <input
+                    type="text"
+                    id="shortDescription"
+                    {...register('shortDescription', { required: 'Short Description is required' })}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+                {errors.shortDescription && <p className="text-red-500 text-sm mt-1">{errors.shortDescription.message}</p>}
+            </div>
+            <div className="mb-4">
+                <label htmlFor="duration" className="block text-sm font-medium text-gray-700">Duration (ex: 4 weeks)</label>
+                <input
+                    type="text"
+                    id="duration"
+                    {...register('duration', { required: 'Duration is required' })}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+                {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration.message}</p>}
+            </div>
             {/* Course Description */}
             <div className="mb-4">
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">Course Description</label>
@@ -450,6 +501,50 @@ const EditCourse = ({ course }) => {
                 {errors.instructor && <p className="text-red-500 text-sm mt-1">{errors.instructor.message}</p>}
             </div>
             <div className="mb-4">
+                <label htmlFor="instructorImage" className="block text-sm font-medium text-gray-700">Instructor Image</label>
+                <input
+                    type="file"
+                    id="instructorImage"
+                    accept="image/*"
+                    onChange={handleUploadInstructorImage}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+                {instructorImage?.length > 1 && (
+                    <img src={instructorImage} alt="Instructor" className="mt-2 w- h-48 object-cover rounded-lg" />
+                )}
+            </div>
+            <div className="mb-4">
+                <label htmlFor="instructorDesignation" className="block text-sm font-medium text-gray-700">Instructor Designations</label>
+                <input
+                    type="text"
+                    id="instructorDesignation"
+                    {...register('instructorDesignation',)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                    placeholder="Separated by commas (ex:Teacher, Dawi)"
+                />
+            </div>
+
+            <div className="mb-4">
+                <label htmlFor="aboutInstructor" className="block text-sm font-medium text-gray-700">About Instructor</label>
+                <Controller
+                    name="aboutInstructor"
+                    control={control}
+                    render={({ field }) => {
+                        if (field.value === undefined) return;
+                        return <RichTextEditor
+                            value={field.value}
+                            onContentChange={field.onChange}
+                            key={`Editing About Instructor Rich Text Key course`}
+                            uniqueKey={generateUniqueIds(1)}
+                            initialContent={field.value}
+                        />
+                    }
+                    }
+                />
+                {errors.aboutInstructor && <p className="text-red-500 text-sm mt-1">{errors.aboutInstructor.message}</p>}
+            </div>
+
+            <div className="mb-4">
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
                 <input
                     type="number"
@@ -460,7 +555,61 @@ const EditCourse = ({ course }) => {
                 {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
             </div>
             <div className='mb-4'>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">What you will learn</h3>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">Course Includes</h3>
+                {courseIncludes?.map((item, index) => (
+                    <div key={index} className="mb-4 flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={item.text}
+                            onChange={(e) => handleCourseIncludesInputChange(e, index)}
+                            placeholder={`Enter text ${index + 1}`}
+                            className="p-2 border rounded-md w-full"
+                        />
+                        <button
+                            onClick={() => setCourseIncludes(courseIncludes?.filter((_, idx) => idx !== index))}
+                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                ))}
+                <button
+                    type='button'
+                    onClick={() => setCourseIncludes([...courseIncludes, { text: '' }])}
+                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                    Add Another
+                </button>
+            </div>
+            <div className='mb-4'>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">Additional Materials</h3>
+                {additionalMaterials?.map((item, index) => (
+                    <div key={index} className="mb-4 flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={item.text}
+                            onChange={(e) => handleAdditionalMaterialsInputChange(e, index)}
+                            placeholder={`Enter text ${index + 1}`}
+                            className="p-2 border rounded-md w-full"
+                        />
+                        <button
+                            onClick={() => setAdditionalMaterials(additionalMaterials?.filter((_, idx) => idx !== index))}
+                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                ))}
+                <button
+                    type='button'
+                    onClick={() => setAdditionalMaterials([...additionalMaterials, { text: '' }])}
+                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                    Add Another
+                </button>
+            </div>
+            <div className='mb-4'>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">Who This Course is For</h3>
                 {learningItems?.map((item, index) => (
                     <div key={index} className="mb-4 flex items-center space-x-2">
                         <input

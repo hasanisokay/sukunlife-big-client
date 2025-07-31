@@ -4,7 +4,6 @@ import { useForm, Controller } from 'react-hook-form';
 import RichTextEditor from '@/components/editor/RichTextEditor';
 import uploadImage from '@/utils/uploadImage.mjs';
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
-import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import DatePicker from '@/components/ui/datepicker/Datepicker';
 import { AddSVG, ClipboardSVG, QuizSVG, VideoSVG } from '@/components/svg/SvgCollection';
@@ -21,16 +20,18 @@ const AddCourse = () => {
     const [coverPhotoUrl, setCoverPhotoUrl] = useState([]);
     const [instructorImage, setInstructorImage] = useState([]);
     const [learningItems, setLearningItems] = useState([{ text: '' }]);
+    const [additionalMaterials, setAdditionalMaterials] = useState([{ text: '' }]);
+    const [courseIncludes, setCourseIncludes] = useState([{ text: '' }]);
 
     const onSubmit = async (data) => {
         if (!idAvailable) return toast.error("Course Id is not available.")
 
-        const dateObj = data.addedOn;
+        const dateObj = data.addedOn || new Date();
         const date = getDateObjWithoutTime(dateObj);
         data.addedOn = date;
         data.reviews = [];
         data.studentIds = [];
-        const d = await addNewCourse(data, modules, coverPhotoUrl, learningItems);
+        const d = await addNewCourse(data, modules, coverPhotoUrl, learningItems, instructorImage, additionalMaterials, courseIncludes);
         if (d?.status === 200) {
             toast.success(d?.message);
             // return;
@@ -41,6 +42,7 @@ const AddCourse = () => {
             setIdAvailable(false);
             setIdCheckMessage("");
             setCheckingId(false);
+            window.location.reload()
         } else {
             toast.error(d.message)
         }
@@ -57,6 +59,18 @@ const AddCourse = () => {
             idx === index ? { ...item, text: e.target.value } : item
         );
         setLearningItems(updatedItems);
+    };
+    const handleAdditionalMaterialInputChange = (e, index) => {
+        const updatedItems = additionalMaterials?.map((item, idx) =>
+            idx === index ? { ...item, text: e.target.value } : item
+        );
+        setAdditionalMaterials(updatedItems);
+    };
+    const handleCourseIncludesInputChange = (e, index) => {
+        const updatedItems = courseIncludes?.map((item, idx) =>
+            idx === index ? { ...item, text: e.target.value } : item
+        );
+        setCourseIncludes(updatedItems);
     };
 
     const checkIdAvailability = async (id) => {
@@ -395,6 +409,16 @@ const AddCourse = () => {
                 {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration.message}</p>}
             </div>
             <div className="mb-4">
+                <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700">Short Description</label>
+                <input
+                    type="text"
+                    id="shortDescription"
+                    {...register('shortDescription', { required: 'Short Description is required' })}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+                {errors.shortDescription && <p className="text-red-500 text-sm mt-1">{errors.shortDescription.message}</p>}
+            </div>
+            <div className="mb-4">
                 <label htmlFor="courseId" className="block text-sm font-medium text-gray-700">Course Id</label>
                 <input
                     type="text"
@@ -423,15 +447,43 @@ const AddCourse = () => {
                 {errors?.instructor && <p className="text-red-500 text-sm mt-1">{errors?.instructor?.message}</p>}
             </div>
             <div className="mb-4">
+                <label htmlFor="instructorDesignation" className="block text-sm font-medium text-gray-700">Instructor Designations</label>
+                <input
+                    type="text"
+                    id="instructorDesignation"
+                    {...register('instructorDesignation',)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                    placeholder="Separated by commas (ex:Teacher, Dawi)"
+                />
+            </div>
+
+            <div className="mb-4">
+                <label htmlFor="aboutInstructor" className="block text-sm font-medium text-gray-700">About Instructor</label>
+                <Controller
+                    name="aboutInstructor"
+                    control={control}
+                    render={({ field }) => (
+                        <RichTextEditor
+                            onContentChange={field.onChange}
+                            key={`About Instructor Rich Text Key course`}
+                            uniqueKey={generateUniqueIds(1)}
+                        />
+                    )}
+                />
+                {errors.aboutInstructor && <p className="text-red-500 text-sm mt-1">{errors.aboutInstructor.message}</p>}
+            </div>
+
+
+            <div className="mb-4">
                 <label htmlFor="instructorImage" className="block text-sm font-medium text-gray-700">Instructor Image</label>
-                 <input
+                <input
                     type="file"
                     id="instructorImage"
                     accept="image/*"
                     onChange={handleUploadInstructorImage}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                 />
-                    {coverPhotoUrl?.length > 1 && (
+                {instructorImage?.length > 1 && (
                     <img src={instructorImage} alt="Instructor" className="mt-2 w- h-48 object-cover rounded-lg" />
                 )}
             </div>
@@ -504,7 +556,7 @@ const AddCourse = () => {
 
             {/* Cover Photo */}
             <div className="mb-4">
-                <label htmlFor="coverPhoto" className="block text-sm font-medium text-gray-700">Cover Photo</label>
+                <label htmlFor="coverPhoto" className="block text-sm font-medium text-gray-700">Course Cover Photo</label>
                 <input
                     type="file"
                     id="coverPhoto"
@@ -516,9 +568,9 @@ const AddCourse = () => {
                     <img src={coverPhotoUrl} alt="Cover" className="mt-2 w-full h-48 object-cover rounded-lg" />
                 )}
             </div>
-
+            {/* who is this course for */}
             <div className='mb-4'>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">What you will learn</h3>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">Who This Course is For</h3>
                 {learningItems?.map((item, index) => (
                     <div key={index} className="mb-4 flex items-center space-x-2">
                         <input
@@ -539,6 +591,62 @@ const AddCourse = () => {
                 <button
                     type='button'
                     onClick={() => setLearningItems([...learningItems, { text: '' }])}
+                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                    Add Another
+                </button>
+            </div>
+            {/* additional materials */}
+            <div className='mb-4'>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">Additional Materials</h3>
+                {additionalMaterials?.map((item, index) => (
+                    <div key={index} className="mb-4 flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={item.text}
+                            onChange={(e) => handleAdditionalMaterialInputChange(e, index)}
+                            placeholder={`Enter text ${index + 1}`}
+                            className="p-2 border rounded-md w-full"
+                        />
+                        <button
+                            onClick={() => setAdditionalMaterials(additionalMaterials.filter((_, idx) => idx !== index))}
+                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                ))}
+                <button
+                    type='button'
+                    onClick={() => setAdditionalMaterials([...additionalMaterials, { text: '' }])}
+                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
+                >
+                    Add Another
+                </button>
+            </div>
+            {/* course includes */}
+            <div className='mb-4'>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">Course Includes</h3>
+                {courseIncludes?.map((item, index) => (
+                    <div key={index} className="mb-4 flex items-center space-x-2">
+                        <input
+                            type="text"
+                            value={item.text}
+                            onChange={(e) => handleCourseIncludesInputChange(e, index)}
+                            placeholder={`Enter text ${index + 1}`}
+                            className="p-2 border rounded-md w-full"
+                        />
+                        <button
+                            onClick={() => setCourseIncludes(courseIncludes.filter((_, idx) => idx !== index))}
+                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
+                        >
+                            Remove
+                        </button>
+                    </div>
+                ))}
+                <button
+                    type='button'
+                    onClick={() => setCourseIncludes([...courseIncludes, { text: '' }])}
                     className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
                 >
                     Add Another
