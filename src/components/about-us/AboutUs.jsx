@@ -39,7 +39,7 @@ const AboutUs = () => {
             {/* </section> */}
             {/* our purpose */}
 
-            <section className="relative max-w-4xl mx-auto text-black flex flex-col items-start justify-center gap-[33px] px-4">
+            <section className="relative max-w-4xl mx-auto text-black dark:text-white pb-4 flex flex-col items-start justify-center gap-[33px] px-4">
                 <h2 className="charisSIL-font md:text-[60px] text-[30px] font-bold leading-tight md:text-start text-center md:mx-0 mx-auto">
                     Our <span className="text-green">Purpose</span>
                 </h2>

@@ -4,7 +4,6 @@ import { fallbackBlurDataURL } from "@/constants/fallbackBlurDataUrl.mjs";
 import formatDate from "@/utils/formatDate.mjs";
 import Image from "next/image";
 import { memo, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import StarRating from "../rating/StarRating";
 import { TakaSVG } from "../svg/SvgCollection";
@@ -37,11 +36,6 @@ const CourseCard = ({ course }) => {
   }, [coursesEnrolled]);
 
 
-  const overlayVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-  };
-
   const handleAddToCart = async (buyNow) => {
     if (itemAddedToCart) return window.location.href = "/cart";
     const cartItem = {
@@ -70,7 +64,7 @@ const CourseCard = ({ course }) => {
     }
   }, [cart])
   return (
-    <div className="bg-[#F8F5F5] w-[350px] rounded-[24px] montserrat-font border-none outline-none text-black">
+    <div className="bg-[#F8F5F5] w-[350px] h-[510px] rounded-[24px] montserrat-font border-none outline-none text-black">
       {/* Image Section with Overlay */}
       <div className="relative  w-[350px]  h-56 overflow-hidden group rounded-[22px]">
         <Image
@@ -79,7 +73,7 @@ const CourseCard = ({ course }) => {
           className="w-full h-full object-cover transition-transform duration-500 border-none outline-none"
           quality={100}
           src={imageError ? fallbaclCourseImage : course.coverPhotoUrl}
-        // src={'https://images.pexels.com/photos/10788135/pexels-photo-10788135.jpeg'}
+          // src={'https://images.pexels.com/photos/10788135/pexels-photo-10788135.jpeg'}
           alt={course.title}
           placeholder="blur"
           blurDataURL={fallbackBlurDataURL}
@@ -118,22 +112,17 @@ const CourseCard = ({ course }) => {
         </div>
       </div>
 
-      {/* Content Section */}
-
       <div className="px-5 pt-[16px] pb-[30px] max-w-[350px]">
         <Link href={`/courses/${course.courseId}`} passHref>
-          <h2 className="text-lg font-medium text-black  line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+          <h2 className="text-[20px] h-[55px] font-medium text-black  line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
             {course.title}
           </h2>
-          {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            by {course.instructor}
-          </p> */}
-          <div className="text-wrapped max-w-[350px] text-sm">
+          <div className="text-wrapped max-w-[350px] h-[55px] pt-1 text-sm">
             {getTwoLinesOfDescription(course?.description || null)}
           </div>
         </Link>
         {/* Price and Rating in Two Lines */}
-        <div className="mt-3 space-y-2">
+        <div className="pt-[11px] space-y-2">
           <div className="flex items-center">
             <StarRating
               ratingCount={course.reviewsCount}
@@ -164,7 +153,7 @@ const CourseCard = ({ course }) => {
               {alreadyEnrolled ? "Continue to course" : itemAddedToCart ? "View Cart" : "Add to cart"}
             </button>
           </div>
-          
+
         </div>
 
         {/* Enrollment Info */}

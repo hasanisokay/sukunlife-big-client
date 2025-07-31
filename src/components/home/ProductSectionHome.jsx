@@ -26,7 +26,8 @@ const ProductSectionHome = ({ topProducts }) => {
                                     <div className="pl-[29px] pr-[23px]">
                                         <h3 className="text-xl font-semibold line-clamp-2 mt-[44px]">{product?.title}</h3>
                                         <p className="mt-[10px] pb-[10px]  h-[95px] ">{getTwoLinesOfDescription(product?.description, 90)}</p>
-                                        <button className="w-[266px] h-[59px] bg-orange text-black font-medium rounded-full">Place Order</button>
+                                        <Link href={`/shop/${product?.productId}`} >                                  <button className="w-[266px] h-[59px] bg-orange text-black font-medium rounded-full">Place Order</button>
+                                        </Link>
                                     </div>
 
                                 </div>

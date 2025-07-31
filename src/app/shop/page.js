@@ -5,6 +5,7 @@ import hostname from "@/constants/hostname.mjs";
 import getAllProducts from "@/utils/getAllProducts.mjs";
 import shopCover from "@/../public/images/shop.jpg";
 import { websiteName } from "@/constants/names.mjs";
+import SukunLifeMission from "@/components/shared/SukunLifeMission";
 
 
 
@@ -38,7 +39,10 @@ const shopPage = async ({ searchParams }) => {
       );
     if (products?.status !== 200) return <NotFound />;
     return (
-      <AllShopItems p={products?.products} totalCount={products.totalCount} />
+      <div>
+        <AllShopItems p={products?.products} totalCount={products.totalCount} />
+        <SukunLifeMission />
+      </div>
     );
   } catch {
     return <NotFound />;

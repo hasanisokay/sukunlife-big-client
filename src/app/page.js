@@ -27,9 +27,9 @@ const page = async () => {
       <Homepage
       recentBlogs={recentBlogs?.blogs}
       topCourses={topCourses?.courses}
-      topProducts={topProducts}
-      shopReviews={topReviews?.shopReviews}
       appointmentReviews={topReviews?.appointmentReviews}
+        topProducts={topProducts}
+        shopReviews={topReviews?.shopReviews}
         courseReviews={topReviews?.courseReviews}
       />
     );
