@@ -25,7 +25,7 @@ import FixedCart from "@/components/shared/FixedCart";
 const SingleProductPage = ({ product }) => {
     const cartItems = useSelector((state) => state.cart.cartData);
     const [selectedColor, setSelectedColor] = useState(product?.colorVariants[0]);
-    const [selectedSize, setSelectedSize] = useState(product?.sizeVariants[0]);
+    const [selectedSize, setSelectedSize] = useState(product?.sizeVariants[0] || product?.variantPrices[0]?.price);
     const [quantity, setQuantity] = useState(1);
     const [currentPrice, setCurrentPrice] = useState(product?.price);
     const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -41,11 +41,13 @@ const SingleProductPage = ({ product }) => {
     }, [thumbsSwiper]);
     // Update price when color or size changes
     useEffect(() => {
-        if (product?.variantPrices.length > 0) {
+
+        if (product?.variantPrices?.length > 0) {
             const newPrice = product?.variantPrices.find((p) => p.size === selectedSize);
-            console.log(newPrice);
-            setCurrentPrice(newPrice?.price * quantity || 0)
-            setSelectedSize(newPrice?.size)
+            if (newPrice) {
+                setCurrentPrice(newPrice?.price * quantity)
+                setSelectedSize(newPrice?.size)
+            }
         } else {
             setCurrentPrice(product?.price * quantity)
         }
@@ -62,7 +64,7 @@ const SingleProductPage = ({ product }) => {
             price: currentPrice,
             quantity: quantity,
             color: selectedColor,
-            size: selectedSize,
+            size: parseFloat(selectedSize),
             image: product?.images[0],
             unit: product?.unit
         };
@@ -173,11 +175,10 @@ const SingleProductPage = ({ product }) => {
                         <button className={`rounded-full w-[118px] h-[41px] ${product.stockQuantity < 1 ? 'bg-red-500 text-white' : 'text-black bg-[#68D585]'}`}>
                             {product.stockQuantity > 0 ? "In Stock" : "Out of stock"}
                         </button>
-                        <h1 className="text-3xl font-bold">{product?.title}</h1>
+                        <h1 className="md:text-3xl text-lg font-bold">{product?.title}</h1>
                         {/* StarRating Component */}
-                        <div className="flex justify-start items-center gap-4">
+                        <div className="flex flex-wrap justify-start items-center gap-4">
                             <p className="text-2xl font-semibold flex items-center"> BDT {currentPrice}</p>
-
                             <Link href={"#reviews"}>
                                 <StarRating totalRating={totalRating} ratingCount={ratingCount} />
                             </Link>
@@ -330,24 +331,24 @@ const SingleProductPage = ({ product }) => {
                     <div id="reviews" className="space-y-6">
                         {product?.reviews.map((review, index) => (
                             <div key={index} className="border-b pb-4">
-                                <div className="flex items-center space-x-4">
-                                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                <div className="flex items-center flex-wrap space-x-4">
+                                    <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
                                         <span className="text-lg font-semibold">
-                                            {review.name.charAt(0)}
+                                            {review?.name?.charAt(0)}
                                         </span>
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-semibold">{review.name}</h3>
-                                        <StarsOnly star={review.rating} />
-                                        {/* Add the date here */}
+                                        <h3 className="text-sm font-semibold">{review.name}</h3>
+                                        <StarsOnly size={14} star={review.rating} />
+
                                         {review?.date && (
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                                 {formatDate(review?.date)}
                                             </p>
                                         )}
                                     </div>
                                 </div>
-                                <p className="mt-2 text-gray-700 dark:text-gray-300">
+                                <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
                                     {review.comment}
                                 </p>
                             </div>

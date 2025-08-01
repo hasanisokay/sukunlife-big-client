@@ -2,8 +2,9 @@ import React from 'react';
 import TransparentGreenButton from './TransparentGreenButton';
 import TestimonialCard from './TestimonialCardHome';
 
-const TestimonialSectionHome = ({ appointmentReviews, shopReviews, courseReviews, showMoreButton =true }) => {
-    if (!appointmentReviews && !shopReviews && !courseReviews) return;
+const TestimonialSectionHome = ({ appointmentReviews, shopReviews, courseReviews, showMoreButton = true }) => {
+    if (appointmentReviews?.length === 0 && shopReviews?.length === 0 && courseReviews?.length === 0) return;
+
     return (
         <div className='pt-[144px] px-4 md:pb-[160px] pb-[100px] '>
             <div className=" explore-self-ruqyah-now-wrapper">

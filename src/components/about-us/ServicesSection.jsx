@@ -54,8 +54,8 @@ const ServicesSection = () => {
                 <div className='flex flex-col group items-center gap-[19px] session-card rounded-3xl w-[255px] min-h-[222px] max-h-[300px] py-[30px]'>
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="80"
-                        height="80"
+                  width="106"
+                        height="106"
                         fill="none"
                         viewBox="0 0 80 80"
                     >
