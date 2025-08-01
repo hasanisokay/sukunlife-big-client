@@ -10,6 +10,7 @@ import { Flip, toast, ToastContainer } from "react-toastify";
 import ProductImage2 from "@/components/home/ProductImage2";
 import getTwoLinesOfDescription from "@/utils/getTwoLinesOfDescription.mjs";
 import SliderOnShopHeader from "./SliderOnShopHeader";
+import FixedCart from "@/components/shared/FixedCart";
 
 const AllShopItems = ({ p, totalCount }) => {
   const cartItems = useSelector((state) => state.cart.cartData);
@@ -132,7 +133,7 @@ const AllShopItems = ({ p, totalCount }) => {
           {memorizedProducts?.map((product, index) => (
             <div key={product?._id} className="bg-[#F8F5F5] rounded-t-[26px] rounded-b-3xl ">
               <div
-                className="h-[471px] rounded-t-[26px] rounded-b-3xl  overflow-hidden transition-all duration-300  group"
+                className="h-[500px] rounded-t-[26px] rounded-b-3xl  overflow-hidden transition-all duration-300  group"
               >
                 {/* Image Container */}
                 <Link href={`/shop/${product?.productId}`} passHref>
@@ -204,20 +205,8 @@ const AllShopItems = ({ p, totalCount }) => {
       </div>
 
       {/* Fixed Cart Icon */}
-      {hasMounted && cartItems?.length > 0 && (<div
-        className="fixed bottom-8 right-8 bg-green text-white p-4 rounded-full shadow-lg hover:bg-[#16250a] transition-all duration-300 z-50"
-      >
-        <Link href="/cart" passHref>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h18l-2 9H5L3 3zm0 0l2 9m0 0l2 6h10l2-6m-8 0h4" />
-          </svg>
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-            {cartItems?.length}
-          </span>
-        </Link>
-      </div>
-      )}
 
+      <FixedCart />
       <ToastContainer transition={Flip} />
     </div>
   );

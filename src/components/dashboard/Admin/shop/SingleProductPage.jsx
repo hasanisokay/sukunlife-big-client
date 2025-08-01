@@ -17,13 +17,13 @@ import addToCart from "@/components/cart/functions/addToCart.mjs";
 import { setCartData } from "@/store/slices/cartSlice";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import ThumbnailImage from "./ThumbnailImage";
-import ProductImage from "@/components/home/ProductImage";
+
 
 import ImageWithFallback from "./ImageWithFallback";
 import FixedCart from "@/components/shared/FixedCart";
 
 const SingleProductPage = ({ product }) => {
-      const cartItems = useSelector((state) => state.cart.cartData);
+    const cartItems = useSelector((state) => state.cart.cartData);
     const [selectedColor, setSelectedColor] = useState(product?.colorVariants[0]);
     const [selectedSize, setSelectedSize] = useState(product?.sizeVariants[0]);
     const [quantity, setQuantity] = useState(1);
@@ -40,18 +40,18 @@ const SingleProductPage = ({ product }) => {
         }
     }, [thumbsSwiper]);
     // Update price when color or size changes
-
     useEffect(() => {
-        const variantPrice = product?.variantPrices.find(
-            (variant) =>
-                variant.color === selectedColor && variant.size === selectedSize
-        );
-        if (variantPrice) {
-            setCurrentPrice(variantPrice.price);
+        if (product?.variantPrices.length > 0) {
+            const newPrice = product?.variantPrices.find((p) => p.size === selectedSize);
+            console.log(newPrice);
+            setCurrentPrice(newPrice?.price * quantity || 0)
+            setSelectedSize(newPrice?.size)
         } else {
-            setCurrentPrice(product?.price);
+            setCurrentPrice(product?.price * quantity)
         }
-    }, [selectedColor, selectedSize, product?.variantPrices, product?.price]);
+
+    }, [selectedSize, quantity])
+
 
     const handleAddToCart = async (buyNow) => {
         const cartItem = {
@@ -80,9 +80,9 @@ const SingleProductPage = ({ product }) => {
     const handleImageContextMenu = (e) => {
         e.preventDefault();
     };
-
+    console.log(product)
     return (
-        <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-8">
+        <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-8 montserrat-font">
             <div className="max-w-6xl mx-auto">
                 {/* Product Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -170,24 +170,26 @@ const SingleProductPage = ({ product }) => {
 
                     {/* Product Info */}
                     <div className="space-y-6">
+                        <button className={`rounded-full w-[118px] h-[41px] ${product.stockQuantity < 1 ? 'bg-red-500 text-white' : 'text-black bg-[#68D585]'}`}>
+                            {product.stockQuantity > 0 ? "In Stock" : "Out of stock"}
+                        </button>
                         <h1 className="text-3xl font-bold">{product?.title}</h1>
                         {/* StarRating Component */}
-                        <div>
+                        <div className="flex justify-start items-center gap-4">
+                            <p className="text-2xl font-semibold flex items-center"> BDT {currentPrice}</p>
+
                             <Link href={"#reviews"}>
                                 <StarRating totalRating={totalRating} ratingCount={ratingCount} />
                             </Link>
                         </div>
-                        <p className="text-2xl font-semibold flex items-center"> <TakaSVG /> {currentPrice}</p>
 
                         {/* Quantity and Unit */}
                         <p className="text-gray-600 dark:text-gray-400">
-                            {product?.quantity} {product?.unit}
+                            {selectedSize}
                         </p>
 
                         {/* Stock Quantity */}
-                        <p className={` ${product.stockQuantity < 1 ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'}`}>
-                            {product.stockQuantity > 0 ? "In Stock" : "Out of stock"}
-                        </p>
+
 
                         {/* Color Variants */}
                         {product?.colorVariants?.length > 0 && (
@@ -216,18 +218,21 @@ const SingleProductPage = ({ product }) => {
                             <div>
                                 <h3 className="text-lg font-semibold mb-2">Size</h3>
                                 <div className="flex space-x-2">
-                                    {product?.sizeVariants?.map((size, index) => (
+                                    {product?.variantPrices?.map((size, index) => (
                                         <motion.button
                                             key={index}
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
-                                            onClick={() => setSelectedSize(size)}
-                                            className={`px-4 py-2 border rounded-lg ${selectedSize === size
+                                            onClick={() => {
+                                                setSelectedSize(size.size)
+                                                setCurrentPrice(size.price)
+                                            }}
+                                            className={`px-4 py-2 border rounded-lg ${selectedSize === size?.size
                                                 ? "border-blue-500 bg-blue-300 dark:bg-blue-900"
                                                 : "border-gray-300"
                                                 }`}
                                         >
-                                            {size}
+                                            {size.size}
                                         </motion.button>
                                     ))}
                                 </div>
@@ -235,14 +240,13 @@ const SingleProductPage = ({ product }) => {
                         )}
 
                         {/* Quantity Selector */}
-                        {product.stockQuantity > 0 && <div>
-                            <h3 className="text-lg font-semibold mb-2">Quantity</h3>
-                            <div className="flex items-center space-x-4">
+                        {product.stockQuantity > 0 && <div className="flex gap-[24px]">
+                            <div className="flex items-center space-x-4 border rounded">
                                 <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="px-4 py-2 border rounded-lg"
+                                    className="px-4 py-2 "
                                 >
                                     -
                                 </motion.button>
@@ -251,46 +255,39 @@ const SingleProductPage = ({ product }) => {
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
-                                    className="px-4 py-2 border rounded-lg"
+                                    className="px-4 py-2 "
                                 >
                                     +
                                 </motion.button>
                             </div>
+                            {product?.stockQuantity > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="flex gap-4"
+                                >
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleAddToCart(false)}
+                                        className=" bg-[#63953A] text-white py-3 rounded-full w-[172px] h-[52px] transition duration-300"
+                                    >
+                                        Add to Cart
+                                    </motion.button>
+
+                                </motion.div>
+                            )}
                         </div>}
 
-                        {product?.stockQuantity > 0 && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="flex gap-4"
-                            >
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => handleAddToCart(false)}
-                                    className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
-                                >
-                                    Add to Cart
-                                </motion.button>
 
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => handleAddToCart(true)}
-                                    className="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition duration-300"
-                                >
-                                    Buy Now
-                                </motion.button>
-                            </motion.div>
-                        )}
 
                     </div>
                 </div>
 
                 {/* Product Description */}
                 <div className="mt-12">
-                    <h2 className="text-2xl font-bold mb-4">Product Description</h2>
+                    <h2 className="text-2xl font-bold mb-4">Product Overview</h2>
                     <div className="prose dark:prose-invert">
                         <BlogContent content={product?.description} />
                     </div>
@@ -299,49 +296,31 @@ const SingleProductPage = ({ product }) => {
                 {/* Additional Product Details */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold mb-4">Product Details</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        <div>
-                            <h3 className="text-lg font-semibold">Brand</h3>
-                            <p className="text-gray-600 dark:text-gray-400">{product?.brand}</p>
+                    <div className="">
+
+                        <p className="text-gray-600 dark:text-gray-400">Brand: {product?.brand}</p>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            Category: <Link href={`/shop?category=${product.category}`} >{product?.category}</Link>
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-400">Material: {product?.material}</p>
+
+                        <p className="text-gray-600 dark:text-gray-400"> Dimensions:
+                            {product?.dimensions.length} x {product?.dimensions.width} x {product?.dimensions.height} cm
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-400">SKU: {product?.sku}</p>
+
+                        <div className="flex flex-wrap gap-2">
+                            {product?.tags.split(", ").map((tag, index) => (
+                                <Link key={index} href={`/shop?tags=${tag}`}>
+                                    <span
+                                        className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm"
+                                    >
+                                        {tag}
+                                    </span>
+                                </Link>
+                            ))}
                         </div>
-                        <div>
-                            <h3 className="text-lg font-semibold">Category</h3>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                <Link href={`/shop?category=${product.category}`} >{product?.category}</Link>
-                            </p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold">Material</h3>
-                            <p className="text-gray-600 dark:text-gray-400">{product?.material}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold">Weight</h3>
-                            <p className="text-gray-600 dark:text-gray-400">{product?.weight} kg</p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold">Dimensions</h3>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                {product?.dimensions.length} x {product?.dimensions.width} x {product?.dimensions.height} cm
-                            </p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold">SKU</h3>
-                            <p className="text-gray-600 dark:text-gray-400">{product?.sku}</p>
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-semibold">Tags</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {product?.tags.split(", ").map((tag, index) => (
-                                    <Link key={index} href={`/shop?tags=${tag}`}>
-                                        <span
-                                            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm"
-                                        >
-                                            {tag}
-                                        </span>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -376,8 +355,8 @@ const SingleProductPage = ({ product }) => {
                     </div>
                 </div>
             </div>
-                  {/* Fixed Cart Icon */}
-          <FixedCart />
+            {/* Fixed Cart Icon */}
+            <FixedCart />
             <ToastContainer transition={Flip} />
         </div >
     );

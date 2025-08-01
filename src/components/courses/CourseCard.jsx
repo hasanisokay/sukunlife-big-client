@@ -118,7 +118,7 @@ const CourseCard = ({ course }) => {
             {course.title}
           </h2>
           <div className="text-wrapped max-w-[350px] h-[55px] pt-1 text-sm">
-            {getTwoLinesOfDescription(course?.description || null)}
+            {getTwoLinesOfDescription(course?.shortDescription || null)}
           </div>
         </Link>
         {/* Price and Rating in Two Lines */}
