@@ -182,9 +182,9 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
       <SelfRuqyahResoursesSectionHome />
       <BlogsAndArticleSectionHome recentBlogs={recentBlogs} />
       <TestimonialSectionHome appointmentReviews={appointmentReviews} shopReviews={shopReviews} courseReviews={courseReviews} />
-      <div className=" logo-lg">
+      {/* <div className=" logo-lg">
         {themeSwitch}
-      </div>
+      </div> */}
     </div>
   );
 };
