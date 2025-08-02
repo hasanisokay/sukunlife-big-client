@@ -11,14 +11,11 @@ import StarsOnly from "@/components/rating/StarsOnly";
 import Link from "next/link";
 import formatDate from "@/utils/formatDate.mjs";
 import BlogContent from "@/components/blogs/BlogContnet";
-import { TakaSVG } from "@/components/svg/SvgCollection";
 import { useDispatch, useSelector } from "react-redux";
 import addToCart from "@/components/cart/functions/addToCart.mjs";
 import { setCartData } from "@/store/slices/cartSlice";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import ThumbnailImage from "./ThumbnailImage";
-
-
 import ImageWithFallback from "./ImageWithFallback";
 import FixedCart from "@/components/shared/FixedCart";
 
@@ -43,16 +40,24 @@ const SingleProductPage = ({ product }) => {
     useEffect(() => {
 
         if (product?.variantPrices?.length > 0) {
-            const newPrice = product?.variantPrices.find((p) => p.size === selectedSize);
+            let newPrice;
+            newPrice = product?.variantPrices.find((p) => p.size === selectedSize);
             if (newPrice) {
                 setCurrentPrice(newPrice?.price * quantity)
                 setSelectedSize(newPrice?.size)
             }
+            else {
+                newPrice = product?.variantPrices.find((p) => p.color === selectedColor);
+                setCurrentPrice(newPrice?.price * quantity);
+                setSelectedSize(newPrice?.size);
+                setSelectedColor(newPrice?.color);
+            }
+
         } else {
             setCurrentPrice(product?.price * quantity)
         }
 
-    }, [selectedSize, quantity])
+    }, [selectedSize, quantity, selectedColor])
 
 
     const handleAddToCart = async (buyNow) => {
@@ -299,11 +304,11 @@ const SingleProductPage = ({ product }) => {
                     <h2 className="text-2xl font-bold mb-4">Product Details</h2>
                     <div className="">
 
-                        <p className="text-gray-600 dark:text-gray-400">Brand: {product?.brand}</p>
+                        <p className="text-gray-600 dark:text-gray-400">Brand: {product?.brand || "N/A"}</p>
                         <p className="text-gray-600 dark:text-gray-400">
                             Category: <Link href={`/shop?category=${product.category}`} >{product?.category}</Link>
                         </p>
-                        <p className="text-gray-600 dark:text-gray-400">Material: {product?.material}</p>
+                        <p className="text-gray-600 dark:text-gray-400">Material: {product?.material || "N/A"}</p>
 
                         <p className="text-gray-600 dark:text-gray-400"> Dimensions:
                             {product?.dimensions.length} x {product?.dimensions.width} x {product?.dimensions.height} cm
@@ -329,7 +334,7 @@ const SingleProductPage = ({ product }) => {
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
                     <div id="reviews" className="space-y-6">
-                        {product?.reviews.map((review, index) => (
+                        {product?.reviews?.map((review, index) => (
                             <div key={index} className="border-b pb-4">
                                 <div className="flex items-center flex-wrap space-x-4">
                                     <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -353,6 +358,9 @@ const SingleProductPage = ({ product }) => {
                                 </p>
                             </div>
                         ))}
+                        {
+                            product?.reviews?.length === 0 && <p>No review available.</p>
+                        }
                     </div>
                 </div>
             </div>

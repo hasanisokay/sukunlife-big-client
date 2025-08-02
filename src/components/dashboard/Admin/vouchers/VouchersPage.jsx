@@ -135,7 +135,7 @@ const VouchersPage = ({ vouchers: initialVouchers = [] }) => {
                                         <p className="text-sm text-gray-600 dark:text-gray-400">
                                             {voucher.type === 'percentage' ? `${voucher.value}% off` : `$${voucher.value} off`}
                                         </p>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">Max Limit: ${voucher.maxLimit || 'No limit'}</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">Max Limit: &#2547; {voucher.maxLimit || 'No limit'}</p>
                                         <p className="text-sm text-gray-600 dark:text-gray-400">Category: {voucher.category}</p>
                                     </div>
                                     <button

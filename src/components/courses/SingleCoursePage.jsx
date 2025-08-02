@@ -18,6 +18,7 @@ import FixedCart from '../shared/FixedCart';
 import getTwoLinesOfDescription from '@/utils/getTwoLinesOfDescription.mjs';
 import TickSVG from '../svg/TickSVG';
 import BlogContent from '../blogs/BlogContnet';
+import { SERVER } from '@/constants/urls.mjs';
 
 const SingleCoursePage = ({ course }) => {
     const [expandedModule, setExpandedModule] = useState(null);
@@ -25,11 +26,15 @@ const SingleCoursePage = ({ course }) => {
     const [itemAddedToCart, setItemAddedToCart] = useState(false);
     const dispatch = useDispatch()
     const user = useSelector((state) => state.user.userData);
+    const [coursePrice, setCoursePrice] = useState(course?.price || 0);
     const theme = useSelector((state) => state.theme.mode);
     const cart = useSelector((state) => state.cart.cartData);
     const coursesEnrolled = useSelector((state) => state.user.enrolledCourses);
     const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
     const [imageError, setImageError] = useState(false);
+    const [typedVoucher, setTypedVoucher] = useState("");
+    const [voucherMessage, setVoucherMessage] = useState('');
+    const [voucherError, setVoucherError] = useState('');
     useEffect(() => {
         if (!coursesEnrolled) return;
         coursesEnrolled?.filter((c) => {
@@ -72,7 +77,28 @@ const SingleCoursePage = ({ course }) => {
     const closeVideoModal = () => {
         setVideoModal({ isOpen: false, url: '' });
     };
+    const validateVoucher = async (voucherPassed) => {
+        if (!typedVoucher && !voucherPassed) return;
 
+        try {
+            const response = await fetch(`${SERVER}/api/public/check-voucher?code=${typedVoucher || voucherPassed || ""}&&totalPrice=${course?.price}`);
+            const data = await response.json();
+            console.log(data)
+            if (data?.isValid) {
+                const calculatedDiscount = data.discount;
+                const calculatedFinalPrice = data.finalPrice;
+                setCoursePrice(calculatedFinalPrice);
+                setVoucherError('');
+                setVoucherMessage(data.message);
+                localStorage.setItem('voucher', JSON.stringify(typedVoucher || voucherPassed))
+            } else {
+                setVoucherMessage('')
+                setVoucherError(data.message);
+            }
+        } catch (error) {
+            console.log("Error validating voucher:", error);
+        }
+    };
     const handleAddToCart = async (buyNow) => {
         if (itemAddedToCart) return window.location.href = "/cart";
         const cartItem = {
@@ -99,7 +125,7 @@ const SingleCoursePage = ({ course }) => {
         return text.split(",").join(" | ")
     }
 
-    console.log(course)
+    // console.log(course)
     return (
         <div className="bg-white  text-black rounded-xl min-w-full max-w-7xl mx-auto  montserrat-font">
             {/* Cover Photo with Instructor, Tags, and Enroll Button */}
@@ -172,7 +198,7 @@ const SingleCoursePage = ({ course }) => {
                         <Image className='rounded-3xl h-[214px] w-[380px]' width={1000} height={1000} alt='Instructor image/Intro video' src={course?.instructorImage} />
                     </div>
                     <div className='p-[32px]'>
-                        <h3 className='charisSIL-font text-[32px] font-bold'>{course.price} TK</h3>
+                        <h3 className='charisSIL-font text-[32px] font-bold'>{coursePrice || course.price} TK</h3>
                         <p className='line-clamp-3'>{course?.shortDescription}</p>
                         <Link href={'#reviews'} className='max-w-fit'>
                             <StarRating ratingCount={course?.reviewsCount} totalRating={course?.ratingSum} />
@@ -184,7 +210,7 @@ const SingleCoursePage = ({ course }) => {
                                     className="w-5 h-5 mr-1"
                                     color={theme === "light" ? "#00000" : "#00000"}
                                 />
-                                {formatPrice(course.price)}
+                                {formatPrice(coursePrice || course.price)}
                             </p>
                             <button
                                 // disabled={itemAddedToCart}
@@ -210,17 +236,32 @@ const SingleCoursePage = ({ course }) => {
                         </svg>
                         <p className='text-[12px] font-light italic text-center'>30-Day Money-Back Guarantee</p>
                         <p className='text-[12px] font-light italic text-center'>Full Lifetime Access</p>
+                        <div className='mt-[27px]'>
+                            <input
+                                type="text"
+                                placeholder="Enter your Courpon Code"
+                                value={typedVoucher}
+                                onChange={(e) => setTypedVoucher(e.target.value)}
+                                className={`w-[322px] h-[55px] px-[20px] text-black rounded-full focus:outline-none`}
+                            />
+                            <button className="w-[322px] mt-[14px] h-[55px] voucher-apply-button text-black rounded-full"
+                                onClick={validateVoucher}>
+                                Apply
+                            </button>
+                            {voucherMessage?.length > 0 && <p className="text-green-500 py-1">{voucherMessage}</p>}
+                            {voucherError?.length > 0 && <p className="text-red-500 py-1">{voucherError}</p>}
+                        </div>
                     </div>
 
                 </div>
                 {course?.description && <div className='w-[350px] p-6'>
-                <h3 className="charisSIL-font md:text-[32px] text-[26px] leading-tight font-semibold text-black dark:text-white">About This Course</h3>
-                <BlogContent content={course?.description} />
-            </div>}
+                    <h3 className="charisSIL-font md:text-[32px] text-[26px] leading-tight font-semibold text-black dark:text-white">About This Course</h3>
+                    <BlogContent content={course?.description} />
+                </div>}
             </div>
 
 
-            
+
             <div className='md:pl-6 md:py-6 md:pr-8 lg:pr-12 md:w-[calc(100vw-480px)]'>
                 {/* Modules Section */}
                 <div
