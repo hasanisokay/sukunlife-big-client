@@ -29,7 +29,7 @@ const SelfDiagnosisSection = () => {
           to identify possible spiritual concerns such as
         </p>
         <a href="https://test.sukunlife.com" target="_blank" rel="noopener noreferrer">
-          <button className="mt-6 w-[350px] h-[82px] btn-rounded-green font-semibold rounded-full transition">
+          <button className="mt-6 md:w-[350px] w-[320px] h-[60px] md:h-[82px] btn-rounded-green font-semibold rounded-full transition">
             Explore self-healing now!
           </button>
         </a>

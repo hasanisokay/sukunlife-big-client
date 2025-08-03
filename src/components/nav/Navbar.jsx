@@ -106,7 +106,7 @@ const Navbar = () => {
             }`}
           aria-label="Global"
         >
-          <div className="flex min-h-[110px] items-center justify-between relative">
+          <div className="flex nav-wrapper  items-center justify-between relative">
             <div className="absolute inset-y-0 right-0 flex items-center nav-theme-switch-lg">
               <button
                 type="button"

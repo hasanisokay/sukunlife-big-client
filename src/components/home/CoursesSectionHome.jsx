@@ -15,8 +15,8 @@ const CoursesSectionHome = ({ topCourses }) => {
                         ))}
                     </div>
                     <div className="flex items-center justify-center mt-[63px]">
-                        <Link href={'/courses'} className="block w-[262px] h-[80px]">
-                            <button className="rounded-full font-semibold hover:bg-[#ffc267] hover:text-black hover:border-none border text-white h-full w-full">
+                        <Link href={'/courses'} className="block md:w-[350px] w-[320px] h-[60px] md:h-[82px]">
+                            <button className="rounded-full font-semibold hover:bg-[#ffc267] hover:text-black hover:border-none border text-white md:w-[350px] w-[320px] h-[60px] md:h-[82px]">
                                 View More Course
                             </button>
                         </Link>

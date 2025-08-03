@@ -276,11 +276,17 @@ svg.star-svg {
 .pop {
   animation: pop 0.4s ease-in-out;
 }
-
+.nav-wrapper {
+  min-height: 110px;
+}
 @media (max-width: 1050px) {
   .nav-items {
     display: none;
   }
+  .nav-wrapper {
+  min-height: 64px;
+}
+
 }
 @media (min-width: 1050px) {
   /* .nav-theme-switch {
@@ -407,11 +413,11 @@ svg.star-svg {
   background-color: rgba(99, 149, 58, 0.23);
 }
 
-.voucher-apply-button{
+.voucher-apply-button {
   background-color: rgba(99, 149, 58, 0.21);
   color: black;
 }
-.voucher-apply-button:hover{
+.voucher-apply-button:hover {
   background-color: rgba(99, 149, 58, 1);
   color: white;
 }

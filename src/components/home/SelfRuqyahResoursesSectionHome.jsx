@@ -63,7 +63,7 @@ const SelfRuqyahResoursesSectionHome = () => {
                 </div>
             </div>
             <div className="btn-explore-self-ruqyah-now2-wrapper">
-                <Link className="btn-explore-self-ruqyah-now2" href={'/resources'}>   <button className="w-[281px] h-[82px] btn-green bg-green text-white rounded-full">Explore self-healing now!</button></Link>
+                <Link className="btn-explore-self-ruqyah-now2" href={'/resources'}>   <button className="md:w-[350px] w-[320px] h-[60px] md:h-[82px] btn-green bg-green text-white rounded-full">Explore self-healing now!</button></Link>
             </div>
 
         </div>

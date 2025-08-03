@@ -142,7 +142,7 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
               spiritual distress, negative energies, or personal mental issues, our consultations are tailored to provide
               healing and clarity.
             </p>
-            <button className="mt-6 btn-rounded-green text-white font-semibold py-2 px-6 rounded-full transition">
+            <button className="mt-6 md:w-[350px] w-[320px] h-[60px] md:h-[82px] btn-rounded-green text-white font-semibold rounded-full transition">
               <Link href={'/book-appointment'} >Book an appointment</Link>
             </button>
 
