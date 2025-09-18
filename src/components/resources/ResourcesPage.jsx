@@ -4,7 +4,6 @@ import Image from "next/image";
 import CategoryNavbar from "../blogs/CategoryNavbar";
 import { useEffect, useState, useMemo } from "react";
 import BlogContent from "../blogs/BlogContnet";
-import AudioPlayer from "./AudioSection";
 import AudioSection from "./AudioSection";
 import VideoSection from "./VideoSection";
 import LiteratureSection from "./LiteratureSection";

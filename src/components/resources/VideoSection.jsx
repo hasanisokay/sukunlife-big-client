@@ -54,12 +54,12 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
   return (
     <section id="video">
       {/* Sticky top navbar */}
-      <div className="sticky top-[55px] max-w-[1200px] mx-auto bg-white z-20 py-3 flex gap-3 overflow-x-auto">
+      <div className="sticky lg:top-[55px] top-[40px] max-w-[1200px] mx-auto bg-white z-20 py-3 flex gap-3 overflow-x-auto">
         {Object.keys(videoGroups).map((lang) => (
           <a
             key={lang}
             href={`#video-${lang.toLowerCase()}`}
-            className={`text-center w-[160px] pt-[14px] h-[57px] rounded-full ${
+            className={`text-center w-[160px] pt-[14px] h-[57px]  rounded-full ${
               activeLang === lang
                 ? "bg-black text-white"
                 : "border border-gray-400 hover:bg-black hover:text-white"
@@ -102,11 +102,13 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
                           url={videoUrl}
                           playing
                           controls
-                          width="100%"
+
+                          width="540px"
                           height="304px"
                           style={{
                             borderRadius: "40px",
                             overflow: "hidden",
+                            width:'540px'
                           }}
                         />
                       )
