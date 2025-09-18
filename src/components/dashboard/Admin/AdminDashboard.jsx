@@ -1,8 +1,12 @@
 'use client'
+import { setUserData } from '@/store/slices/authSlice';
+import logOut from '@/utils/logOut.mjs';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useDispatch } from 'react-redux';
 
 const AdminDashboard = ({ dashboardData }) => {
+  const dispatch = useDispatch();
   // Destructure the data from the dashboardData prop
   const {
     blogCount,
@@ -19,12 +23,41 @@ const AdminDashboard = ({ dashboardData }) => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   };
-
+  const handleLogOut = async () => {
+    await fetch("/api/logout")
+    await logOut();
+    dispatch(setUserData(null));
+    window.location.reload();
+  };
   return (
     <div className="min-h-screen w-full bg-gray-100 dark:bg-gray-900 p-6">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">
+     <div className='flex justify-between items-center flex-wrap gap-6'>
+       <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">
         Admin Dashboard
       </h1>
+      <button
+        onClick={handleLogOut}
+        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="lucide lucide-log-out"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        <span className="font-medium">Logout</span>
+      </button>
+     </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Blog Count Card */}
         <Link href="/dashboard/blogs">

@@ -12,11 +12,13 @@ const BlogCardForHomeSection = ({ blog }) => {
                 fallbackImage={blogFallbackImage}
                 classProps={'rounded-3xl'}
                 src={blog?.blogCoverPhoto}
-                alt={blog?.title} width={'350px'} height={'213px'} />
+                alt={blog?.title} width={'350px'} height={'213px'}
+                key={blog?._id}
+            />
             <div className="pl-[29px] pr-[23px]">
-                <h3 className="text-xl font-semibold line-clamp-2 mt-[28px]">{blog?.title}</h3>
+                <h3 className="text-xl min-h-[60px] font-semibold line-clamp-2 mt-[28px]">{blog?.title}</h3>
                 <p className="mt-[10px] pb-[10px]  h-[95px] ">{getTwoLinesOfDescription(blog?.content, 100)}</p>
-                <Link href={`/blog/${blog?.blogUrl}`}>   <button className="w-[267px] h-[59px] bg-green text-white font-medium rounded-full">Read More</button></Link>
+                <Link href={`/blog/${blog?.blogUrl}`}>   <button className="w-[267px] lg:h-[59px] md:h-[52px] h-[45px] bg-green text-white font-medium rounded-full">Read More</button></Link>
             </div>
 
         </div>

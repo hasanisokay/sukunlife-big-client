@@ -8,7 +8,6 @@ const TestimonialSectionInAboutUs = () => {
     useEffect(() => {
         (async () => {
             const r = await getTopReviews(3);
-            console.log(r)
             if (r.status === 200) {
                 setReviews(r)
             } else {

@@ -2,8 +2,30 @@ import ResourcesPage from "@/components/resources/ResourcesPage";
 import hostname from "@/constants/hostname.mjs";
 import cartCover from "@/../public/images/resources.jpg";
 import { websiteName } from "@/constants/names.mjs";
-const page = async() => {
-    return <ResourcesPage />
+import NotFound from "@/components/not-found/NotFound";
+import getResources from "@/utils/getResources.mjs";
+const page = async ({ searchParams }) => {
+  try {
+    const s = await searchParams;
+    const page = s?.page || 1;
+    const limit = s?.limit || 3;
+    const keyword = s?.keyword || "";
+    const sort = s?.sort || "newest";
+    const type = s?.type || "all";
+    const r = await getResources(page, limit, keyword, sort, type);
+
+    if (r?.status === 200) {
+      return (
+        <>
+          <ResourcesPage iResources={r?.resources} initialLimit ={limit} />
+        </>
+      );
+    } else {
+      return <NotFound />;
+    }
+  } catch {
+    return <NotFound />;
+  }
 };
 
 export default page;
@@ -60,7 +82,7 @@ export async function generateMetadata() {
 
     // Remove duplicates and limit keywords
     metadata.keywords = [...new Set(metadata.keywords)]
-      .filter(kw => kw && kw.length > 2)
+      .filter((kw) => kw && kw.length > 2)
       .slice(0, 10);
 
     return metadata;

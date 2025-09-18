@@ -7,7 +7,11 @@ import { fallbackBlurDataURL } from "@/constants/fallbackBlurDataUrl.mjs";
 const ProductImage2 = ({ src, alt, height = "100px", width = "100px", classProps, fallbackImage }) => {
     const [imageError, setImageError] = useState(false);
     return (<Image
-        src={imageError ? fallbackImage ? fallbackImage : productFallbackImage : src?.length > 0 ? src : productFallbackImage}
+        src={
+            src = imageError
+                ? (fallbackImage ? fallbackImage : productFallbackImage)
+                : (src?.length > 0 ? src : fallbackImage)
+        }
         alt={alt}
         height={1000}
         width={1000}
@@ -15,7 +19,7 @@ const ProductImage2 = ({ src, alt, height = "100px", width = "100px", classProps
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         className={`object-cover ${classProps}`}
         blurDataURL={fallbackBlurDataURL}
-        onError={() => setImageError(true)} // Fallback on error
+        onError={() => setImageError(true)} 
     />
     );
 };

@@ -5,11 +5,13 @@ import { websiteName } from "@/constants/names.mjs";
 import hostname from "@/constants/hostname.mjs";
 import NotFound from "@/components/not-found/NotFound";
 
-const page = async () => {
+const page = async ({ searchParams }) => {
   try {
+    const s = await searchParams;
+    const selected = s?.selected || '';
     const dates = await getAllScheduleDates();
 
-    return <BookAppointment dates={dates?.dates} status={dates?.status} />;
+    return <BookAppointment dates={dates?.dates} preSelectedService={selected} status={dates?.status} />;
   } catch {
     return <NotFound />;
   }
@@ -23,7 +25,8 @@ export async function generateMetadata() {
 
   const metadata = {
     title: `Book Appointment`,
-    description: "Schedule your appointment with ease at SukunLife. Book now for personalized consultations and expert guidance tailored to your needs.",
+    description:
+      "Schedule your appointment with ease at SukunLife. Book now for personalized consultations and expert guidance tailored to your needs.",
     url: `${host}/book-appointment`,
     alternates: {
       canonical: `${host}/book-appointment`,
@@ -56,7 +59,8 @@ export async function generateMetadata() {
     twitter: {
       card: "summary_large_image",
       title: `Book Appointment - ${websiteName}`,
-      description: "Schedule your appointment with ease at SukunLife. Book now for personalized consultations and expert guidance tailored to your needs.",
+      description:
+        "Schedule your appointment with ease at SukunLife. Book now for personalized consultations and expert guidance tailored to your needs.",
       images: [appointmentCoverUrl],
     },
   };

@@ -26,7 +26,7 @@ const ServicesSection = () => {
                     </svg>
                     <p className='font-semibold text-black'>Ruqyah Session</p>
                     <div className='block'>
-                        <Link href={'/book-appointment#ruqyah-session'}>
+                        <Link href={'/book-appointment?selected=ruqyah'}>
                             <button className='hidden group-hover:block group-active:block btn-rounded-green rounded-full w-[172px] h-[54px]'>Book Now</button>
                         </Link>
                     </div>
@@ -46,7 +46,7 @@ const ServicesSection = () => {
                     </svg>
                     <p className='font-semibold text-black'>Hijama</p>
                     <div className='block'>
-                        <Link href={'/book-appointment#hijama'}>
+                        <Link href={'/book-appointment?selected=hijama'}>
                             <button className='hidden group-hover:block group-active:block btn-rounded-green rounded-full w-[172px] h-[54px]'>Book Now</button>
                         </Link>
                     </div>
@@ -73,9 +73,9 @@ const ServicesSection = () => {
                             </clipPath>
                         </defs>
                     </svg>
-                    <p className='font-semibold text-black'>Counselling Session</p>
+                    <p className='font-semibold text-black'>Counseling Session</p>
                     <div className='block'>
-                        <Link href={'/book-appointment#counselling-session'}>
+                        <Link href={'/book-appointment?selected=counseling'}>
                             <button className='hidden group-hover:block group-active:block btn-rounded-green rounded-full w-[172px] h-[54px]'>Book Now</button>
                         </Link>
                     </div>

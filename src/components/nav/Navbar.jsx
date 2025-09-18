@@ -8,7 +8,7 @@ import { setUserData } from "@/store/slices/authSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartSVG } from "../svg/SvgCollection";
 import { setCartData } from "@/store/slices/cartSlice";
-import userShortName from "./userShortName.mjs";
+
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -84,12 +84,7 @@ const Navbar = () => {
   }, [menuOpen, userMenuOpen]);
 
 
-  const handleLogOut = async () => {
-    await fetch("/api/logout")
-    await logOut();
-    dispatch(setUserData(null));
-    window.location.reload();
-  };
+
 
   const getLinkClass = (path) => {
     return path === currentPath

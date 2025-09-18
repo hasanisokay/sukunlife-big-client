@@ -3,19 +3,19 @@ import { ACCESS_TOKEN } from "@/constants/names.mjs";
 import { SERVER } from "@/constants/urls.mjs";
 import { cookies } from "next/headers";
 
-const getResources = async (
+const getAllCategoryFiveBlogs = async (
   page = 1,
-  limit = 10,
+  limit = 5,
   keyword = "",
+  tags = "",
   sort = "newest",
-  type = "all",
-  subType = "all"
+  skip = 0
 ) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   try {
     const res = await fetch(
-      `${SERVER}/api/public/resources?limit=${limit}&&page=${page}&&keyword=${keyword}&&sort=${sort}&&type=${type}&&subType=${subType}`,
+      `${SERVER}/api/public/blogs-with-all-category-limited-to-five?limit=${limit}&&page=${page}&&keyword=${keyword}&&tags=${tags}&&sort=${sort}&&skip=${skip}`,
       {
         method: "GET",
         headers: {
@@ -32,4 +32,4 @@ const getResources = async (
   }
 };
 
-export default getResources;
+export default getAllCategoryFiveBlogs;

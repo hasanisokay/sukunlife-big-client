@@ -10,8 +10,8 @@ const addToCart = async (item, user) => {
 
   const existingIndex = cart.findIndex(
     (cartItem) =>
-      `${cartItem._id}-${cartItem.size || "default"}-${
-        cartItem.color || "default"
+      `${cartItem._id}-${cartItem?.size || "default"}-${
+        cartItem?.color || "default"
       }` === uniqueId
   );
 

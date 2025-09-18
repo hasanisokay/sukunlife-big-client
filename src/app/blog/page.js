@@ -2,9 +2,9 @@ import BlogPage from "@/components/blogs/BlogPage";
 import NotFound from "@/components/not-found/NotFound";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
-import getAllBlog from "@/utils/getAllBlog.mjs";
+// import getAllBlog from "@/utils/getAllBlog.mjs";
 import blogCover from "@/../public/images/blog.jpg";
-import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
+import getAllCategoryFiveBlogs from "@/utils/getAllCategoryFiveBlogs.mjs";
 
 
 
@@ -12,19 +12,17 @@ const publicBlogPage = async ({ searchParams }) => {
   try {
     const s = await searchParams;
     const page = s?.page || 1;
-    const limit = s?.limit || 10;
+    const limit = s?.limit || 3;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const tags = s?.tags || "";
     const skip = 0;
 
-    const blogs = await getAllBlog(page, limit, keyword, tags, sort, skip);
-    const tagsData = await getAllBlogTags();
-    
+    const blogs = await getAllCategoryFiveBlogs(page, limit, keyword, tags, sort, skip);
     if (blogs?.status === 200) {
       return (
         <>
-          <BlogPage b={blogs} tags={tagsData?.tags} limit={limit} page={page} />
+          <BlogPage b={blogs?.categories}  limit={limit} page={page} />
         </>
       );
     } else {

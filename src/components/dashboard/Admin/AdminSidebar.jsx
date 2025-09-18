@@ -56,7 +56,7 @@ const AdminSidebar = () => {
                 <SidebarSVG transform={false} />
             </button>}
             <nav
-                className={`bg-gray-200 dark:bg-gray-800 p-4 overflow-y-auto space-y-4 fixed left-0 h-[calc(100vh-70px)]  md:w-64 w-full z-50 transform  transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`bg-gray-200 dark:bg-gray-800 pb-[100px] pt-4 px-4 overflow-y-auto space-y-4 fixed left-0 h-[calc(100vh-70px)]  md:w-64 w-full z-50 transform  transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                     }`}
             >
                 <div className="relative">

@@ -1,101 +1,136 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import LoadMoreButton from "../ui/btn/LoadMoreButton";
-import SingleBlogCard from "./SingleBlogCard";
-import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
-import Link from "next/link";
+import { useMemo, useCallback, useState } from "react";
+import CategoryNavbar from "./CategoryNavbar";
+// import getAllBlog from "@/utils/getAllBlog.mjs"; // not used
+import BlogCardForHomeSection from "../home/BlogCardForHomeSection";
+import getBlogsByTag from "@/utils/getBlogsByTag.mjs";
 
-// SVG Decorative Element
-const WaveSVG = () => (
-  <svg className="absolute top-0 left-0 w-full h-32 text-green-100 dark:text-green-800" fill="currentColor" viewBox="0 0 1440 120">
-    <path d="M1440 0H0v60c200 30 400 60 720 60s520-30 720-60V0z" />
-  </svg>
-);
+const LIMIT = 3;
 
-const BlogPage = ({ b, page, selectedTag, tags }) => {
-  const [blogs, setBlogs] = useState(b.blogs);
-  const memorizedBlogs = useMemo(() => blogs, [blogs]);
+const CATEGORIES = [
+  { id: "ruqyah", label: "Ruqyah" },
+  { id: "black-magic", label: "Black Magic" },
+  { id: "evil-eye", label: "Evil Eye" },
+  { id: "jinn-problem", label: "Jinn Problem" },
+  { id: "others", label: "Others" },
+];
 
-  useEffect(() => {
-    setBlogs(b?.blogs);
-  }, [b, selectedTag]);
+const BlogPage = ({ b }) => {
+  const [blogs, setBlogs] = useState(b);
 
+  // ✅ Initialize pages for ALL categories so clicking "others" etc. never breaks
+  const [pages, setPages] = useState(() =>
+    CATEGORIES.reduce((acc, cat) => {
+      const initialCount = b?.[cat.id]?.length || 0;
+      acc[cat.id] = {
+        page: 1,
+        lastBatch: initialCount,
+      };
+      return acc;
+    }, {})
+  );
+  const [loading, setLoading] = useState({}); 
+
+  const blogSections = useMemo(
+    () =>
+      CATEGORIES.map((cat) => ({
+        id: cat.id,
+        label: cat.label,
+        posts: blogs[cat.id] || [],
+      })),
+    [blogs]
+  );
+
+  const handleLoadMore = useCallback(
+    async (tag) => {
+      const current = pages[tag] || { page: 1, lastBatch: 0 };
+      const nextPage = current.page + 1;
+
+      if (loading[tag]) return; // already fetching
+
+      try {
+        setLoading((prev) => ({ ...prev, [tag]: true }));
+
+        const res = await getBlogsByTag(
+          nextPage,
+          LIMIT,
+          "",
+          tag,
+          "newest",
+          LIMIT * (nextPage - 1)
+        );
+
+        const batch = res?.blogs || [];
+
+        if (batch.length) {
+          setBlogs((prev) => ({
+            ...prev,
+            [tag]: [...(prev[tag] || []), ...batch],
+          }));
+          setPages((prev) => ({
+            ...prev,
+            [tag]: { page: nextPage, lastBatch: batch.length },
+          }));
+        } else {
+          // No more results: set lastBatch to 0 so button hides
+          setPages((prev) => ({
+            ...prev,
+            [tag]: { ...prev[tag], lastBatch: 0 },
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load blogs for", tag, err);
+        // Optionally hide the button on error:
+        setPages((prev) => ({
+          ...prev,
+          [tag]: { ...prev[tag], lastBatch: 0 },
+        }));
+      } finally {
+        setLoading((prev) => ({ ...prev, [tag]: false }));
+      }
+    },
+    [pages, loading]
+  );
+  const categories = [
+    { id: "ruqyah", label: "Ruqyah" },
+    { id: "black-magic", label: "Black Magic" },
+    { id: "evil-eye", label: "Evil Eye" },
+    { id: "jinn-problem", label: "Jinn Problem" },
+    { id: "others", label: "Others" },
+  ];
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-teal-50 dark:from-green-900 dark:via-gray-900 dark:to-teal-900 text-gray-800 dark:text-gray-100">
-      {/* Decorative Wave Background */}
-      <WaveSVG />
+    <div className="min-h-screen">
+      <CategoryNavbar key={'blog_category_nav'} categories={categories} heading={'Categories of the Articles'} />
+      <section className="px-4 max-w-[1110px] mx-auto">
+        {blogSections?.map((section) => {
+          const { id, posts } = section;
+          const pageInfo = pages[id] || { page: 1, lastBatch: 0 };
+          return (
+            <div key={id} id={id} className="mb-12 scroll-mt-20">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6">
+                {posts.map((post) => (
+                  <div key={post._id}>
+                    <BlogCardForHomeSection blog={post} />
+                  </div>
+                ))}
+              </div>
 
-      {/* Main Content */}
-      <div className="mt-12 space-y-10 relative z-10 px-6">
-        {/* Header Section */}
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-serif tracking-wide text-[#2e3e23] dark:text-green-300 flex items-center justify-center">
-            <svg className="w-10 h-10 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l5 5v11a2 2 0 01-2 2z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 4v5h5" />
-            </svg>
-            Our Blog
-          </h1>
-          <p className="text-lg md:text-xl mt-4 text-gray-600 dark:text-gray-300 flex items-center justify-center">
-            <svg className="w-6 h-6 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432 .917-4.995 2.638-4.995 5.458v10.391h-5.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433 .917-4.996 2.638-4.996 5.458v10.391h-5z" />
-            </svg>
-            Discover insights, tips, and stories from our latest posts.
-          </p>
-        </header>
-
-        {/* Tags Section */}
-        {tags && (
-          <section className="max-w-4xl mx-auto mb-12">
-            <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center justify-center gap-2">
-              <svg className="w-6 h-6 text-[#2e3e23] dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h10M7 11h7m-7 4h10" />
-              </svg>
-              Explore by Tags
-            </h3>
-            <div className="flex flex-wrap justify-center gap-3">
-              {tags?.map((tag, index) => (
-                <Link key={index} href={`/blog/tags/${encodeURIComponent(tag)}`}>
-                  <span
-                    className={`
-                      px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer
-                      ${
-                        selectedTag === tag
-                          ? "bg-gradient-to-r from-[#2e3e23] to-[#4a5e3b] text-white shadow-md scale-105 hover:scale-110 hover:shadow-lg dark:from-green-600 dark:to-green-800"
-                          : "bg-green-100 text-[#2e3e23] dark:bg-green-800 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-700"
-                      }
-                    `}
+              {pageInfo.lastBatch === LIMIT && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={() => handleLoadMore(id)}
+                    disabled={!!loading[id]}
+                    className="load-more-btn"
                   >
-                    {tag}
-                  </span>
-                </Link>
-              ))}
+                    {loading[id] ? "Loading..." : "Load More"}
+                  </button>
+                </div>
+              )}
             </div>
-          </section>
-        )}
-
-        {/* Blogs List */}
-        <section className="space-y-10 max-w-4xl mx-auto">
-          {memorizedBlogs?.map((blog) => (
-            <div key={blog?._id} className="transform hover:scale-102 transition-transform duration-300">
-              <SingleBlogCard b={blog} />
-            </div>
-          ))}
-        </section>
-
-        {/* Load More Button */}
-        {memorizedBlogs?.length < b.totalCount && (
-          <div className="flex justify-center mt-12">
-            <LoadMoreButton page={page} />
-          </div>
-        )}
-      </div>
-
-      {/* Decorative Footer Wave */}
-      <svg className="absolute bottom-0 left-0 w-full h-32 text-teal-100 dark:text-teal-800" fill="currentColor" viewBox="0 0 1440 120">
-        <path d="M1440 120H0V60C200 30 400 0 720 0s520 30 720 60v60z" />
-      </svg>
+          );
+        })}
+      </section>
     </div>
   );
 };

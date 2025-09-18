@@ -7,16 +7,15 @@ const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
     const page = s?.page || 1;
-    const limit = s?.limit || 100;
+    const limit = s?.limit || 1000;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const resources = await getResources(page, limit, keyword, sort);
-
     if (resources?.status === 200) {
       return (
         <div className="overflow-hidden">
           <ResourcesAdmin resources={resources?.resources} />
-          <PaginationDefault p={page} totalPages={resources?.totalPages} />
+          {/* <PaginationDefault p={page} totalPages={resources?.totalPages} /> */}
         </div>
       );
     } else {

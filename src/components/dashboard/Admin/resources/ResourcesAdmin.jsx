@@ -6,26 +6,33 @@ import SearchBar from '@/components/search/SearchBar';
 import deleteBulkResource from '@/server-functions/deleteBulkResource.mjs';
 
 const ResourcesAdmin = ({ resources: initialResources }) => {
-    // State for resources (managed locally to reflect deletions)
-    const [resources, setResources] = useState(initialResources);
+    // Flatten grouped server response into single array
+    const flattenResources = (data) => {
+        if (!Array.isArray(data)) return [];
+        return data.flatMap(group =>
+            Object.keys(group).flatMap(typeKey => group[typeKey])
+        );
+    };
 
-    useEffect(() => {
-        setResources(initialResources)
-    }, [initialResources])
-
+    const [resources, setResources] = useState([]);
     const [filter, setFilter] = useState('all');
     const [selectedResources, setSelectedResources] = useState([]);
     const [status, setStatus] = useState('');
     const [selectedResource, setSelectedResource] = useState(null);
-    const filteredResources = resources.filter((resource) =>
+console.log(resources)
+    useEffect(() => {
+        setResources(flattenResources(initialResources));
+    }, [initialResources]);
+
+    // Filter logic
+    const filteredResources = resources?.filter((resource) =>
         filter === 'all' ? true : resource.type === filter
     );
 
     // Handle checkbox selection
     const handleSelect = (id) => {
-        setSelectedResources((prev) =>{
-            return prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
-        }
+        setSelectedResources((prev) =>
+            prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
         );
     };
 
@@ -37,7 +44,7 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
             setSelectedResources(filteredResources.map((r) => r._id));
         }
     };
-    console.log(selectedResource)
+
     // Handle bulk delete
     const handleBulkDelete = async () => {
         if (selectedResources.length === 0) {
@@ -45,16 +52,14 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
             return;
         }
         try {
-            console.log(selectedResource)
             setStatus('Deleting resources...');
-            const resData = await deleteBulkResource(selectedResources)
+            const resData = await deleteBulkResource(selectedResources);
             if (resData.status === 200) {
-                // Update local resources state to remove deleted items
                 setResources((prev) =>
                     prev.filter((resource) => !selectedResources.includes(resource._id))
                 );
                 setStatus('Resources deleted successfully!');
-                setSelectedResources([]); // Clear selection
+                setSelectedResources([]);
             } else {
                 throw new Error(resData.message || 'Failed to delete resources');
             }
@@ -63,15 +68,9 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
         }
     };
 
-    // Open modal
-    const openModal = (resource) => {
-        setSelectedResource(resource);
-    };
-
-    // Close modal
-    const closeModal = () => {
-        setSelectedResource(null);
-    };
+    // Modal open/close
+    const openModal = (resource) => setSelectedResource(resource);
+    const closeModal = () => setSelectedResource(null);
 
     return (
         <div className="min-h-[300px] w-full bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -80,44 +79,22 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
                     Manage Resources
                 </h1>
                 <SearchBar placeholder={"Search Resources"} />
+
                 {/* Filter Options */}
                 <div className="flex justify-center mb-6 space-x-4">
-                    <button
-                        onClick={() => setFilter('all')}
-                        className={`px-4 py-2 rounded-md ${filter === 'all'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'
+                    {['all', 'video', 'audio', 'literature', 'quran'].map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => setFilter(type)}
+                            className={`px-4 py-2 rounded-md ${
+                                filter === type
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'
                             }`}
-                    >
-                        All
-                    </button>
-                    <button
-                        onClick={() => setFilter('pdf')}
-                        className={`px-4 py-2 rounded-md ${filter === 'pdf'
-                            ? 'bg-red-500 text-white'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'
-                            }`}
-                    >
-                        PDF
-                    </button>
-                    <button
-                        onClick={() => setFilter('video')}
-                        className={`px-4 py-2 rounded-md ${filter === 'video'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'
-                            }`}
-                    >
-                        Video
-                    </button>
-                    <button
-                        onClick={() => setFilter('audio')}
-                        className={`px-4 py-2 rounded-md ${filter === 'audio'
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'
-                            }`}
-                    >
-                        Audio
-                    </button>
+                        >
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Status Message */}
@@ -140,84 +117,78 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
                 {/* Resources Table */}
                 <div className="lg:min-w-[1000px] md:min-w-[600px] min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 ">
+                        <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                <th className="px-6 py-3">
                                     <input
                                         type="checkbox"
                                         checked={selectedResources.length === filteredResources.length && filteredResources.length > 0}
                                         onChange={handleSelectAll}
                                     />
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Type
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Title
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Description
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Links
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Date
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Actions
-                                </th>
+                                <th className="px-6 py-3">Type</th>
+                                <th className="px-6 py-3">Title</th>
+                                <th className="px-6 py-3">Description</th>
+                                <th className="px-6 py-3">Links</th>
+                                <th className="px-6 py-3">Date</th>
+                                <th className="px-6 py-3">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                            {filteredResources.length === 0 ? (
-                                <tr className="h-full">
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {filteredResources?.length === 0 ? (
+                                <tr>
                                     <td colSpan="7" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                         No resources found.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredResources.map((resource) => (
-                                    <tr key={resource._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                filteredResources?.map((resource) => (
+                                    <tr key={resource._id}>
+                                        <td className="px-6 py-4">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedResources.includes(resource._id)}
                                                 onChange={() => handleSelect(resource._id)}
                                             />
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                            {resource.type}
+                                        <td className="px-6 py-4">{resource.type}</td>
+                                        <td className="px-6 py-4">{resource.title}</td>
+                                        <td className="px-6 py-4">
+                                            <div dangerouslySetInnerHTML={{ __html: resource?.description }} className="line-clamp-2" />
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 min-w-[200px]">
-                                            {resource.title}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-300">
-                                            <div
-                                                dangerouslySetInnerHTML={{ __html: resource.description }}
-                                                className="line-clamp-2"
-                                            />
-                                        </td>
-                                        <td className="px-6 py-4 min-w-[200px] text-sm text-gray-500 dark:text-gray-300">
+                                        <td className="px-6 py-4">
                                             <ul className="list-disc pl-4">
-                                                {resource.links.map((link, index) => (
-                                                    <li key={index}>
-                                                        <a
-                                                            href={link}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-500 hover:underline"
-                                                        >
-                                                            Link {index + 1}
-                                                        </a>
-                                                    </li>
+                                                {resource?.links?.map((link, index) => (
+                                                    link && (
+                                                        <li key={index}>
+                                                            <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                                                                Link {index + 1}
+                                                            </a>
+                                                        </li>
+                                                    )
                                                 ))}
+                                                {resource.readLink && (
+                                                    <li>
+                                                        <a href={resource.readLink} target="_blank" className="text-green-500 hover:underline">Read</a>
+                                                    </li>
+                                                )}
+                                                {resource.listenLink && (
+                                                    <li>
+                                                        <a href={resource.listenLink} target="_blank" className="text-orange-500 hover:underline">Listen</a>
+                                                    </li>
+                                                )}
+                                                {resource.downloadLink && (
+                                                    <li>
+                                                        <a href={resource.downloadLink} target="_blank" className="text-purple-500 hover:underline">Download</a>
+                                                    </li>
+                                                )}
+                                                {resource.litType === 'paid' && resource.price && (
+                                                    <li className="text-red-600 font-semibold">Price: {resource.price} BDT</li>
+                                                )}
                                             </ul>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                            {formatDate(resource.date)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm flex space-x-2">
+                                        <td className="px-6 py-4">{formatDate(resource.date)}</td>
+                                        <td className="px-6 py-4 flex space-x-2">
                                             <Link href={`/dashboard/resources/edit?id=${resource._id}`} passHref>
                                                 <button className="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600">
                                                     Edit
@@ -238,49 +209,42 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
                 </div>
             </div>
 
-            {/* Modal for Viewing Resource */}
+            {/* Modal */}
             {selectedResource && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-                        <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
-                            {selectedResource.title}
-                        </h2>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                            <strong>Type:</strong> {selectedResource.type}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                            <strong>Date:</strong> {formatDate(selectedResource.date)}
-                        </p>
+                        <h2 className="text-2xl font-semibold mb-4">{selectedResource.title}</h2>
+                        <p><strong>Type:</strong> {selectedResource.type}</p>
+                        <p><strong>Date:</strong> {formatDate(selectedResource.date)}</p>
                         <div className="mb-4">
-                            <h3 className="text-lg font-medium text-gray-800 dark:text-white">Description</h3>
-                            <div
-                                dangerouslySetInnerHTML={{ __html: selectedResource.description }}
-                                className="text-gray-700 dark:text-gray-200 prose dark:prose-invert"
-                            />
+                            <h3>Description</h3>
+                            <div dangerouslySetInnerHTML={{ __html: selectedResource.description }} className="prose dark:prose-invert" />
                         </div>
                         <div className="mb-4">
-                            <h3 className="text-lg font-medium text-gray-800 dark:text-white">Links</h3>
-                            <ul className="list-disc pl-4 text-gray-700 dark:text-gray-200">
-                                {selectedResource.links.map((link, index) => (
-                                    <li key={index}>
-                                        <a
-                                            href={link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-500 hover:underline"
-                                        >
-                                            {link}
-                                        </a>
-                                    </li>
+                            <h3>Links</h3>
+                            <ul className="list-disc pl-4">
+                                {selectedResource.links?.map((link, i) => (
+                                    link && (
+                                        <li key={i}>
+                                            <a href={link} target="_blank" className="text-blue-500 hover:underline">{link}</a>
+                                        </li>
+                                    )
                                 ))}
+                                {selectedResource.readLink && (
+                                    <li><a href={selectedResource.readLink} target="_blank" className="text-green-500 hover:underline">Read</a></li>
+                                )}
+                                {selectedResource.listenLink && (
+                                    <li><a href={selectedResource.listenLink} target="_blank" className="text-orange-500 hover:underline">Listen</a></li>
+                                )}
+                                {selectedResource.downloadLink && (
+                                    <li><a href={selectedResource.downloadLink} target="_blank" className="text-purple-500 hover:underline">Download</a></li>
+                                )}
+                                {selectedResource.litType === 'paid' && selectedResource.price && (
+                                    <li className="text-red-600 font-semibold">Price: {selectedResource.price} BDT</li>
+                                )}
                             </ul>
                         </div>
-                        <button
-                            onClick={closeModal}
-                            className="w-full bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600"
-                        >
-                            Close
-                        </button>
+                        <button onClick={closeModal} className="w-full bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600">Close</button>
                     </div>
                 </div>
             )}

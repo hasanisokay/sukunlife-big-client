@@ -1,17 +1,17 @@
 'use client'
 import Link from 'next/link';
 import { BookSVG, CartSVG, AppointmentSVG } from '@/components/svg/SvgCollection';
-import { SERVER } from '@/constants/urls.mjs';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import getUserOrders from '@/utils/getUserOrders.mjs';
-
+import logOut from "@/utils/logOut.mjs";
+import { setUserData } from "@/store/slices/authSlice";
 const UserDashboard = () => {
     const enrolledCourses = useSelector((state) => state.user.enrolledCourses);
     const [userOrderCount, setUserOrderCount] = useState(0);
     const [userAppointmentCount, setUserAppointmentCount] = useState(0);
-
+    const dispatch = useDispatch();
     useEffect(() => {
         (async () => {
             const data = await getUserOrders(false, true)
@@ -24,11 +24,41 @@ const UserDashboard = () => {
             }
         })()
     }, [])
-
+    const handleLogOut = async () => {
+        await fetch("/api/logout")
+        await logOut();
+        dispatch(setUserData(null));
+        window.location.reload();
+    };
     return (
         <div className='w-full min-w-[200px]'>
-            <h2 className="text-3xl font-bold mb-8 dark:text-white">Dashboard Overview</h2>
-
+            <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-bold dark:text-white">Dashboard Overview</h2>
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleLogOut}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-log-out"
+                    >
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    <span className="font-medium">Logout</span>
+                </motion.button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <Link href={'/dashboard/c'} passHref>
                     <motion.div
@@ -74,6 +104,7 @@ const UserDashboard = () => {
                         </div>
                     </motion.div>
                 </Link>
+
             </div>
         </div>
     );

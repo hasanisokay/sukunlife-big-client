@@ -130,13 +130,13 @@ const SettingsPage = () => {
                             </span>
                         )}
 
-                        <motion.div
+                        {/* <motion.div
                             className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100"
                             initial={{ opacity: 0 }}
                             whileHover={{ opacity: 1 }}
                         >
                             <EditSVG className="text-white w-6 h-6" />
-                        </motion.div>
+                        </motion.div> */}
                     </div>
 
                     <input
@@ -149,7 +149,7 @@ const SettingsPage = () => {
                     <motion.button
                         type="button"
                         onClick={() => fileInputRef.current.click()}
-                        className="absolute -right-2 -bottom-2 bg-purple-500 p-2 rounded-full shadow-lg hover:bg-purple-600"
+                        className="absolute -right-2 -bottom-2 bg-green p-2 rounded-full shadow-lg "
                         disabled={loading}
                         whileTap={{ scale: 0.9 }}
                     >
@@ -160,7 +160,21 @@ const SettingsPage = () => {
                                 transition={{ repeat: Infinity, duration: 1 }}
                             />
                         ) : (
-                            <UploadSVG className="text-white w-5 h-5" />
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                fill="none"
+                                viewBox="0 0 16 16"
+                            >
+                                <path
+                                    stroke="#ffffff"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="1.5"
+                                    d="M8 13.333h6m-12 0h1.116c.326 0 .49 0 .643-.036q.205-.05.385-.16c.135-.082.25-.198.48-.428L13 4.333a1.414 1.414 0 1 0-2-2L2.625 10.71c-.23.23-.346.346-.429.48q-.11.181-.16.385C2 11.728 2 11.891 2 12.217z"
+                                ></path>
+                            </svg>
                         )}
                     </motion.button>
                 </motion.div>
@@ -204,7 +218,7 @@ const SettingsPage = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setIsEditingPassword(!isEditingPassword)}
-                        className="px-4 py-2 text-purple-500 hover:bg-purple-100 dark:hover:bg-gray-700 rounded-lg"
+                        className="px-4 py-2 text-green rounded-lg"
                     >
                         {isEditingPassword ? 'Cancel' : 'Change Password'}
                     </motion.button>
@@ -252,14 +266,13 @@ const SettingsPage = () => {
                                     {passwordError}
                                 </motion.div>
                             )}
-                            <motion.button
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                            <button
+
                                 type="submit"
-                                className="w-full py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+                                className="w-[300px] h-[60px]  bg-green text-white rounded-full "
                             >
                                 Update Password
-                            </motion.button>
+                            </button>
                         </motion.form>
                     )}
                 </AnimatePresence>

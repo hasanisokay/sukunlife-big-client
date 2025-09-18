@@ -3,7 +3,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants/names.mjs";
 import { SERVER } from "@/constants/urls.mjs";
 import { cookies } from "next/headers";
 
-const editResource = async (resourceId, type, title, description, links) => {
+const editResource = async (resourceId, type, payload) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   const refreshToken = cookieStore.get(REFRESH_TOKEN);
@@ -18,9 +18,7 @@ const editResource = async (resourceId, type, title, description, links) => {
       },
       body: JSON.stringify({
         type,
-        title,
-        description,
-        links,
+        ...payload,
       }),
       credentials: "include",
     });

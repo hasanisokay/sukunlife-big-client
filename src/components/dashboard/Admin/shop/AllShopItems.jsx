@@ -13,7 +13,6 @@ import SliderOnShopHeader from "./SliderOnShopHeader";
 import FixedCart from "@/components/shared/FixedCart";
 
 const AllShopItems = ({ p, totalCount }) => {
-  const cartItems = useSelector((state) => state.cart.cartData);
   const [products, setProducts] = useState(p);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -163,7 +162,7 @@ const AllShopItems = ({ p, totalCount }) => {
                           e.preventDefault();
                           handleAddToCart(product, false);
                         }}
-                        className="w-[180px] min-w-fit h-[59px] rounded-full  bg-orange text-black font-semibold"
+                        className="lg:w-[180px] lg:h-[59px] w-[150px] h-[45px] rounded-full  bg-orange text-black font-semibold"
                       >
                         Add to Cart
                       </button>

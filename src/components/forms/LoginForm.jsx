@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,8 @@ import SubmitButton from "../ui/btn/SubmitButton";
 import bgImage from "@/../public/bgImages/login_page_bg.jpeg"
 import Image from "next/image";
 import SocialIcons from "../shared/SocialIcons";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
 const loginSchema = z.object({
   userIdentifier: z
@@ -25,6 +27,8 @@ const loginSchema = z.object({
 export default function LoginForm({ redirectTo }) {
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+      const user = useSelector((state) => state.user.userData);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -67,7 +71,11 @@ export default function LoginForm({ redirectTo }) {
       console.log(e)
     }
   };
-
+  useEffect(() => {
+    if (user) {
+      router.replace("/")
+    }
+  }, [user])
   return (
     <div className="h-[890px]">
       <div className="absolute top-0 bottom-0 right-0 left-0 h-[900px]">

@@ -1,4 +1,3 @@
-import BlogPage from "@/components/blogs/BlogPage";
 import NotFound from "@/components/not-found/NotFound";
 import { websiteName } from "@/constants/names.mjs";
 import getAllBlog from "@/utils/getAllBlog.mjs";
@@ -7,6 +6,7 @@ import blogCover from "@/../public/images/blog.jpg";
 import hostname from "@/constants/hostname.mjs";
 import capitalize from "@/utils/capitalize.mjs";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
+import BlogTagPage from "@/components/blogs/BlogTagPage";
 
 
 
@@ -27,7 +27,7 @@ const singleTagPage = async ({ params, searchParams }) => {
     if (blogs?.status === 200) {
       return (
         <>
-          <BlogPage b={blogs} tags={tags?.tags} limit={limit} page={page} selectedTag={decodeURIComponent(tag)} />
+          <BlogTagPage b={blogs} tags={tags?.tags} limit={limit} page={page} selectedTag={decodeURIComponent(tag)} />
         </>
       );
     } else {

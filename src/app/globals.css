@@ -91,6 +91,24 @@ body {
 }
 
 /* Button Styles */
+.play-button {
+  box-shadow: 0px 0px 47px #7a51e2;
+}
+.play-button-shadow:hover {
+  box-shadow: 0px 0px 47px #7a51e2;
+}
+
+.load-more-btn {
+  padding: 0.5rem 1rem; 
+  background-color: var(--bg-green);
+  color: white; 
+  border-radius: 9999px; 
+  transition: all 0.2s ease-in-out;
+}
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 .btn {
   background-color: var(--btn-primary);
   color: var(--text-primary);
@@ -284,9 +302,8 @@ svg.star-svg {
     display: none;
   }
   .nav-wrapper {
-  min-height: 64px;
-}
-
+    min-height: 64px;
+  }
 }
 @media (min-width: 1050px) {
   /* .nav-theme-switch {
