@@ -692,7 +692,7 @@ const BookAppointment = ({ dates, status, preSelectedService }) => {
                             onClick={(e_) => e_.stopPropagation()}
                             className={`absolute book-appointment-modal rounded-lg bg-white p-6  drop-shadow-2xl dark:bg-gray-800 dark:text-white ${openModal ? 'opacity-1 translate-y-0 duration-300' : 'translate-y-20 opacity-0 duration-150'}`}
                         >
-                            {selectedService && <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 h-[90vh] overflow-y-auto">
+                            {selectedService && <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 h-[90vh]  overflow-y-auto ">
                                 <div className="">
                                     <button
                                         type="button"

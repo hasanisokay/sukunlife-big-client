@@ -45,15 +45,29 @@
   padding: 12px;
   text-align: center;
 }
-.book-appointment-modal {
-  width: 700px;
-}
+
 @media (min-width: 400px) {
   .ruqyah-session-card {
     width: 395px;
   }
   .book-appointment-modal {
-    width: 350px;
+    width: 390px;
+  }
+}
+@media (min-width: 500px) {
+  .book-appointment-modal {
+    width: 490px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 799px) {
+  .book-appointment-modal {
+    width: 630px;
+  }
+}
+@media (min-width: 810px) {
+  .book-appointment-modal {
+    width: 70vw;
   }
 }
 
@@ -68,9 +82,6 @@
     margin-top: 150px;
   }
   .ruqyah-session-card {
-    width: 500px;
-  }
-  .book-appointment-modal {
     width: 500px;
   }
 }
