@@ -9,13 +9,14 @@ const getResources = async (
   keyword = "",
   sort = "newest",
   type = "all",
-  subType = "all"
+  subType = "all",
+  skip = ""
 ) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   try {
     const res = await fetch(
-      `${SERVER}/api/public/resources?limit=${limit}&&page=${page}&&keyword=${keyword}&&sort=${sort}&&type=${type}&&subType=${subType}`,
+      `${SERVER}/api/public/resources?limit=${limit}&&page=${page}&&keyword=${keyword}&&sort=${sort}&&type=${type}&&subType=${subType}&&skip=${skip}`,
       {
         method: "GET",
         headers: {

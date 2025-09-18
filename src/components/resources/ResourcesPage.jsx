@@ -8,10 +8,14 @@ import AudioSection from "./AudioSection";
 import VideoSection from "./VideoSection";
 import LiteratureSection from "./LiteratureSection";
 import FixedCart from "../shared/FixedCart";
+import getResources from "@/utils/getResources.mjs";
 
 const ResourcesPage = ({ iResources, initialLimit }) => {
   const [resources, setResources] = useState(iResources?.[0] || {});
-
+  const [showMoreAudioButton, setShowMoreAudioButton] = useState(true);
+  const [showMoreLiteratureButton, setShowMoreLiteratureButton] = useState(true);
+  const [showMoreQuranButton, setShowMoreQuranButton] = useState(true);
+  const [showMoreVideoButton, setShowMoreVideoButton] = useState(true);
   useEffect(() => {
     setResources(iResources?.[0] || {});
   }, [iResources]);
@@ -24,27 +28,36 @@ const ResourcesPage = ({ iResources, initialLimit }) => {
   ];
 
   // Helper: slice to limit 5 items initially
-  const getLimited = (arr) => (arr?.length > initialLimit ? arr.slice(0, initialLimit) : arr || []);
 
-  const audioList = useMemo(() => getLimited(resources.audio), [resources]);
-  const quranList = useMemo(() => getLimited(resources.quran), [resources]);
-  const videoList = useMemo(() => getLimited(resources.video), [resources]);
+  const audioList = useMemo(() => resources?.audio, [resources]);
+  const quranList = useMemo(() => resources.quran, [resources]);
+  const videoList = useMemo(() => resources.video, [resources]);
   const literatureList = useMemo(
-    () => getLimited(resources.literature),
+    () => resources.literature,
     [resources]
   );
-  console.log(resources)
-  const handleLoadMore = (type) => {
-    console.log("Load more called for:", type);
-    // Example: fetch API and merge into state
-    // fetch(`/api/resources?type=${type}&offset=${resources[type].length}`)
-    //   .then(res => res.json())
-    //   .then(newData => {
-    //     setResources(prev => ({
-    //       ...prev,
-    //       [type]: [...prev[type], ...newData],
-    //     }));
-    //   });
+  const handleLoadMore = async (type, previousDataSize, subType = '') => {
+
+    const moreItems = await getResources(1, initialLimit, '', 'newest', type, subType, previousDataSize || initialLimit)
+    if (moreItems?.status === 200) {
+      if (moreItems?.resources?.length > 0) {
+        setResources((prev) => ({
+          ...prev,
+          [type]: [...(prev[type] || []), ...(moreItems?.resources || [])],
+        }));
+      }else{
+        if(type==='audio'){
+          setShowMoreAudioButton(false);
+        }else if(type==='video'){
+          setShowMoreVideoButton(false);
+        }else if(type==='quran'){
+          setShowMoreQuranButton(false);
+        }else{
+          setShowMoreLiteratureButton(false)
+        }
+      }
+    }
+
   };
 
   return (
@@ -84,10 +97,10 @@ const ResourcesPage = ({ iResources, initialLimit }) => {
         {/* Audio Section */}
         <section id="audio">
           <AudioSection audioList={audioList} />
-          {resources?.audio?.length === initialLimit && (
+          {audioList.length >= initialLimit && showMoreAudioButton && (
             <div className="text-center mt-6">
               <button
-                onClick={() => handleLoadMore("audio")}
+                onClick={() => handleLoadMore("audio", audioList?.length, '')}
                 className="load-more-btn"
               >
                 Load More
@@ -138,10 +151,10 @@ const ResourcesPage = ({ iResources, initialLimit }) => {
               </div>
             ))}
           </div>
-          {resources.quran?.length === initialLimit && (
+          {resources.quran?.length >= initialLimit && showMoreQuranButton && (
             <div className="text-center mt-6">
               <button
-                onClick={() => handleLoadMore("quran")}
+                onClick={() => handleLoadMore("quran", quranList?.length, '')}
                 className="load-more-btn"
               >
                 Load More
@@ -152,10 +165,10 @@ const ResourcesPage = ({ iResources, initialLimit }) => {
         {/* Video Section */}
         <div className="relative">
           <VideoSection videos={videoList} />
-          {resources?.video?.length === initialLimit && (
+          {videoList?.length >= initialLimit && showMoreVideoButton && (
             <div className="text-center mt-6">
               <button
-                onClick={() => handleLoadMore("video")}
+                onClick={() => handleLoadMore("video", videoList?.length, '')}
                 className="load-more-btn"
               >
                 Load More
@@ -167,10 +180,10 @@ const ResourcesPage = ({ iResources, initialLimit }) => {
         {/* Literature Section (Third Design) */}
 
         <LiteratureSection literatureData={literatureList} />
-        {resources?.literature?.length === initialLimit && (
+        {literatureList?.length >= initialLimit && showMoreLiteratureButton && (
           <div className="text-center mt-6">
             <button
-              onClick={() => handleLoadMore("literature")}
+              onClick={() => handleLoadMore("literature", literatureList?.length, '')}
               className="load-more-btn"
             >
               Load More

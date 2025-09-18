@@ -8,7 +8,7 @@ const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
     const page = s?.page || 1;
-    const limit = s?.limit || 3;
+    const limit = s?.limit || 2;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const type = s?.type || "all";
