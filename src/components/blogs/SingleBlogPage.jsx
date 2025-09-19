@@ -107,7 +107,7 @@ const SingleBlogPage = ({ b }) => {
                 </div>
             )}
             <hr className="bg-black h-[2px] mt-[158px] mb-[40px]" />
-            <div className="md:h-[649px] h-[1206px]">
+            <div className="md:h-[680px] h-[1300px]">
                 {
                     similarBlogs?.length > 0 && <div>
                         <h3 className="montserrat-font md:text-[32px] text-[24px] font-bold">
