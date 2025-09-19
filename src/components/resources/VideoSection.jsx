@@ -85,7 +85,7 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
 
               return (
                 <div key={video._id}>
-                  <div className="video-player-wrapper">
+                  <div className="relative h-[304px] md:w-[540px] w-[350px] overflow-hidden  rounded-[40px] bg-black">
                     {activeVideo === video._id ? (
                       directFile ? (
                         <video
@@ -94,16 +94,19 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
                           controls
                           autoPlay
                           playsInline
-                          className='custom-video-player'
+                          className="min-w-full rounded-[40px] h-[304px] object-cover"
                         />
                       ) : (
                         <ReactPlayer
-                          url={"https://youtu.be/G1PqWr0m6PE?si=SsR37REFP6QMi9rJ"}
+                          url={videoUrl}
                           playing
                           controls
-                          className="react-player"
                           width="100%"
                           height="100%"
+                          style={{
+                            borderRadius: "40px",
+                          }}
+                          className="min-w-full rounded-[40px] h-[304px] object-cover"
                         />
                       )
                     ) : (
@@ -113,7 +116,7 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
                           alt={video.title}
                           width={400}
                           height={300}
-                          className="md:w-[540px] w-[95vw] rounded-[40px] h-[304px] object-cover"
+                          className=" min-w-full rounded-[40px] h-[304px] object-cover"
                         />
                         <button
                           className="absolute inset-0 flex items-center justify-center text-white text-4xl"
