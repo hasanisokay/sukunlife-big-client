@@ -59,11 +59,10 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
           <a
             key={lang}
             href={`#video-${lang.toLowerCase()}`}
-            className={`text-center w-[160px] pt-[14px] h-[57px]  rounded-full ${
-              activeLang === lang
-                ? "bg-black text-white"
-                : "border border-gray-400 hover:bg-black hover:text-white"
-            }`}
+            className={`text-center w-[160px] pt-[14px] h-[57px]  rounded-full ${activeLang === lang
+              ? "bg-black text-white"
+              : "border border-gray-400 hover:bg-black hover:text-white"
+              }`}
           >
             {capitalize(lang)}
           </a>
@@ -86,7 +85,7 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
 
               return (
                 <div key={video._id}>
-                  <div className="relative">
+                  <div className="video-player-wrapper">
                     {activeVideo === video._id ? (
                       directFile ? (
                         <video
@@ -95,21 +94,16 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
                           controls
                           autoPlay
                           playsInline
-                          className="w-[540px] rounded-[40px] h-[304px] object-cover"
+                          className='custom-video-player'
                         />
                       ) : (
                         <ReactPlayer
                           url={videoUrl}
                           playing
                           controls
-
-                          width="540px"
-                          height="304px"
-                          style={{
-                            borderRadius: "40px",
-                            overflow: "hidden",
-                            width:'540px'
-                          }}
+                          className="react-player"
+                          width="100%"
+                          height="100%"
                         />
                       )
                     ) : (
@@ -119,7 +113,7 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
                           alt={video.title}
                           width={400}
                           height={300}
-                          className="w-[540px] rounded-[40px] h-[304px] object-cover"
+                          className="md:w-[540px] w-[95vw] rounded-[40px] h-[304px] object-cover"
                         />
                         <button
                           className="absolute inset-0 flex items-center justify-center text-white text-4xl"
