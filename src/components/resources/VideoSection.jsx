@@ -98,7 +98,7 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
                         />
                       ) : (
                         <ReactPlayer
-                          url={videoUrl}
+                          url={"https://youtu.be/G1PqWr0m6PE?si=SsR37REFP6QMi9rJ"}
                           playing
                           controls
                           className="react-player"

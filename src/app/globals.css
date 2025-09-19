@@ -443,12 +443,12 @@ svg.star-svg {
 .video-player-wrapper {
   position: relative;
   width: 100%;
-  max-width: 540px;   /* desktop limit */
-  margin: 0 auto;     /* center horizontally */
+  max-width: 540px;  
+  margin: 0 auto;   
   border-radius: 40px;
-  overflow: hidden;   /* clip corners */
-  aspect-ratio: 16/9; /* keeps video proportional */
-  background: #000;   /* avoids white flicker before load */
+  overflow: hidden;   
+  /* aspect-ratio: 16/9; */
+  background: #000; 
 }
 
 .react-video-player {
@@ -456,7 +456,7 @@ svg.star-svg {
   top: 0;
   left: 0;
   border-radius: inherit;
-  overflow: hidden;
+
 }
 
 .custom-video-player {
