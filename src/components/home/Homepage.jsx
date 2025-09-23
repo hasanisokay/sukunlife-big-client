@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-// import { toggleTheme } from "@/store/slices/themeSlice";
+
 // import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import homeTopBanner from "@/../public/bgImages/home-banner.jpeg"
@@ -15,47 +15,6 @@ import BlogsAndArticleSectionHome from "./BlogsAndArticleSectionHome";
 import TestimonialSectionHome from "./TestimonialSectionHome";
 
 const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews, topCourses, recentBlogs }) => {
-  // const dispatch = useDispatch();
-  // const theme = useSelector((state) => state.theme.mode);
-  // const themeSwitch = (
-  //   <button className="px-3 py-2" onClick={() => dispatch(toggleTheme())}>
-  //     {theme === "dark" ? (
-  //       <svg
-  //         xmlns="http://www.w3.org/2000/svg"
-  //         width="24"
-  //         height="24"
-  //         fill="none"
-  //         viewBox="0 0 24 24"
-  //       >
-  //         <path
-  //           stroke="#ffff"
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth="2"
-  //           d="M3.32 11.684a9 9 0 0 0 17.357 3.348A9 9 0 0 1 8.32 6.683c0-1.18.23-2.32.644-3.353a9 9 0 0 0-5.645 8.354"
-  //         ></path>
-  //       </svg>
-  //     ) : (
-  //       <svg
-  //         xmlns="http://www.w3.org/2000/svg"
-  //         width="24"
-  //         height="24"
-  //         fill="none"
-  //         viewBox="0 0 24 24"
-  //       >
-  //         <g fill="#000000">
-  //           <path d="M18 12a6 6 0 1 1-12 0 6 6 0 0 1 12 0"></path>
-  //           <path
-  //             fillRule="evenodd"
-  //             d="M12 1.25a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0V2a.75.75 0 0 1 .75-.75M4.399 4.399a.75.75 0 0 1 1.06 0l.393.392a.75.75 0 0 1-1.06 1.061l-.393-.393a.75.75 0 0 1 0-1.06m15.202 0a.75.75 0 0 1 0 1.06l-.393.393a.75.75 0 0 1-1.06-1.06l.393-.393a.75.75 0 0 1 1.06 0M1.25 12a.75.75 0 0 1 .75-.75h1a.75.75 0 0 1 0 1.5H2a.75.75 0 0 1-.75-.75m19 0a.75.75 0 0 1 .75-.75h1a.75.75 0 0 1 0 1.5h-1a.75.75 0 0 1-.75-.75m-2.102 6.148a.75.75 0 0 1 1.06 0l.393.393a.75.75 0 1 1-1.06 1.06l-.393-.393a.75.75 0 0 1 0-1.06m-12.296 0a.75.75 0 0 1 0 1.06l-.393.393a.75.75 0 1 1-1.06-1.06l.392-.393a.75.75 0 0 1 1.061 0M12 20.25a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1a.75.75 0 0 1 .75-.75"
-  //             clipRule="evenodd"
-  //           ></path>
-  //         </g>
-  //       </svg>
-  //     )}
-
-  //   </button>
-  // );
   return (
     <div>
 
@@ -110,16 +69,12 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
           <DotsSVG2 width={'150'} height={'120'} />
         </div>
       </div>
-      {/* self diagnose section */}
       <SelfDiagnosisSection />
       <CoursesSectionHome topCourses={topCourses} />
       <ProductSectionHome topProducts={topProducts} />
       <SelfRuqyahResoursesSectionHome />
       <BlogsAndArticleSectionHome recentBlogs={recentBlogs} />
       <TestimonialSectionHome appointmentReviews={appointmentReviews} shopReviews={shopReviews} courseReviews={courseReviews} />
-      {/* <div className=" logo-lg">
-        {themeSwitch}
-      </div> */}
     </div>
   );
 };

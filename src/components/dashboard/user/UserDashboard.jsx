@@ -12,6 +12,7 @@ const UserDashboard = () => {
     const [userOrderCount, setUserOrderCount] = useState(0);
     const [userAppointmentCount, setUserAppointmentCount] = useState(0);
     const dispatch = useDispatch();
+
     useEffect(() => {
         (async () => {
             const data = await getUserOrders(false, true)
@@ -104,8 +105,8 @@ const UserDashboard = () => {
                         </div>
                     </motion.div>
                 </Link>
-
             </div>
+
         </div>
     );
 }

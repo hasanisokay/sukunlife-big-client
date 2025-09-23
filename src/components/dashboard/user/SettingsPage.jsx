@@ -5,13 +5,12 @@ import { setUserData } from "@/store/slices/authSlice";
 import uploadImage from "@/utils/uploadImage.mjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useRef, useEffect } from "react";
-import { EditSVG, UploadSVG } from "@/components/svg/SvgCollection";
 import formatDate from "@/utils/formatDate.mjs";
 import { SERVER } from '@/constants/urls.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import changePassword from '@/utils/changePassword.mjs';
 import updateUserPhoto from '@/utils/updateUserPhoto.mjs';
-
+import { toggleTheme } from "@/store/slices/themeSlice";
 const SettingsPage = () => {
     const user = useSelector((state) => state.user.userData);
     const dispatch = useDispatch();
@@ -25,6 +24,52 @@ const SettingsPage = () => {
         confirmPassword: ""
     });
     const [passwordError, setPasswordError] = useState("");
+
+    const theme = useSelector((state) => state.theme.mode);
+    const themeSwitch = (
+        <div className="flex flex-col gap-2 w-40">
+            <label
+                htmlFor="theme-select"
+                className="text-sm font-semibold text-gray-600 dark:text-gray-300"
+            >
+                Choose Theme
+            </label>
+
+            <div className="relative">
+                <select
+                    id="theme-select"
+                    value={theme}
+                    onChange={(e) => dispatch(toggleTheme(e.target.value))}
+                    className="
+          w-full appearance-none rounded-xl border border-gray-300 
+          bg-white px-4 py-2 pr-10 text-sm font-medium text-gray-700 
+          shadow-sm transition-all duration-200 
+          focus:border-green-500 focus:ring-2 focus:ring-green-500 
+          dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100
+        "
+                >
+                    <option value="light">🌞 Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    {/* <option value="system">💻 System</option> */}
+                </select>
+
+                {/* Dropdown arrow */}
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </span>
+            </div>
+        </div>
+    );
+
+
 
     useEffect(() => {
         if (user?.photoUrl) setPreviewImage(user.photoUrl);
@@ -205,7 +250,9 @@ const SettingsPage = () => {
                     <div className="text-gray-900 dark:text-white">{user.mobile}</div>
                 </div>
             </motion.div>
-
+            <div className=" logo-lg mb-10">
+                {themeSwitch}
+            </div>
             {/* Password Change Section */}
             <motion.div
                 initial={{ opacity: 0 }}

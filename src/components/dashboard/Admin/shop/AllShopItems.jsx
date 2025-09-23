@@ -93,12 +93,12 @@ const AllShopItems = ({ p, totalCount }) => {
       type: "product",
       productId: product?.productId,
       title: product?.title,
-      price: product.price,
+      price: product?.variantPrices?.length > 0 ? product?.variantPrices[0]?.price : product?.price,
       quantity: 1,
-      color: product?.colorVariants?.length > 0 ? product.colorVariants[0] : "",
-      size: product?.sizeVariants?.length > 0 ? product.sizeVariants[0] : "",
+      color: product?.colorVariants?.length > 0 ? product.colorVariants[0] : (product?.variantPrices?.length > 0 ? product?.variantPrices[0]?.color : ""),
+      size: product?.sizeVariants?.length > 0 ? product.sizeVariants[0] : (product?.variantPrices?.length > 0 ? product?.variantPrices[0]?.size : ""),
       image: product?.images[0] || "",
-      unit: product?.unit,
+      unit: product?.unit || '',
     };
     const c = await addToCart(cartItem, user);
     dispatch(setCartData(c));
@@ -109,7 +109,7 @@ const AllShopItems = ({ p, totalCount }) => {
       toast.success("Added to cart.", { autoClose: 700 });
     }
   };
-
+  console.log(memorizedProducts)
   return (
     <div className="montserrat-font text-black">
 
