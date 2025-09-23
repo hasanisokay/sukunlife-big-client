@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import "swiper/css";
-import { toggleTheme } from "@/store/slices/themeSlice";
-import "swiper/css/pagination";
-import { useDispatch, useSelector } from "react-redux";
+// import { toggleTheme } from "@/store/slices/themeSlice";
+// import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import homeTopBanner from "@/../public/bgImages/home-banner.jpeg"
 import DotsSVG from "../svg/DotsSVG";
@@ -17,8 +15,8 @@ import BlogsAndArticleSectionHome from "./BlogsAndArticleSectionHome";
 import TestimonialSectionHome from "./TestimonialSectionHome";
 
 const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews, topCourses, recentBlogs }) => {
-  const dispatch = useDispatch();
-  const theme = useSelector((state) => state.theme.mode);
+  // const dispatch = useDispatch();
+  // const theme = useSelector((state) => state.theme.mode);
   // const themeSwitch = (
   //   <button className="px-3 py-2" onClick={() => dispatch(toggleTheme())}>
   //     {theme === "dark" ? (

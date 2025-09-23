@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import TransparentGreenButton from './TransparentGreenButton';
-import TestimonialCard from './TestimonialCardHome';
+import HomeCardSlider from './HomeCardSlider';
 
 const TestimonialSectionHome = ({ appointmentReviews, shopReviews, courseReviews, showMoreButton = true }) => {
-    if (appointmentReviews?.length === 0 && shopReviews?.length === 0 && courseReviews?.length === 0) return;
+
+    const allReviews = useMemo(() => {
+        const fromAppointments = appointmentReviews?.map((r) => r) || [];
+        const fromCourses = courseReviews?.map((r) => r?.reviews?.[0]) || [];
+        const fromShops = shopReviews?.map((r) => r?.reviews?.[0]) || [];
+
+        // filter out empty / undefined
+        return [...fromAppointments, ...fromCourses, ...fromShops].filter(Boolean);
+    }, [appointmentReviews, shopReviews, courseReviews]);
+
+    if (allReviews.length === 0) return null;
 
     return (
         <div className='pt-[144px] px-4 md:pb-[160px] pb-[100px] '>
@@ -19,22 +29,13 @@ const TestimonialSectionHome = ({ appointmentReviews, shopReviews, courseReviews
                 <div className="md:w-[482px] self-ruqyah-resources-right-side-div">
                 </div>
             </div>
-            <div className='flex justify-center gap-[59px] flex-wrap py-4'>
-                {appointmentReviews?.length > 0 && appointmentReviews?.map((appointmentReview) => <div key={appointmentReview?._id}>
-                    <TestimonialCard testimonial={appointmentReview} />
-                </div>)}
+            <HomeCardSlider
+                itemType="testimonial"
+                items={allReviews}
+                sliderWrapperClassProps="flex justify-center items-center py-4"
+                nonSliderWrapperClassProps="flex justify-center gap-[59px] flex-wrap py-4"
+                key={'testimonial-home'} />
 
-                {courseReviews?.length > 0 && courseReviews?.map((r) => (
-                    <div key={r._id}>
-                        <TestimonialCard testimonial={r?.reviews[0]} />
-                    </div>
-                ))}
-                {shopReviews?.length > 0 && shopReviews?.map((r) => (
-                    <div key={r._id}>
-                        <TestimonialCard testimonial={r?.reviews[0]} />
-                    </div>
-                ))}
-            </div>
             {showMoreButton && <TransparentGreenButton hrefLink={'/about-us#testimonial'} text={'More Testimonial'} />}
         </div>
     );
