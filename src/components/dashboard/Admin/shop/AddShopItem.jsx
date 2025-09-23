@@ -23,7 +23,7 @@ const AddShopItem = () => {
     const [checkingProductId, setCheckingProductId] = useState(false);
     const [productIdAvailable, setProductIdAvailable] = useState(false);
     const [images, setImages] = useState([]);
-
+    const [loading, setLoading] = useState(false);
     const [weight, setWeight] = useState('');
     const [dimensions, setDimensions] = useState({ length: '', width: '', height: '' });
     const [colorVariants, setColorVariants] = useState([]);
@@ -103,6 +103,9 @@ const AddShopItem = () => {
             if (!productIdAvailable) {
                 return toast.error("Required Product Id.");
             }
+            if (loading) {
+                return toast.error("wait...")
+            }
             const sku = generateSku(data.title, data.productId);
             const productData = {
                 ...data,
@@ -116,12 +119,15 @@ const AddShopItem = () => {
                 variantPrices,
                 sku,
             };
+            setLoading(true);
             const resData = await addNewProduct(productData);
             if (resData?.status === 200) {
-                toast.success(resData?.message)
+                toast.success(resData?.message);
+                window?.location?.reload()
             } else {
                 toast.error(resData?.message)
             }
+            setLoading(false)
         } catch (e) {
             console.log(e)
         }

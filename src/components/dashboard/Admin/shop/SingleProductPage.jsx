@@ -21,7 +21,7 @@ import FixedCart from "@/components/shared/FixedCart";
 
 const SingleProductPage = ({ product }) => {
     const [selectedColor, setSelectedColor] = useState(product?.colorVariants[0]);
-    const [selectedSize, setSelectedSize] = useState(product?.sizeVariants[0] || product?.variantPrices[0]?.price);
+    const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [currentPrice, setCurrentPrice] = useState(product?.price);
     const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -53,9 +53,9 @@ const SingleProductPage = ({ product }) => {
                 setSelectedColor(newPrice?.color);
             }
             else {
-                setCurrentPrice(variantPrices[0]?.price * quantity);
-                setSelectedSize(variantPrices[0]?.size);
-                setSelectedColor(variantPrices[0]?.color);
+                setCurrentPrice(product?.variantPrices[0]?.price * quantity);
+                setSelectedSize(product?.variantPrices[0]?.size);
+                setSelectedColor(product?.variantPrices[0]?.color);
             }
         } else {
             setCurrentPrice(product?.price * quantity)

@@ -11,6 +11,8 @@ import ProductImage2 from "@/components/home/ProductImage2";
 import getTwoLinesOfDescription from "@/utils/getTwoLinesOfDescription.mjs";
 import SliderOnShopHeader from "./SliderOnShopHeader";
 import FixedCart from "@/components/shared/FixedCart";
+import productFallbackImage from "@/../public/images/product.jpg";
+
 
 const AllShopItems = ({ p, totalCount }) => {
   const [products, setProducts] = useState(p);
@@ -108,7 +110,6 @@ const AllShopItems = ({ p, totalCount }) => {
     }
   };
 
-
   return (
     <div className="montserrat-font text-black">
 
@@ -138,8 +139,11 @@ const AllShopItems = ({ p, totalCount }) => {
                 <Link href={`/shop/${product?.productId}`} passHref>
                   <div className="relative h-[213px] overflow-hidden ">
                     <ProductImage2
+                      key={product?._id}
                       classProps={' rounded-3xl'}
-                      src={product?.images[0]}
+                      src={product?.images?.[0] && product?.images?.[0].trim() !== ""
+                        ? product.images[0]
+                        : null}
                       alt={product?.title} width={'350px'} height={'213px'} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl" />
                   </div>
