@@ -134,7 +134,7 @@ const CartPage = () => {
                                         />
                                         <div>
                                             <h2 className="text-xl font-semibold">{item.title}</h2>
-                                            <p className={` dark:text-gray-400 text-gray-600 flex items-center font-semibold`}> <TakaSVG /> {item.price.toLocaleString()}
+                                            <p className={` dark:text-gray-400 text-gray-600 flex items-center font-semibold`}> <TakaSVG /> {item?.price?.toLocaleString()}
                                                 {item.size ? <span className="ml-2 text-xs">Variant: {item?.size} {item?.unit}</span> : <span></span>} {item.color ? <span className="ml-2 text-xs">Color: {item.color}</span> : <span></span>}
                                             </p>
                                         </div>
@@ -179,7 +179,7 @@ const CartPage = () => {
                             </div>
                             <div className="flex justify-between items-center">
                                 <p className="dark:text-gray-400 text-gray-700 ">Discount</p>
-                                <p className="text-xl font-semibold flex items-center">-<TakaSVG />{discount.toLocaleString()}</p>
+                                <p className="text-xl font-semibold flex items-center">-<TakaSVG />{discount?.toLocaleString()}</p>
                             </div>
                             <div className="flex justify-between items-center">
                                 <p className="dark:text-gray-400 text-gray-700 ">Total</p>
