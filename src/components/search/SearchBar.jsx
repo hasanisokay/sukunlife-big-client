@@ -36,7 +36,7 @@ const SearchBar = ({ placeholder }) => {
             />
             <button
                 type="submit"
-                className="px-4 py-2 rounded-full bg-[#FFC267] text-black text-sm font-medium  shadow-lg  focus:outline-none focus:ring-2"
+                className="px-4 py-2 rounded-full bg-green text-white text-sm font-medium  shadow-lg  focus:outline-none focus:ring-2"
             >
                 Search
             </button>

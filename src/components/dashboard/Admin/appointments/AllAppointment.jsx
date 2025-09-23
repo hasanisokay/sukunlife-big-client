@@ -8,6 +8,7 @@ import { SERVER } from "@/constants/urls.mjs";
 import AppointmentCard from "./AppointmentCard";
 import LoadMoreButton from "@/components/ui/btn/LoadMoreButton";
 import deleteBulkAppointment from "@/server-functions/deleteBulkdeleteBulkAppointment.mjs";
+import { useRouter } from "next/navigation";
 
 
 const AllAppointment = ({ a, page, limit }) => {
@@ -16,7 +17,9 @@ const AllAppointment = ({ a, page, limit }) => {
     const memorizedAppointments = useMemo(() => appointments, [appointments]);
     const [loading, setLoading] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-
+    const [startDate, setStartDate] = useState(null)
+    const [endDate, setEndDate] = useState(null)
+    const router = useRouter();
     useEffect(() => {
         setAppointments(a?.appointments);
     }, [a]);
@@ -52,11 +55,41 @@ const AllAppointment = ({ a, page, limit }) => {
             setLoading(false);
         }
     };
-
+    const handleSearchWithDateClick = () => {
+        if (!startDate || !endDate) {
+            return
+        }
+        const query = new URLSearchParams(window.location.search);
+        query.set('startDate', startDate);
+        query.set('endDate', endDate);
+        router.replace(`${window.location.pathname}?${query.toString()}`,);
+    }
     return (
         <div className="bg-gray-100 dark:bg-gray-900 w-full min-h-screen">
             <div className="mx-auto">
                 {/* Bulk Delete Button */}
+                <div className="flex gap-4 mb-6 items-center justify-center flex-wrap">
+                    <div>
+                        <input
+                            type="date"
+                            value={startDate || ''}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="border px-2 py-1 rounded-md"
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="date"
+                            value={endDate || ''}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="border px-2 py-1 rounded-md"
+                        />
+                    </div>
+                    <button
+                        onClick={handleSearchWithDateClick}
+                        className="px-4 py-2 rounded-full bg-green text-white text-sm font-medium  shadow-lg  focus:outline-none focus:ring-2"
+                    >Search</button>
+                </div>
                 <div className="min-h-[56px] mb-4 text-center">
                     {selectedIds.length > 0 && (
                         <button
@@ -83,7 +116,7 @@ const AllAppointment = ({ a, page, limit }) => {
                 </div>
             </div>
             {
-                memorizedAppointments?.length < a?.totalCount && <LoadMoreButton page={page} limit={limit}/>
+                memorizedAppointments?.length < a?.totalCount && <LoadMoreButton page={page} limit={limit} />
             }
             {selectedIds.length > 0 && showDeleteModal && (
                 <DeleteConfirmationModal

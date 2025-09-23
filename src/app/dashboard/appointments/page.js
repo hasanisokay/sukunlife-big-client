@@ -10,6 +10,8 @@ const allAppoitnmentPage = async ({ searchParams }) => {
   const limit = s?.limit || 5;
   const filter = s?.filter || "all";
   const sort = s?.sort || "newest";
+  const startDate = s?.startDate || "";
+  const endDate = s?.endDate || "";
   const keyword = s?.keyword || "";
   const skip = s?.skip || 0;
   const appointments = await getAllAppointment(
@@ -18,7 +20,9 @@ const allAppoitnmentPage = async ({ searchParams }) => {
     filter,
     sort,
     keyword,
-    skip
+    skip,
+    startDate,
+    endDate
   );
   
   if (appointments?.status !== 200) return <NotFound />;

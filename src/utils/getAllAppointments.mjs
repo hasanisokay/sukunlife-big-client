@@ -9,7 +9,9 @@ const getAllAppointment = async (
   filter = "upcoming",
   sort = "newest",
   keyword = "",
-  skip = ""
+  skip = "",
+  startDate = "",
+  endDate = ""
 ) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
@@ -17,7 +19,7 @@ const getAllAppointment = async (
 
   try {
     const res = await fetch(
-      `${SERVER}/api/admin/appointments?limit=${limit}&&page=${page}&&filter=${filter}&&sort=${sort}&&keyword=${keyword}&&skip=${skip}`,
+      `${SERVER}/api/admin/appointments?limit=${limit}&&page=${page}&&filter=${filter}&&sort=${sort}&&keyword=${keyword}&&skip=${skip}&&startDate=${startDate}&&endDate=${endDate}`,
       {
         method: "GET",
         headers: {

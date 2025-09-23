@@ -27,7 +27,7 @@ const loginSchema = z.object({
 export default function LoginForm({ redirectTo }) {
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
-      const user = useSelector((state) => state.user.userData);
+  const user = useSelector((state) => state.user.userData);
   const router = useRouter();
   const {
     register,
@@ -63,7 +63,7 @@ export default function LoginForm({ redirectTo }) {
           credentials: 'include'
         })
 
-        window.location.href = redirectTo || "/"
+        window.location.href = redirectTo || "/dashboard"
       } else {
         setServerError(data?.message || "ERROR")
       }
@@ -73,7 +73,7 @@ export default function LoginForm({ redirectTo }) {
   };
   useEffect(() => {
     if (user) {
-      router.replace("/")
+      router.replace("/dashboard")
     }
   }, [user])
   return (
