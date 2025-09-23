@@ -166,7 +166,7 @@ const BookAppointment = ({ dates, status, preSelectedService }) => {
                 </div>
                 <div className="bg-black bg-opacity-[41%] w-full bg-image-banner absolute top-0 bottom-0 right-0 left-0">
                 </div>
-                <div className="relative z-10 md:px-6 px-4 md:-mt-0 -mt-[50px]">
+                <div className="relative z-10 md:px-6 px-4 md:-mt-0 -mt-[10px]">
                     <div className="flex flex-col gap-[19px]">
                         <h2 className="charisSIL-font md:text-[60px] text-[30px] font-bold leading-tight text-center ">Book an Appointment</h2>
                         <p className="text-sm md:text-base max-w-4xl text-center mx-auto">

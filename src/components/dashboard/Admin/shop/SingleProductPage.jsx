@@ -20,7 +20,6 @@ import ImageWithFallback from "./ImageWithFallback";
 import FixedCart from "@/components/shared/FixedCart";
 
 const SingleProductPage = ({ product }) => {
-    const cartItems = useSelector((state) => state.cart.cartData);
     const [selectedColor, setSelectedColor] = useState(product?.colorVariants[0]);
     const [selectedSize, setSelectedSize] = useState(product?.sizeVariants[0] || product?.variantPrices[0]?.price);
     const [quantity, setQuantity] = useState(1);
@@ -38,7 +37,6 @@ const SingleProductPage = ({ product }) => {
     }, [thumbsSwiper]);
     // Update price when color or size changes
     useEffect(() => {
-
         if (product?.variantPrices?.length > 0) {
             let newPrice;
             newPrice = product?.variantPrices.find((p) => p.size === selectedSize);
@@ -48,11 +46,17 @@ const SingleProductPage = ({ product }) => {
             }
             else {
                 newPrice = product?.variantPrices.find((p) => p.color === selectedColor);
+            }
+            if (newPrice) {
                 setCurrentPrice(newPrice?.price * quantity);
                 setSelectedSize(newPrice?.size);
                 setSelectedColor(newPrice?.color);
             }
-
+            else {
+                setCurrentPrice(variantPrices[0]?.price * quantity);
+                setSelectedSize(variantPrices[0]?.size);
+                setSelectedColor(variantPrices[0]?.color);
+            }
         } else {
             setCurrentPrice(product?.price * quantity)
         }
@@ -220,7 +224,7 @@ const SingleProductPage = ({ product }) => {
                         )}
 
                         {/* Size Variants */}
-                        {product?.sizeVariants?.length > 0 && (
+                        {(product?.variantPrices?.length > 0) && (
                             <div>
                                 <h3 className="text-lg font-semibold mb-2">Size</h3>
                                 <div className="flex space-x-2">
