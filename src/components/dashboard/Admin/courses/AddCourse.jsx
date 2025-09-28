@@ -76,6 +76,11 @@ const AddCourse = () => {
     const checkIdAvailability = async (id) => {
         setCheckingId(true);
         try {
+            if (id?.includes("/")) {
+                setIdCheckMessage("ID cannot contain slashes.");
+                setIdAvailable(false);
+                return;
+            }
             const data = await checkCourseId(id);
             setIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
             setIdAvailable(data?.isAvailable);

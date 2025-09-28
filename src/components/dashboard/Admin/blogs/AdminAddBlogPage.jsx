@@ -79,8 +79,14 @@ const AdminAddBlogPage = () => {
   }, []);
 
   const checkUrlAvailability = async (url) => {
+
     setCheckingUrl(true);
     try {
+      if (url?.includes("/")) {
+        setUrlCheckMessage("URL cannot contain slashes.");
+        setUrlAvailable(false);
+        return;
+      }
       const data = await checkBlogUrl(url);
       setUrlCheckMessage(data?.isAvailable ? "URL is available!" : "URL is already taken.");
       setUrlAvailable(data?.isAvailable);
@@ -105,7 +111,9 @@ const AdminAddBlogPage = () => {
         setUrlCheckMessage("");
         setCheckingUrl(false);
         setValue("date", new Date())
+        window.location.reload();
       }
+
       else {
         toast.error(data.message)
       }

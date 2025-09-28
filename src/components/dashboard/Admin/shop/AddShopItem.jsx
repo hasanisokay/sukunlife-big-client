@@ -49,6 +49,11 @@ const AddShopItem = () => {
     const checkUrlAvailability = async (id) => {
         setCheckingProductId(true);
         try {
+            if (id?.includes("/")) {
+                setProductIdCheckMessage("ID cannot contain slashes.");
+                setProductIdAvailable(false);
+                return;
+            }
             const data = await checkProductId(id)
             setProductIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
             setProductIdAvailable(data?.isAvailable);
