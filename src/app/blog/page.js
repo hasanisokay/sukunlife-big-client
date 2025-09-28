@@ -2,7 +2,6 @@ import BlogPage from "@/components/blogs/BlogPage";
 import NotFound from "@/components/not-found/NotFound";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
-// import getAllBlog from "@/utils/getAllBlog.mjs";
 import blogCover from "@/../public/images/blog.jpg";
 import getAllCategoryFiveBlogs from "@/utils/getAllCategoryFiveBlogs.mjs";
 

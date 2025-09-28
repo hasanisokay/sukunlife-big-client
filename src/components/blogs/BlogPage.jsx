@@ -1,8 +1,7 @@
-"use client";
+"use client"
 
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import CategoryNavbar from "./CategoryNavbar";
-// import getAllBlog from "@/utils/getAllBlog.mjs"; // not used
 import BlogCardForHomeSection from "../home/BlogCardForHomeSection";
 import getBlogsByTag from "@/utils/getBlogsByTag.mjs";
 
@@ -17,29 +16,74 @@ const CATEGORIES = [
 ];
 
 const BlogPage = ({ b }) => {
-  const [blogs, setBlogs] = useState(b);
+  const [blogs, setBlogs] = useState(b || {
+    "ruqyah": [],
+    "black-magic": [],
+    "evil-eye": [],
+    "jinn-problem": [],
+    "others": []
+  });
+  const [pages, setPages] = useState({
+    "ruqyah": {
+      "page": 1,
+      "lastBatch": 0
+    },
+    "black-magic": {
+      "page": 1,
+      "lastBatch": 0
+    },
+    "evil-eye": {
+      "page": 1,
+      "lastBatch": 0
+    },
+    "jinn-problem": {
+      "page": 1,
+      "lastBatch": 0
+    },
+    "others": {
+      "page": 1,
+      "lastBatch": 0
+    }
+  });
 
-  // ✅ Initialize pages for ALL categories so clicking "others" etc. never breaks
-  const [pages, setPages] = useState(() =>
-    CATEGORIES.reduce((acc, cat) => {
-      const initialCount = b?.[cat.id]?.length || 0;
-      acc[cat.id] = {
-        page: 1,
-        lastBatch: initialCount,
-      };
-      return acc;
-    }, {})
-  );
-  const [loading, setLoading] = useState({}); 
+  useEffect(() => {
+    if (!blogs) return;
+    setPages(
+      CATEGORIES.reduce((acc, cat) => {
+        const initialCount = blogs?.[cat.id]?.length || 0;
+        acc[cat.id] = {
+          page: 1,
+          lastBatch: initialCount,
+        };
+        return acc;
+      }, {})
+    );
+  }, [blogs]);
 
+  const [loading, setLoading] = useState({});
+  // const blogSections = useMemo(
+  //   () =>
+  //     CATEGORIES.map((cat) => ({
+  //       id: cat.id,
+  //       label: cat.label,
+  //       posts: blogs[cat.id] || [],
+  //     })),
+  //   [blogs]
+  // );
   const blogSections = useMemo(
     () =>
-      CATEGORIES.map((cat) => ({
-        id: cat.id,
-        label: cat.label,
-        posts: blogs[cat.id] || [],
-      })),
-    [blogs]
+      CATEGORIES.reduce((sections, cat) => {
+        const posts = blogs[cat.id] || [];
+        if (posts?.length > 0) {
+          sections.push({
+            id: cat.id,
+            label: cat.label,
+            posts,
+          });
+        }
+        return sections;
+      }, []),
+    [blogs, b]
   );
 
   const handleLoadMore = useCallback(
@@ -47,7 +91,7 @@ const BlogPage = ({ b }) => {
       const current = pages[tag] || { page: 1, lastBatch: 0 };
       const nextPage = current.page + 1;
 
-      if (loading[tag]) return; // already fetching
+      if (loading[tag]) return;
 
       try {
         setLoading((prev) => ({ ...prev, [tag]: true }));
@@ -116,7 +160,7 @@ const BlogPage = ({ b }) => {
                 ))}
               </div>
 
-              {pageInfo.lastBatch === LIMIT && (
+              {pageInfo?.lastBatch === LIMIT && (
                 <div className="flex justify-center mt-6">
                   <button
                     onClick={() => handleLoadMore(id)}
