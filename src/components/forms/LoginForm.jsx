@@ -63,7 +63,7 @@ export default function LoginForm({ redirectTo }) {
           credentials: 'include'
         })
 
-        window.location.href = redirectTo || "/dashboard"
+        window.location.href = redirectTo === "/" ? "/dashboard" : redirectTo
       } else {
         setServerError(data?.message || "ERROR")
       }
