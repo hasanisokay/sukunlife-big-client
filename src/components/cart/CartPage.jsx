@@ -124,7 +124,7 @@ const CartPage = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ duration: 0.3 }}
-                                    className={`flex flex-col md:flex-row items-center justify-between p-6 dark:bg-gray-800 bg-white rounded-lg shadow-lg`}
+                                    className={`flex flex-col md:flex-row  justify-between p-6 dark:bg-gray-800 bg-white rounded-lg shadow-lg`}
                                 >
                                     <div className="flex items-center space-x-4">
                                         <img
@@ -133,8 +133,8 @@ const CartPage = () => {
                                             className="w-20 h-20 object-cover rounded-lg"
                                         />
                                         <div>
-                                            <h2 className="text-xl font-semibold">{item.title}</h2>
-                                            <p className={` dark:text-gray-400 text-gray-600 flex items-center font-semibold`}> <TakaSVG /> {item?.price?.toLocaleString()}
+                                            <h2 className="md:text-xl text-base font-semibold">{item.title}</h2>
+                                            <p className={` dark:text-gray-400 text-gray-600 flex items-center font-semibold`}> <TakaSVG /> {(parseFloat(item?.price) * parseInt(item.quantity))?.toLocaleString()}
                                                 {item.size ? <span className="ml-2 text-xs">Variant: {item?.size} {item?.unit}</span> : <span></span>} {item.color ? <span className="ml-2 text-xs">Color: {item.color}</span> : <span></span>}
                                             </p>
                                         </div>

@@ -109,7 +109,7 @@ const AllShopItems = ({ p, totalCount }) => {
       toast.success("Added to cart.", { autoClose: 700 });
     }
   };
-  console.log(memorizedProducts)
+
   return (
     <div className="montserrat-font text-black">
 
