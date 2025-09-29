@@ -72,9 +72,10 @@ const CartPage = () => {
     }, [])
     // console.log(cartItems)
     // Update quantity of an item
-    const updateQuantity = async (id, newQuantity) => {
+    console.log(cartItems)
+    const updateQuantity = async (id, newQuantity, size) => {
         const updatedCart = cartItems.map((item) =>
-            item._id === id ? { ...item, quantity: newQuantity } : item
+            (item._id + item?.size).trim() === (id + size).trim() ? { ...item, quantity: newQuantity } : item
         );
         dispatch(setCartData(updatedCart));
         dispatch(removeVoucher());
@@ -86,7 +87,7 @@ const CartPage = () => {
     const removeItem = async (item) => {
         const uniqueId = `${item?._id}-${item?.size || "default"}-${item?.color || "default"}`;
         const updatedCart = cartItems.filter((cartItem) => `${cartItem._id}-${cartItem.size || "default"}-${cartItem.color || "default"}` !== uniqueId)
-          
+
         dispatch(removeVoucher());
         dispatch(setCartData(updatedCart));
         await updateCart(updatedCart, user);
@@ -143,7 +144,7 @@ const CartPage = () => {
                                         <div className="flex items-center space-x-2">
                                             <button
                                                 onClick={() =>
-                                                    updateQuantity(item._id, Math.max(1, item.quantity - 1))
+                                                    updateQuantity(item._id, Math.max(1, item.quantity - 1), item.size)
                                                 }
                                                 className={`px-3 py-1 dark:bg-gray-700 bg-gray-200  rounded-lg dark:hover:bg-gray-600 hover:bg-gray-300 transition`}
                                             >
@@ -153,7 +154,7 @@ const CartPage = () => {
                                                 {item.quantity}
                                             </span>
                                             <button
-                                                onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                                                onClick={() => updateQuantity(item._id, item.quantity + 1, item.size)}
                                                 className={`px-3 py-1 dark:bg-gray-700 bg-gray-200 rounded-lg dark:hover:bg-gray-600 hover:bg-gray-300 transition`}
                                             >
                                                 +
