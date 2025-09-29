@@ -91,7 +91,7 @@ const SingleProductPage = ({ product }) => {
     const handleImageContextMenu = (e) => {
         e.preventDefault();
     };
-    console.log(product)
+
     return (
         <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-8 montserrat-font">
             <div className="max-w-6xl mx-auto">
@@ -186,8 +186,8 @@ const SingleProductPage = ({ product }) => {
                         </button>
                         <h1 className="md:text-3xl text-lg font-bold">{product?.title}</h1>
                         {/* StarRating Component */}
-                        <div className="flex flex-wrap justify-start items-center gap-4">
-                            <p className="text-2xl font-semibold flex items-center"> BDT {currentPrice}</p>
+                        <div className="flex flex-wrap justify-start items-center lg:gap-4 gap-1">
+                            <p className="text-2xl font-semibold flex items-center w-[180px]"> BDT {currentPrice}</p>
                             <Link href={"#reviews"}>
                                 <StarRating totalRating={totalRating} ratingCount={ratingCount} />
                             </Link>
@@ -251,43 +251,38 @@ const SingleProductPage = ({ product }) => {
 
                         {/* Quantity Selector */}
                         {product.stockQuantity > 0 && <div className="flex gap-[24px]">
-                            <div className="flex items-center space-x-4 border rounded">
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
+                            <div className="flex items-center px-4 justify-center space-x-4   border rounded-full ">
+                                <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="px-4 py-2 "
+                                    className="w-[10px]"
                                 >
                                     -
-                                </motion.button>
-                                <span className="text-xl">{quantity}</span>
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
+                                </button>
+                                <span className="text-xl w-[30px] text-center">{quantity}</span>
+                                <button
                                     onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
-                                    className="px-4 py-2 "
+                                    className="w-[10px] "
                                 >
                                     +
-                                </motion.button>
+                                </button>
                             </div>
-                            {product?.stockQuantity > 0 && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="flex gap-4"
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex gap-4"
+                            >
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleAddToCart(false)}
+                                    className=" bg-[#63953A] text-white py-3 rounded-full w-[172px] h-[52px] transition duration-300"
                                 >
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleAddToCart(false)}
-                                        className=" bg-[#63953A] text-white py-3 rounded-full w-[172px] h-[52px] transition duration-300"
-                                    >
-                                        Add to Cart
-                                    </motion.button>
+                                    Add to Cart
+                                </motion.button>
 
-                                </motion.div>
-                            )}
+                            </motion.div>
+
                         </div>}
 
 

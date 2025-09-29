@@ -104,7 +104,7 @@ const CartPage = () => {
     if (!isClient) return null
 
     return (
-        <div className={`min-h-screen dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900 p-8`}>
+        <div className={`min-h-screen p-8`}>
             <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
             {cartItems?.length === 0 ? (
                 <div className="text-center py-12 mx-auto max-w-fit">
