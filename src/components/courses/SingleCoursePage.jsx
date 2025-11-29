@@ -83,7 +83,6 @@ const SingleCoursePage = ({ course }) => {
         try {
             const response = await fetch(`${SERVER}/api/public/check-voucher?code=${typedVoucher || voucherPassed || ""}&&totalPrice=${course?.price}`);
             const data = await response.json();
-            console.log(data)
             if (data?.isValid) {
                 const calculatedDiscount = data.discount;
                 const calculatedFinalPrice = data.finalPrice;

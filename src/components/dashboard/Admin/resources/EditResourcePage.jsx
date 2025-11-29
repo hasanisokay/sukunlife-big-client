@@ -83,7 +83,7 @@ const EditResourcePage = ({ resource }) => {
 
         try {
             toast.info(`Saving ${resource.type} resource...`);
-            console.log(formData);
+          
             let payload;
             if (resource.type === "video") {
                 payload = {

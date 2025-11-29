@@ -19,7 +19,6 @@ const ResourcesAdmin = ({ resources: initialResources }) => {
     const [selectedResources, setSelectedResources] = useState([]);
     const [status, setStatus] = useState('');
     const [selectedResource, setSelectedResource] = useState(null);
-console.log(resources)
     useEffect(() => {
         setResources(flattenResources(initialResources));
     }, [initialResources]);

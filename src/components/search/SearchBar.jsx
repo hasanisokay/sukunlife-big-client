@@ -22,7 +22,7 @@ const SearchBar = ({ placeholder }) => {
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                console.log(e.target.search_bar.value)
+                // console.log(e.target.search_bar.value)
                 setKeyword(e.target.search_bar.value ||"")
             }}
             className="flex items-center gap-2 w-full max-w-md mx-auto p-2"

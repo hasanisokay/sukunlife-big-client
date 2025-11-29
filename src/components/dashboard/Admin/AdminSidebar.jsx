@@ -51,7 +51,7 @@ const AdminSidebar = () => {
         >
             {!isSidebarOpen && <button
                 onClick={toggleSidebar}
-                className="fixed opacity-30 hover:opacity-100"
+                className="fixed opacity-30 hover:opacity-100 z-10"
             >
                 <SidebarSVG transform={false} />
             </button>}
@@ -68,6 +68,7 @@ const AdminSidebar = () => {
                     </button>
                 </div>
                 <Link href="/dashboard" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard")}`}>Dashboard</Link>
+                <Link href="/dashboard/notes" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/notes")}`}>Notes</Link>
                 <Link href="/dashboard/vouchers" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/vouchers")}`}>Vouchers</Link>
                 <Link href="/dashboard/orders" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/orders")}`}>Orders</Link>
                 <div>

@@ -6,7 +6,6 @@ import { z } from "zod";
 import { useState, useEffect } from "react";
 import RichTextEditor from "@/components/editor/RichTextEditor";
 import DatePicker from "@/components/ui/datepicker/Datepicker";
-import { SERVER } from "@/constants/urls.mjs";
 import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import uploadImage from "@/utils/uploadImage.mjs";

@@ -141,7 +141,6 @@ const BookAppointment = ({ dates, status, preSelectedService }) => {
     };
 
     const handleCardSelect = (service) => {
-        console.log(service)
         setSelectedService(service);
         setValue("service", service);
         setOpenModal(true);
