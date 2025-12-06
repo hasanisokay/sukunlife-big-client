@@ -33,7 +33,7 @@
     "flatpickr": "^4.6.13",
     "framer-motion": "^12.0.6",
     "jose": "^6.0.8",
-    "next": "15.5.6",
+    "next": "^15.5.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
