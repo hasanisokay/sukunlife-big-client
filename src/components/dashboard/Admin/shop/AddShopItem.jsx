@@ -10,9 +10,10 @@ import uploadImage from '@/utils/uploadImage.mjs'; // Import the uploadImage fun
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
 import checkProductId from '@/server-functions/checkProductId.mjs';
 import addNewProduct from '@/server-functions/addNewProduct.mjs';
+import formatUrlAdIds from '@/utils/formatUrlAdIds.mjs';
 
 const AddShopItem = () => {
-    const { register, handleSubmit, control, formState: { errors } } = useForm({
+    const { register, handleSubmit,    setValue, control, formState: { errors } } = useForm({
         defaultValues: {
             addedOn: new Date()
         }
@@ -181,6 +182,10 @@ const AddShopItem = () => {
                     <input
                         {...register('productId', { required: 'Product ID is required' })}
                         placeholder="Product ID"
+                        onChange={(e) => {
+                            const formatted = formatUrlAdIds(e.target.value);
+                            setValue("productId", formatted, { shouldValidate: true });
+                        }}
                         onBlur={(e) => checkUrlAvailability(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
                     />

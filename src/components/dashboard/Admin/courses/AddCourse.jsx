@@ -10,6 +10,7 @@ import { AddSVG, ClipboardSVG, QuizSVG, VideoSVG } from '@/components/svg/SvgCol
 import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
 import addNewCourse from '@/server-functions/addNewCourse.mjs';
 import checkCourseId from '@/server-functions/checkCourseId.mjs';
+import formatUrlAdIds from '@/utils/formatUrlAdIds.mjs';
 
 const AddCourse = () => {
     const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
@@ -428,10 +429,12 @@ const AddCourse = () => {
                 <input
                     type="text"
                     id="courseId"
-                    onBlur={(e) => checkIdAvailability(e.target.value)}
+                    {...register('courseId', { required: 'Course Id is required' })}
                     onChange={(e) => {
-                        setValue('courseId', e.target.value);
+                        const formatted = formatUrlAdIds(e.target.value);
+                        setValue("courseId", formatted, { shouldValidate: true });
                     }}
+                    onBlur={(e) => checkIdAvailability(e.target.value)}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                 />
                 {checkingId ? (

@@ -13,6 +13,7 @@ import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 import generateUniqueIds from "@/utils/generateUniqueIds.mjs";
 import addNewBlog from "@/server-functions/addNewBlog.mjs";
 import checkBlogUrl from "@/server-functions/checkBlogUrl.mjs";
+import formatUrlAdIds from "@/utils/formatUrlAdIds.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -97,6 +98,7 @@ const AdminAddBlogPage = () => {
   };
 
   const onSubmit = async (d) => {
+  return console.log(d.blogUrl)
     try {
       if (!urlAvailable) {
         toast.error("Blog Url must be unique.")
@@ -131,7 +133,7 @@ const AdminAddBlogPage = () => {
       }
     }
   };
-
+  
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen w-full">
       <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">
@@ -166,6 +168,10 @@ const AdminAddBlogPage = () => {
             type="text"
             id="blogUrl"
             {...register("blogUrl")}
+              onChange={(e) => {
+    const formatted = formatUrlAdIds(e.target.value);
+    setValue("blogUrl", formatted, { shouldValidate: true });
+  }}
             onBlur={(e) => checkUrlAvailability(e.target.value)}
             className="mt-1 p-2 w-full border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
             placeholder="Enter blog URL"
@@ -175,6 +181,7 @@ const AdminAddBlogPage = () => {
           ) : (
             <p className={`text-gray-500 text-sm mt-1 ${urlCheckMessage === "URL is already taken." && 'text-red-500'}`}>{urlCheckMessage}</p>
           )}
+          <p className="text-sm">Blog URL এ শুধু ছোট হাতের ইংলিশ অক্ষর দিবেন। স্পেস না দিয়ে - ড্যাশ দিবেন।</p>
           {errors.blogUrl && <p className="text-red-500 text-sm mt-1">{errors.blogUrl.message}</p>}
         </div>
 
