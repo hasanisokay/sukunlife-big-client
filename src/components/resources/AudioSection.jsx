@@ -200,12 +200,37 @@ export default function AudioSection({ audioList = [] }) {
     return null;
   }
 
+  // get the direct download link if its not direct
+  const getPlayableSrc = (url = "") => {
+    if (!url) return "";
+
+    // Already a direct Drive download link
+    if (url.includes("drive.google.com/uc?")) {
+      return url;
+    }
+
+    // /file/d/FILE_ID/...
+    let match = url.match(/\/file\/d\/([^/]+)/);
+    if (match?.[1]) {
+      return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+
+    // open?id=FILE_ID
+    match = url.match(/[?&]id=([^&]+)/);
+    if (match?.[1]) {
+      return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+
+    return url;
+  };
+
+
   return (
     <div >
 
       <audio
         ref={audioRef}
-        src={audioList[currentIndex]?.links?.[0] ?? ""}
+        src={getPlayableSrc(audioList[currentIndex]?.links?.[0])}
         preload="metadata"
       />
 
@@ -218,7 +243,7 @@ export default function AudioSection({ audioList = [] }) {
               className={`flex md:gap-[30px] gap-2 items-start  flex-wrap transition-all `}
             >
 
-             {audio?.coverPhoto && <Image
+              {audio?.coverPhoto && <Image
                 src={audio.coverPhoto}
                 alt={audio.title}
                 width={400}
