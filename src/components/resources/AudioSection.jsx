@@ -199,7 +199,7 @@ export default function AudioSection({ audioList = [] }) {
   if (!audioList || audioList.length === 0) {
     return null;
   }
-console.log(audioList)
+
   return (
     <div >
 

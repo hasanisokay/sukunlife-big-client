@@ -4,8 +4,7 @@ import hostname from "@/constants/hostname.mjs";
 import getAllCoursePublic from "@/utils/getAllCoursePublic.mjs";
 import courseCover from "@/../public/images/course.jpg";
 import { websiteName } from "@/constants/names.mjs";
-
-
+import EmptyState from "@/components/shared/EmptyState";
 
 const coursesPage = async ({ searchParams }) => {
   try {
@@ -25,7 +24,14 @@ const coursesPage = async ({ searchParams }) => {
       sort,
       skip
     );
-    if (courses?.status !== 200) return <NotFound />;
+  
+    if (courses?.status !== 200)
+      return (
+        <EmptyState
+          title="No courses yet"
+          description="New courses are coming soon."
+        />
+      );
     return <CoursesPage courses={courses} page={page} />;
   } catch {
     return <NotFound />;
@@ -40,7 +46,8 @@ export async function generateMetadata() {
 
     const metadata = {
       title: `Online Courses - Learn with ${websiteName}`,
-      description: "Discover quality online courses at Sukunlife. Learn new skills with expert-led training. Explore our course catalog now!",
+      description:
+        "Discover quality online courses at Sukunlife. Learn new skills with expert-led training. Explore our course catalog now!",
       keywords: [
         "sukunlife courses",
         "online learning",
@@ -57,7 +64,8 @@ export async function generateMetadata() {
       },
       openGraph: {
         title: `Online Courses - ${websiteName}`,
-        description: "Explore our diverse range of online courses at Sukunlife. Start learning today with expert instructors!",
+        description:
+          "Explore our diverse range of online courses at Sukunlife. Start learning today with expert instructors!",
         url: `${host}/courses`,
         siteName: websiteName,
         images: [
@@ -74,7 +82,8 @@ export async function generateMetadata() {
       twitter: {
         card: "summary_large_image",
         title: `Online Courses - ${websiteName}`,
-        description: "Discover expert-led online courses at Sukunlife. Start your learning journey today!",
+        description:
+          "Discover expert-led online courses at Sukunlife. Start your learning journey today!",
         images: [courseCoverUrl],
       },
     };
@@ -92,4 +101,3 @@ export async function generateMetadata() {
     };
   }
 }
-
