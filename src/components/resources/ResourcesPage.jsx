@@ -98,7 +98,7 @@ const ResourcesPage = ({ iResources, initialLimit }) => {
         <section id="audio">
           <AudioSection audioList={audioList} />
           {audioList.length >= initialLimit && showMoreAudioButton && (
-            <div className="text-center mt-6">
+            <div className="text-center mt-[100px]">
               <button
                 onClick={() => handleLoadMore("audio", audioList?.length, '')}
                 className="load-more-btn"

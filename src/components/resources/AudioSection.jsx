@@ -199,7 +199,7 @@ export default function AudioSection({ audioList = [] }) {
   if (!audioList || audioList.length === 0) {
     return null;
   }
-
+console.log(audioList)
   return (
     <div >
 
@@ -217,17 +217,18 @@ export default function AudioSection({ audioList = [] }) {
               key={audio._id}
               className={`flex md:gap-[30px] gap-2 items-start  flex-wrap transition-all `}
             >
-              <Image
+
+             {audio?.coverPhoto && <Image
                 src={audio.coverPhoto}
                 alt={audio.title}
                 width={400}
                 height={300}
                 className={`h-[244px] w-[255px] rounded-[27px] object-cover `}
-              />
+              />}
               <div className="p-2 flex-1 w-[258px] h-[244px] ">
-                <h3 className="font-bold text-[20px]">{audio.title}</h3>
+                <h3 className="font-bold text-[20px] line-clamp-2 min-h-[48px]" title={audio.title}>{audio.title}</h3>
 
-                <div className="h-[100px]   overflow-y-auto text-sm text-gray-700 mt-2 mb-3">
+                <div className="h-[100px]  overflow-y-auto text-sm text-gray-700 mt-2 mb-3">
                   <BlogContent content={audio?.description || ""} />
                 </div>
 
