@@ -72,6 +72,7 @@ const CourseCard = ({ course }) => {
           height={400}
           className="w-full h-full object-cover transition-transform duration-500 border-none outline-none"
           quality={100}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           src={imageError ? fallbaclCourseImage : course.coverPhotoUrl}
           // src={'https://images.pexels.com/photos/10788135/pexels-photo-10788135.jpeg'}
           alt={course.title}

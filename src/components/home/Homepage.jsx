@@ -22,7 +22,14 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
         {/* Hero Section */}
         <section className="h-[690px] flex flex-col items-center justify-center px-4 text-center ">
           <div className="absolute top-0 bottom-0 right-0 left-0 h-[800px]">
-            <Image className="w-full h-[800px]  object-cover pointer-events-none select-none" src={homeTopBanner} width={1000} height={1000} alt="Quran background for home top banner" />
+            <Image 
+            className="w-full h-[800px]  object-cover pointer-events-none select-none" 
+            src={homeTopBanner} 
+            width={1000} 
+            height={1000} 
+            alt="Quran background for home top banner" 
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
           </div>
           <div className="bg-black bg-opacity-60 w-full h-[800px] absolute top-0 bottom-0 right-0 left-0">
           </div>
