@@ -98,7 +98,7 @@ const AdminAddBlogPage = () => {
   };
 
   const onSubmit = async (d) => {
-  return console.log(d.blogUrl)
+  // return console.log(d.blogUrl)
     try {
       if (!urlAvailable) {
         toast.error("Blog Url must be unique.")
