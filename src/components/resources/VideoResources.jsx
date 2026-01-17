@@ -10,7 +10,7 @@ const isDirectVideo = (url) => {
   return /\.(mp4|webm|ogg|mov)$/i.test(url);
 };
 
-const VideoSection = ({ videos = [], initialLimit = 5 }) => {
+const VideoResources = ({ videos = []}) => {
   const [activeLang, setActiveLang] = useState("Bangla");
   const [activeVideo, setActiveVideo] = useState(null); // playing video id
   const videoRefs = useRef({});
@@ -155,4 +155,4 @@ const VideoSection = ({ videos = [], initialLimit = 5 }) => {
   );
 };
 
-export default VideoSection;
+export default VideoResources;

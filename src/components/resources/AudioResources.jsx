@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import BlogContent from "../blogs/BlogContnet";
-
-export default function AudioSection({ audioList = [] }) {
+import audioFallback from "@/../public/images/audio.jpg";
+export default function AudioResources({ audioList = [] }) {
   const audioRef = useRef(null);
   const pendingSeekRef = useRef(null);
 
@@ -226,36 +226,69 @@ export default function AudioSection({ audioList = [] }) {
 
 
   return (
-    <div >
+    <div className="min-h-screen max-h-fit md:mt-10 mt-0 mb-10">
 
       <audio
         ref={audioRef}
         src={getPlayableSrc(audioList[currentIndex]?.links?.[0])}
-        preload="metadata"
+        preload='none'
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 max-w-[1200px] mx-auto justify-center  gap-8">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 px-2 max-w-[1200px] mx-auto justify-center  gap-8"> */}
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 sm:grid-cols-2 gap-8 max-w-[1200px] mx-auto px-4">
         {audioList.map((audio, idx) => {
           const isCurrent = nowPlayingId === audio._id;
           return (
             <div
               key={audio._id}
-              className={`flex md:gap-[30px] gap-2 items-start  flex-wrap transition-all `}
+              // className={`flex md:gap-[30px] gap-2 items-start  flex-wrap transition-all shadow-xl border border-[#63953a]  rounded-xl h-[300px] px-2`}
+              className="bg-white border border-[#63953a]/30 rounded-2xl shadow-sm 
+             overflow-hidden flex flex-col 
+             min-h-[420px]"
             >
 
-              {audio?.coverPhoto && <Image
-                src={audio.coverPhoto}
-                alt={audio.title}
-                width={400}
-                height={300}
-                className={`h-[244px] w-[255px] rounded-[27px] object-cover `}
-              />}
-              <div className="p-2 flex-1 w-[258px] h-[244px] ">
-                <h3 className="font-bold text-[20px] line-clamp-2 min-h-[48px]" title={audio.title}>{audio.title}</h3>
+              {/* {audio?.coverPhoto && ( */}
+              <div className="relative h-[180px] w-full">
+                <Image
+                  src={audio?.coverPhoto || audioFallback}
+                  alt={audio.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover"
+                // priority={idx < 2}
+                />
 
-                <div className="h-[100px]  overflow-y-auto text-sm text-gray-700 mt-2 mb-3">
+                {/* subtle overlay for polish */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+
+                {/* optional index badge */}
+                <div className="absolute top-3 left-3 bg-white/90 text-[#63953a] 
+                    text-xs font-bold px-3 py-1 rounded-full">
+                  #{idx + 1}
+                </div>
+              </div>
+              {/* )} */}
+
+              <div className="p-2 flex-1  h-[244px] ">
+                {/* <h3 className="font-bold text-[20px] line-clamp-2 h-[58px]" title={audio.title}>
+                  {idx + 1}. {audio.title}</h3> */}
+
+                <h3
+                  className="font-bold text-[17px] line-clamp-2 min-h-[44px]"
+                  title={audio.title}
+                >
+                  {audio.title}
+                </h3>
+
+                <div className="mt-2 mb-3 h-[90px] overflow-y-auto text-sm text-gray-700">
                   <BlogContent content={audio?.description || ""} />
                 </div>
+
+
+
+                {/* <div className="h-[100px]  overflow-y-auto text-sm text-gray-700 mt-2 mb-3">
+                  <BlogContent content={audio?.description || ""} />
+                </div> */}
 
                 {/* Progress bar */}
                 <div

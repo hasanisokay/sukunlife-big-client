@@ -133,11 +133,11 @@ const Pagination2 = ({
 
   // UI classes for morphic / neumorphic look
   const baseBtn =
-    'inline-flex items-center justify-center min-w-[36px] h-9 px-3 rounded-lg shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400';
+    'inline-flex items-center justify-center min-w-[36px] h-9 px-3 rounded-lg shadow-sm transition-shadow focus:outline-none  focus:ring-[#63953a]';
   const primaryBtn =
     baseBtn + ' bg-gradient-to-b from-white/70 to-slate-100 border border-gray-200 text-sm font-medium';
   const activeBtn =
-    baseBtn + ' bg-blue-500 text-white shadow-md font-semibold ring-2 ring-blue-200';
+    baseBtn + ' bg-[#63953a] text-white shadow-md font-semibold ring-1 ring-[#63953a]';
   const ghostBtn = baseBtn + ' bg-white/30 border border-gray-100 text-sm text-gray-700';
 
   return (
@@ -208,27 +208,27 @@ const Pagination2 = ({
           </div>
 
           {/* Right: Page info & items per page (hidden on very small) */}
-          <div className="flex items-center gap-3 text-sm text-gray-600">
-            <div className="hidden sm:inline-flex items-center gap-3">
-              <div className="px-3 py-2 rounded-lg bg-white/60 border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-3 text-sm text-gray- text-center">
+            <div className="inline-flex items-center gap-3">
+              <div className="px-3 py-2 min-w-[140px] rounded-lg bg-white/60 border border-gray-100 shadow-sm">
                 Page <span className="font-medium mx-1">{current}</span> of <span className="font-medium">{totalPages || 1}</span>
               </div>
               {typeof totalItems === 'number' && (
-                <div className="px-3 py-2 rounded-lg bg-white/60 border border-gray-100 shadow-sm">
+                <div className="px-3 py-2 min-w-[80px] rounded-lg bg-white/60 border border-gray-100 shadow-sm">
                   {totalItems.toLocaleString()} items
                 </div>
               )}
               {typeof itemsPerPage === 'number' && (
-                <div className="px-3 py-2 rounded-lg bg-white/60 border border-gray-100 shadow-sm">
+                <div className="px-3 py-2 min-w-[80px] rounded-lg bg-white/60 border border-gray-100 shadow-sm">
                   {itemsPerPage} / page
                 </div>
               )}
             </div>
 
             {/* Mobile concise info */}
-            <div className="sm:hidden text-xs text-gray-500">
+            {/* <div className=" text-xs text-gray-500">
               {typeof totalItems === 'number' ? `${totalItems.toLocaleString()} items` : `${totalPages || 1} pages`}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

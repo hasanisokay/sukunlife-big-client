@@ -522,3 +522,86 @@ export const AppointmentSVG = ({ color, width, height, classes }) => {
     </g>
   </svg>
 };
+
+export function AudioIcon({ size = 28, color = "#63953a" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+      <path d="M21 18a2 2 0 0 1-2 2h-1" />
+      <path d="M3 18a2 2 0 0 0 2 2h1" />
+    </svg>
+  );
+}
+
+export function QuranIcon({ size = 28, color = "#63953a" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* outer mushaf */}
+      <rect x="4" y="3" width="16" height="18" rx="2.5" />
+      
+      {/* inner frame (pages) */}
+      <rect x="7" y="6" width="10" height="12" rx="1.5" />
+      
+      {/* center spine */}
+      <path d="M12 6v12" />
+    </svg>
+  );
+}
+
+export function VideoIcon({ size = 28, color = "#63953a" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+      <path d="M10 9l5 3-5 3z" />
+    </svg>
+  );
+}
+export function LiteratureIcon({ size = 28, color = "#63953a" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* back document */}
+      <rect x="6" y="3" width="12" height="16" rx="2" />
+      {/* front document */}
+      <rect x="3" y="6" width="12" height="16" rx="2" />
+      {/* text lines */}
+      <path d="M7 10h6" />
+      <path d="M7 14h6" />
+    </svg>
+  );
+}
