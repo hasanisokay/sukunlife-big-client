@@ -9,26 +9,26 @@ import Pagination2 from "@/components/paginations/Pagination2";
 const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
-    const page = s?.page || 1;
-    const limit = s?.limit || 10;
+    const page = Number(s?.page) || 1;
+    const limit = Number(s?.limit) || 20;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const type = "audio";
     const r = await getResources(page, limit, keyword, sort, type);
 
     if (r?.status === 200) {
-        const totalItems = r.totalCount;
-  const totalPages = Math.ceil(totalItems / limit);
+      const totalItems = Number(r?.totalCount || 0);
+      const totalPages = Math.max(1, Math.ceil(totalItems / limit));
       return (
         <>
           <AudioResources audioList={r?.resources} />
-          <Pagination2
-          itemsPerPage={limit}
-          totalItems={r?.totalCount}
-          totalPages={totalPages}
-          
-
-          />
+          {totalPages > 1 && (
+            <Pagination2
+              itemsPerPage={limit}
+              totalItems={r?.totalCount}
+              totalPages={totalPages}
+            />
+          )}
         </>
       );
     } else {

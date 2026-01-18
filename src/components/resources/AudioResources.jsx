@@ -284,12 +284,6 @@ export default function AudioResources({ audioList = [] }) {
                   <BlogContent content={audio?.description || ""} />
                 </div>
 
-
-
-                {/* <div className="h-[100px]  overflow-y-auto text-sm text-gray-700 mt-2 mb-3">
-                  <BlogContent content={audio?.description || ""} />
-                </div> */}
-
                 {/* Progress bar */}
                 <div
                   className="w-full h-1 bg-gray-200 rounded-full overflow-hidden cursor-pointer"

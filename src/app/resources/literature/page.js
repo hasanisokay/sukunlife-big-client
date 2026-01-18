@@ -3,40 +3,39 @@ import audioCover from "@/../public/images/audio.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import NotFound from "@/components/not-found/NotFound";
 import getResources from "@/utils/getResources.mjs";
-import AudioResources from "@/components/resources/AudioResources";
 import EmptyState from "@/components/shared/EmptyState";
 import Pagination2 from "@/components/paginations/Pagination2";
+import LiteratureSection from "@/components/resources/LiteratureSection";
 const page = async ({ searchParams }) => {
-    return <p>coming soon...</p>
   try {
     const s = await searchParams;
-    const page = s?.page || 1;
-    const limit = s?.limit || 10;
+    const page = Number(s?.page) || 1;
+    const limit = Number(s?.limit) || 20;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const type = "literature";
     const r = await getResources(page, limit, keyword, sort, type);
 
     if (r?.status === 200) {
-        const totalItems = r.totalCount;
-  const totalPages = Math.ceil(totalItems / limit);
+      const totalItems = Number(r?.totalCount || 0);
+      const totalPages = Math.max(1, Math.ceil(totalItems / limit));
       return (
         <>
-          <AudioResources audioList={r?.resources} />
-          <Pagination2
-          itemsPerPage={limit}
-          totalItems={r?.totalCount}
-          totalPages={totalPages}
-          
-
-          />
+          <LiteratureSection literatureData={r?.resources} />
+          {totalPages > 1 && (
+            <Pagination2
+              itemsPerPage={limit}
+              totalItems={r?.totalCount}
+              totalPages={totalPages}
+            />
+          )}
         </>
       );
     } else {
       return (
         <EmptyState
-          title="No audio yet"
-          description="New audios are coming soon."
+          title="No literature & guides yet"
+          description="New literature & guides are coming soon."
         />
       );
     }
@@ -53,15 +52,15 @@ export async function generateMetadata() {
     const audioCoverUrl = `${host}${audioCover.src}`;
 
     const metadata = {
-      title: `Audio`,
+      title: `Literature`,
       description:
-        "Explore and manage your Sukunlife resources including PDFs, videos, and audio content tailored for your needs.",
+        "Explore and manage your Sukunlife resources including PDFs, guides content tailored for your needs.",
       keywords: [
         "Sukunlife",
         "resources",
-        "audio downloads",
-        "audio tutorials",
-        "audio guides",
+        "pdf downloads",
+        "literature tutorials",
+        "literature guides",
         "learning materials",
         "self-improvement",
         "digital content",
@@ -69,20 +68,20 @@ export async function generateMetadata() {
         "multimedia",
       ],
       alternates: {
-        canonical: `${host}/resources/audio`,
+        canonical: `${host}/resources/literature`,
       },
       openGraph: {
-        title: `Audio - ${websiteName}`,
+        title: `Literature - ${websiteName}`,
         description:
-          "Discover a wide range of resources at Sukunlife, from insightful PDFs to engaging videos and audio content.",
-        url: `${host}/resources/audio`,
+          "Discover a wide range of resources at Sukunlife, from insightful Guides, PDFs, Literature,  content.",
+        url: `${host}/resources/literature`,
         siteName: websiteName,
         images: [
           {
             url: audioCoverUrl,
             width: 1200,
             height: 630,
-            alt: `${websiteName} Audio Resources`,
+            alt: `${websiteName} Literature Resources`,
           },
         ],
         locale: "bn_BD",
@@ -90,9 +89,9 @@ export async function generateMetadata() {
       },
       twitter: {
         card: "summary_large_image",
-        title: `Audio - ${websiteName}`,
+        title: `Literature - ${websiteName}`,
         description:
-          "Manage your Sukunlife resources with our curated collection of PDFs, videos, and audio files!",
+          "Manage your Sukunlife resources with our curated collection of PDFs, gudies, literatures!",
         images: [audioCoverUrl],
       },
     };
@@ -107,10 +106,10 @@ export async function generateMetadata() {
     console.error("Metadata generation failed:", error);
     const host = await hostname();
     return {
-      title: `Resources - ${websiteName}`,
+      title: `Literature - ${websiteName}`,
       description: "Manage your Sukunlife resources.",
       alternates: {
-        canonical: `${host}/resources/audio`,
+        canonical: `${host}/resources/literature`,
       },
     };
   }

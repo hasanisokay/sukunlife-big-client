@@ -7,7 +7,7 @@ import uploadImage from '@/utils/uploadImage.mjs';
 
 const AddResource = () => {
     const [selectedType, setSelectedType] = useState(null);
-    const [videoLang, setVideoLang] = useState(null);
+    const [videoLang, setVideoLang] = useState('bangla');
     const [litType, setLitType] = useState("free");
     const [coverPhoto, setCoverPhoto] = useState("");
 
@@ -275,11 +275,11 @@ const AddResource = () => {
                             <div className="mt-4">
                                 <p className="text-gray-700 dark:text-gray-300 mb-2">Select Video Language</p>
                                 <div className="flex gap-2">
-                                    {['Bangla', 'Urdu', 'Arabic', 'English'].map((lang) => (
+                                    {['Bangla', 'Urdu', 'Arabic', 'English', 'Others'].map((lang) => (
                                         <button
                                             key={lang}
                                             onClick={() => setVideoLang(lang.toLowerCase())}
-                                            className={`px-3 py-1 rounded-md ${videoLang === lang ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white'}`}
+                                            className={`px-3 py-1 rounded-md ${videoLang?.toLowerCase() === lang?.toLowerCase() ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white'}`}
                                         >
                                             {lang}
                                         </button>

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import Image from "next/image";
 import BlogContent from "../blogs/BlogContnet";
@@ -7,76 +7,122 @@ import addToCart from "../cart/functions/addToCart.mjs";
 import { setCartData } from "@/store/slices/cartSlice";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import resourceCover from "@/../public/images/resources.jpg";
-
+import EmptyState from "../shared/EmptyState";
 
 const LiteratureSection = ({ literatureData = [] }) => {
-    const dispatch = useDispatch();
-    const user = useSelector((state) => state.user.userData);
-    const handleAddToCart = async (product, buyNow) => {
-        const cartItem = {
-            _id: product._id,
-            type: "literature",
-            productId: null,
-            title: product?.title,
-            price: product?.price,
-            quantity: 1,
-            color: "",
-            size: "",
-            image: product?.coverPhoto || "",
-            unit: "",
-        };
-        const c = await addToCart(cartItem, user);
-        dispatch(setCartData(c));
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.userData);
 
-        if (buyNow) {
-            window.location.href = "/cart";
-        } else {
-            toast.success("Added to cart.", { autoClose: 700 });
-        }
+  const handleAddToCart = async (product, buyNow) => {
+    const cartItem = {
+      _id: product._id,
+      type: "literature",
+      productId: null,
+      title: product?.title,
+      price: product?.price,
+      quantity: 1,
+      image: product?.coverPhoto || "",
     };
-    if (literatureData?.length === 0) return;
-    return (
-        <section id="literature">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-[30px]">
-                {literatureData?.map(lit => <div key={lit?._id} className="w-[350px] bg-[#F8F5F5] h-[496px] rounded-[27px]">
-                    <Image
-                        alt={lit.title}
-                        height={500}
-                        width={500}
-                        className="w-[350px] h-[213px] object-cover rounded-[27px]"
-                        src={lit?.coverPhoto || resourceCover}
-                    />
-                    <div className="pl-[29px]  pr-[23px] pt-[25px]">
-                        <h4 className="font-bold text-[20px]">
-                            {lit?.title}
-                        </h4>
-                        <div className="h-[130px] overflow-y-auto">
-                            <BlogContent content={lit?.description} />
-                        </div>
-                        <div className="flex items-center justify-start gap-2">
-                            <div className="relative w-[130px]">
-                                {lit?.previousPrice && <p className="absolute -top-[10px] font-semibold text-[#878484] text-sm line-through">{parseFloat(lit?.previousPrice)?.toFixed(2)} TK</p>
-                                }                                {lit?.litType === "paid" ? <p className="font-bold text-[20px]">
-                                    {parseFloat(lit.price).toFixed(2)} TK
-                                </p> : <p className="font-bold text-[20px]">Free
-                                </p>}
-                            </div>
-                            {lit?.litType === "free" ? <button className="lg:w-[180px] lg:h-[59px] w-[150px] h-[45px] bg-green rounded-full text-white font-semibold">
-                                <a target="_blank" href={lit?.downloadLink}>Download</a>
-                            </button> : <button onClick={(e) => {
-                                e.preventDefault();
-                                handleAddToCart(lit, false);
-                            }}
-                                className="lg:w-[180px] lg:h-[59px] w-[150px] h-[45px] rounded-full  bg-orange text-black font-semibold">
-                                Add To Cart
-                            </button>}
-                        </div>
-                    </div>
-                </div>)}
+
+    const c = await addToCart(cartItem, user);
+    dispatch(setCartData(c));
+
+    if (buyNow) {
+      window.location.href = "/cart";
+    } else {
+      toast.success("Added to cart.", { autoClose: 700 });
+    }
+  };
+
+  return (
+    <section id="literature" className="mt-16 mb-12 max-w-[1200px] mx-auto px-4">
+
+      {/* Empty State */}
+      {literatureData.length === 0 ? (
+        <EmptyState
+          title="No literature available"
+          description="Guides, books, and learning materials will be added soon, insha Allah."
+        />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {literatureData.map((lit) => (
+            <div
+              key={lit?._id}
+              className="bg-[#F8F5F5] rounded-2xl overflow-hidden
+                         flex flex-col min-h-[480px]"
+            >
+              {/* Image */}
+              <div className="relative h-[210px] w-full">
+                <Image
+                  alt={lit.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw,
+                         (max-width: 1024px) 50vw,
+                         33vw"
+                  className="object-cover"
+                  src={lit?.coverPhoto || resourceCover}
+                />
+              </div>
+
+              {/* Content */}
+              <div className="flex flex-col flex-1 p-6">
+                <h4 className="font-bold text-[18px] leading-snug mb-2 line-clamp-2">
+                  {lit?.title}
+                </h4>
+
+                <div className="text-sm text-gray-700 mb-4 h-[110px] overflow-y-auto">
+                  <BlogContent content={lit?.description} />
+                </div>
+
+                {/* Price + Action */}
+                <div className="mt-auto flex items-center justify-between gap-3">
+                  <div>
+                    {lit?.previousPrice && (
+                      <p className="text-sm text-gray-400 line-through">
+                        {parseFloat(lit.previousPrice).toFixed(2)} TK
+                      </p>
+                    )}
+
+                    {lit?.litType === "paid" ? (
+                      <p className="font-bold text-[18px]">
+                        {parseFloat(lit.price).toFixed(2)} TK
+                      </p>
+                    ) : (
+                      <p className="font-bold text-[18px]">Free</p>
+                    )}
+                  </div>
+
+                  {lit?.litType === "free" ? (
+                    <a
+                      href={lit?.downloadLink}
+                      target="_blank"
+                      className="px-6 py-3 rounded-full bg-green text-white 
+                                 font-semibold text-sm text-center"
+                    >
+                      Download
+                    </a>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddToCart(lit, false);
+                      }}
+                      className="px-6 py-3 rounded-full bg-orange 
+                                 text-black font-semibold text-sm"
+                    >
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-            <ToastContainer transition={Flip} />
-        </section >
-    );
+          ))}
+        </div>
+      )}
+
+      <ToastContainer transition={Flip} />
+    </section>
+  );
 };
 
 export default LiteratureSection;
