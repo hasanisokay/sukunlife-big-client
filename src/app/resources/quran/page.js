@@ -1,11 +1,11 @@
 import hostname from "@/constants/hostname.mjs";
-import audioCover from "@/../public/images/audio.jpg";
+import quranCover from "@/../public/images/quran.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import NotFound from "@/components/not-found/NotFound";
-import getResources from "@/utils/getResources.mjs";
 import EmptyState from "@/components/shared/EmptyState";
 import Pagination2 from "@/components/paginations/Pagination2";
 import QuranResources from "@/components/resources/QuranResources";
+import getResourcesPublic from "@/utils/getResourcesPublic.mjs";
 const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
@@ -14,7 +14,7 @@ const page = async ({ searchParams }) => {
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const type = "quran";
-    const r = await getResources(page, limit, keyword, sort, type);
+    const r = await getResourcesPublic(page, limit, keyword, sort, type);
     if (r?.status === 200) {
       const totalItems = Number(r?.totalCount || 0);
       const totalPages = Math.max(1, Math.ceil(totalItems / limit));
@@ -48,7 +48,7 @@ export default page;
 export async function generateMetadata() {
   try {
     const host = await hostname();
-    const audioCoverUrl = `${host}${audioCover.src}`;
+    const quranCoverUrl = `${host}${quranCover.src}`;
 
     const metadata = {
       title: `Quran`,
@@ -77,7 +77,7 @@ export async function generateMetadata() {
         siteName: websiteName,
         images: [
           {
-            url: audioCoverUrl,
+            url: quranCoverUrl,
             width: 1200,
             height: 630,
             alt: `${websiteName} Quran Resources`,
@@ -91,7 +91,7 @@ export async function generateMetadata() {
         title: `Quran - ${websiteName}`,
         description:
           "Manage your Sukunlife resources with our curated collection of PDFs, quran files!",
-        images: [audioCoverUrl],
+        images: [quranCoverUrl],
       },
     };
 

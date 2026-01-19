@@ -101,7 +101,7 @@ export default function AudioResources({ audioList = [] }) {
   if (!audioList.length) return null;
 
   return (
-    <div className="max-w-[900px] mx-auto px-4 space-y-2 mb-10 md:mt-6 mt-0">
+    <div className="max-w-[900px] mx-auto px-4 space-y-2">
       <audio ref={audioRef} preload="metadata" />
 
       {audioList.map((audio, idx) => {

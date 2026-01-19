@@ -2,37 +2,19 @@ import ResourcesPage from "@/components/resources/ResourcesPage";
 import hostname from "@/constants/hostname.mjs";
 import cartCover from "@/../public/images/resources.jpg";
 import { websiteName } from "@/constants/names.mjs";
-import NotFound from "@/components/not-found/NotFound";
-import getResources from "@/utils/getResources.mjs";
-const page = async ({ searchParams }) => {
-  try {
-    const s = await searchParams;
-    const page = s?.page || 1;
-    const limit = s?.limit || 2;
-    const keyword = s?.keyword || "";
-    const sort = s?.sort || "newest";
-    const type = s?.type || "all";
-    const r = await getResources(page, limit, keyword, sort, type);
-
-    if (r?.status === 200) {
-      return (
-        <>
-          <ResourcesPage iResources={r?.resources} initialLimit ={limit} />
-        </>
-      );
-    } else {
-      return <NotFound />;
-    }
-  } catch {
-    return <NotFound />;
-  }
+const page = () => {
+  return (
+    <>
+      <ResourcesPage />
+    </>
+  );
 };
 
 export default page;
 
-export async function generateMetadata() {
+export const metadata = () => {
   try {
-    const host = await hostname();
+    const host = hostname();
     const cartCoverUrl = `${host}${cartCover.src}`;
 
     const metadata = {
@@ -79,8 +61,6 @@ export async function generateMetadata() {
         images: [cartCoverUrl],
       },
     };
-
-    // Remove duplicates and limit keywords
     metadata.keywords = [...new Set(metadata.keywords)]
       .filter((kw) => kw && kw.length > 2)
       .slice(0, 10);
@@ -88,7 +68,7 @@ export async function generateMetadata() {
     return metadata;
   } catch (error) {
     console.error("Metadata generation failed:", error);
-    const host = await hostname();
+    const host = hostname();
     return {
       title: `Resources - ${websiteName}`,
       description: "Manage your Sukunlife resources.",
@@ -97,4 +77,4 @@ export async function generateMetadata() {
       },
     };
   }
-}
+};

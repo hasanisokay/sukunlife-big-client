@@ -7,9 +7,11 @@ import uploadImage from '@/utils/uploadImage.mjs';
 
 const AddResource = () => {
     const [selectedType, setSelectedType] = useState(null);
-    const [videoLang, setVideoLang] = useState('bangla');
+    const [videoTopic, setVideoTopic] = useState('');
+
     const [litType, setLitType] = useState("free");
     const [coverPhoto, setCoverPhoto] = useState("");
+    const [audioType, setAudioType] = useState('general');
 
     const [resource, setResource] = useState({
         title: '',
@@ -73,17 +75,21 @@ const AddResource = () => {
                     title: resource?.title,
                     description: resource?.description,
                     links: resource?.links,
-                    coverPhoto, videoLang
+                    coverPhoto,
+                    topic: videoTopic
                 };
             }
+
             if (selectedType === "audio") {
                 payload = {
                     title: resource?.title,
                     description: resource?.description,
                     links: resource?.links,
                     coverPhoto,
+                    audioType
                 };
             }
+
             if (selectedType === "literature") {
                 payload = {
                     title: resource?.title,
@@ -128,8 +134,10 @@ const AddResource = () => {
 
     const handleBack = () => {
         setSelectedType(null);
-        setResource({ title: '', description: '', links: [''], readLink: '', listenLink: '', downloadLink: '', price: '', previousPrice:'' });
+        setResource({ title: '', description: '', links: [''], readLink: '', listenLink: '', downloadLink: '', price: '', previousPrice: '' });
         setStatus('');
+        setAudioType('general')
+        setVideoTopic('');
         setCoverPhoto('');
         setVideoLang(null);
         setLitType("free");
@@ -270,23 +278,42 @@ const AddResource = () => {
                                 />
                             </div>
                         )}
-
                         {selectedType === 'video' && (
                             <div className="mt-4">
-                                <p className="text-gray-700 dark:text-gray-300 mb-2">Select Video Language</p>
-                                <div className="flex gap-2">
-                                    {['Bangla', 'Urdu', 'Arabic', 'English', 'Others'].map((lang) => (
-                                        <button
-                                            key={lang}
-                                            onClick={() => setVideoLang(lang.toLowerCase())}
-                                            className={`px-3 py-1 rounded-md ${videoLang?.toLowerCase() === lang?.toLowerCase() ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white'}`}
-                                        >
-                                            {lang}
-                                        </button>
-                                    ))}
-                                </div>
+                                <label className="block mb-2 text-gray-700 dark:text-gray-300">
+                                    Video Topic
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter video topic (e.g. Ruqyah for Anxiety)"
+                                    value={videoTopic}
+                                    onChange={(e) => setVideoTopic(e.target.value)}
+                                    className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:text-white"
+                                />
                             </div>
                         )}
+
+
+                        {selectedType === 'audio' && (
+                            <div className="mt-4">
+                                <label className="block mb-2 text-gray-700 dark:text-gray-300">
+                                    Audio Category
+                                </label>
+                                <select
+                                    value={audioType || ''}
+                                    onChange={(e) => setAudioType(e.target.value)}
+                                    className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option value="" disabled>Select Audio Type</option>
+                                    <option value="general">General Ruqyah Audios</option>
+                                    <option value="topic-based">Topic-Based Ruqyah Audios</option>
+                                    <option value="specific-problems">Ruqyah for Specific Problems</option>
+                                    <option value="quran-recitation">Quran Recitation Audios</option>
+                                </select>
+                            </div>
+                        )}
+
+
 
                         {/* Links (common for audio & video) */}
                         {(selectedType === 'audio' || selectedType === 'video') && (

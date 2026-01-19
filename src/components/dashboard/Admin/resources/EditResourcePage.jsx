@@ -7,9 +7,11 @@ import editResource from '@/server-functions/editResource.mjs';
 import uploadImage from '@/utils/uploadImage.mjs';
 
 const EditResourcePage = ({ resource }) => {
-    const [videoLang, setVideoLang] = useState(null);
     const [litType, setLitType] = useState("free");
     const [coverPhoto, setCoverPhoto] = useState("");
+
+    const [videoTopic, setVideoTopic] = useState('');
+    const [audioType, setAudioType] = useState('general');
 
     const [formData, setFormData] = useState({
         title: '',
@@ -35,7 +37,8 @@ const EditResourcePage = ({ resource }) => {
 
             });
             setCoverPhoto(resource.coverPhoto || '');
-            setVideoLang(resource.videoLang || null);
+            setVideoTopic(resource.topic || '');
+            setAudioType(resource.audioType || '');
             setLitType(resource.litType || 'free');
         }
     }, [resource]);
@@ -83,19 +86,20 @@ const EditResourcePage = ({ resource }) => {
 
         try {
             toast.info(`Saving ${resource.type} resource...`);
-          
+
             let payload;
             if (resource.type === "video") {
                 payload = {
                     ...formData,
                     coverPhoto,
-                    videoLang,
+                    topic: videoTopic,
                 };
             }
             if (resource.type === "audio") {
                 payload = {
                     ...formData,
                     coverPhoto,
+                    audioType,
                 };
             }
             if (resource.type === "literature") {
@@ -235,27 +239,39 @@ const EditResourcePage = ({ resource }) => {
                         </div>
                     )}
 
-                    {/* Video */}
                     {resource.type === 'video' && (
                         <div className="mt-4">
-                            <p className="text-gray-700 dark:text-gray-300 mb-2">Select Video Language</p>
-                            <div className="flex gap-2">
-                                {['Bangla', 'Urdu', 'Arabic', 'English'].map((lang) => (
-                                    <button
-                                        key={lang}
-                                        onClick={() => setVideoLang(lang.toLowerCase())}
-                                        className={`px-3 py-1 rounded-md ${videoLang?.toLowerCase() === lang?.toLowerCase()
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-200 dark:bg-gray-700 dark:text-white'
-                                            }`}
-                                    >
-                                        {lang}
-                                    </button>
-                                ))}
-                            </div>
+                            <label className="block mb-2 text-gray-700 dark:text-gray-300">
+                                Video Topic
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="Enter video topic (e.g. Ruqyah for Anxiety)"
+                                value={videoTopic}
+                                onChange={(e) => setVideoTopic(e.target.value)}
+                                className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:text-white"
+                            />
                         </div>
                     )}
 
+                    {resource.type === 'audio' && (
+                        <div className="mt-4">
+                            <label className="block mb-2 text-gray-700 dark:text-gray-300">
+                                Audio Category
+                            </label>
+                            <select
+                                value={audioType}
+                                onChange={(e) => setAudioType(e.target.value)}
+                                className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value="" disabled>Select Audio Type</option>
+                                <option value="general">General Ruqyah Audios</option>
+                                <option value="topic-based">Topic-Based Ruqyah Audios</option>
+                                <option value="specific-problems">Ruqyah for Specific Problems</option>
+                                <option value="quran-recitation">Qur’an Recitation Audios</option>
+                            </select>
+                        </div>
+                    )}
                     {/* Links (common for audio & video) */}
                     {(resource.type === 'audio' || resource.type === 'video') && (
                         <div className="mt-4">

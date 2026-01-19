@@ -2,10 +2,10 @@ import hostname from "@/constants/hostname.mjs";
 import audioCover from "@/../public/images/audio.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import NotFound from "@/components/not-found/NotFound";
-import getResources from "@/utils/getResources.mjs";
-import AudioResources from "@/components/resources/AudioResources";
 import EmptyState from "@/components/shared/EmptyState";
 import Pagination2 from "@/components/paginations/Pagination2";
+import getResourcesPublic from "@/utils/getResourcesPublic.mjs";
+import AudioAccordion from "@/components/dashboard/Admin/resources/AudioAccordian";
 const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
@@ -14,14 +14,13 @@ const page = async ({ searchParams }) => {
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const type = "audio";
-    const r = await getResources(page, limit, keyword, sort, type);
-
+    const r = await getResourcesPublic(page, limit, keyword, sort, type);
     if (r?.status === 200) {
       const totalItems = Number(r?.totalCount || 0);
       const totalPages = Math.max(1, Math.ceil(totalItems / limit));
       return (
         <>
-          <AudioResources audioList={r?.resources} />
+          <AudioAccordion audioList={r?.resources} />
           {totalPages > 1 && (
             <Pagination2
               itemsPerPage={limit}

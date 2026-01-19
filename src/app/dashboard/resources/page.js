@@ -1,6 +1,5 @@
 import ResourcesAdmin from "@/components/dashboard/Admin/resources/ResourcesAdmin";
 import NotFound from "@/components/not-found/NotFound";
-import PaginationDefault from "@/components/paginations/PaginationDefault";
 import getResources from "@/utils/getResources.mjs";
 
 const page = async ({ searchParams }) => {

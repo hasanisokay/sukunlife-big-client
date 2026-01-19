@@ -1,12 +1,11 @@
 import hostname from "@/constants/hostname.mjs";
-import audioCover from "@/../public/images/audio.jpg";
+import videoCover from "@/../public/images/video.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import NotFound from "@/components/not-found/NotFound";
-import getResources from "@/utils/getResources.mjs";
-import AudioResources from "@/components/resources/AudioResources";
 import EmptyState from "@/components/shared/EmptyState";
 import Pagination2 from "@/components/paginations/Pagination2";
 import VideoResources from "@/components/resources/VideoResources";
+import getResourcesPublic from "@/utils/getResourcesPublic.mjs";
 const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
@@ -16,7 +15,7 @@ const page = async ({ searchParams }) => {
     const sort = s?.sort || "newest";
     const subType = s?.lang || "all";
     const type = "video";
-    const r = await getResources(page, limit, keyword, sort, type, subType);
+    const r = await getResourcesPublic(page, limit, keyword, sort, type, subType);
 
     if (r?.status === 200) {
       const totalItems = Number(r?.totalCount || 0);
@@ -51,7 +50,7 @@ export default page;
 export async function generateMetadata() {
   try {
     const host = await hostname();
-    const audioCoverUrl = `${host}${audioCover.src}`;
+    const videoCoverUrl = `${host}${videoCover.src}`;
 
     const metadata = {
       title: `Video`,
@@ -80,7 +79,7 @@ export async function generateMetadata() {
         siteName: websiteName,
         images: [
           {
-            url: audioCoverUrl,
+            url: videoCoverUrl,
             width: 1200,
             height: 630,
             alt: `${websiteName} Video Resources`,
@@ -94,7 +93,7 @@ export async function generateMetadata() {
         title: `Video - ${websiteName}`,
         description:
           "Manage your Sukunlife resources with our curated collection of PDFs, videos, and audio files!",
-        images: [audioCoverUrl],
+        images: [videoCoverUrl],
       },
     };
 
