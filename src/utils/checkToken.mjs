@@ -1,8 +1,7 @@
 "use server";
 
-import hostname from "@/constants/hostname.mjs";
+
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/constants/names.mjs";
-import { SERVER } from "@/constants/urls.mjs";
 import { cookies } from "next/headers";
 
 const checkToken = async () => {
