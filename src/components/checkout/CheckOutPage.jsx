@@ -343,7 +343,7 @@ const CheckOutPage = () => {
                                         {...register("transactionId", { required: "Transaction ID is required" })}
                                         type="text"
                                         placeholder="Enter Bkash/Nagad Transaction ID or Number"
-                                        className="w-full px-4 py-2 dark:bg-gray-700 dark:text-white bg-gray-200 text-gray-900 rounded-lg focus:outline-none"
+                                        className="w-full px-4 py-2 dark:bg-gray-700 dark:text-white bg-gray-200 text-gray-900 rounded-full focus:outline-none"
                                     />
                                     {errors.transactionId && (
                                         <p className="text-red-500 text-sm mt-1">{errors.transactionId.message}</p>
