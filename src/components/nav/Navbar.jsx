@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import logOut from "@/utils/logOut.mjs";
-import { setUserData } from "@/store/slices/authSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartSVG } from "../svg/SvgCollection";
 import { setCartData } from "@/store/slices/cartSlice";
@@ -22,6 +20,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const [cartItems, setCartItems] = useState(cart?.length || 0)
   const toggleMenu = () => setMenuOpen(!menuOpen);
+
   const handleScroll = () => {
     if (window.scrollY > lastScrollY) {
       setVisible(false);
@@ -264,7 +263,7 @@ const Navbar = () => {
                   Book Appointment
                 </Link>
               </button>
-              {user ? (
+              {Object?.entries(user)?.length !== 0 ? (
                 <button className="block w-[173px] h-[54px]">
                   <Link
                     href="/dashboard"
@@ -323,7 +322,7 @@ const Navbar = () => {
                       Book Appointment
                     </Link>
                   </button>
-                  {user ? (
+                  {Object?.entries(user)?.length !== 0 ? (
                     <button className="block w-[173px] h-[54px]">
                       <Link
                         href="/dashboard"

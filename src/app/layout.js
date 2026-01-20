@@ -1,23 +1,32 @@
-import { Geist, Geist_Mono, Montserrat, Sacramento, Charis_SIL } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Montserrat,
+  Sacramento,
+  Charis_SIL,
+} from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/nav/Navbar";
 import StoreProvider from "@/components/providers/StoreProvider";
 import ThemeProvider from "@/components/providers/ThemeProvider";
-import { makeStore } from "@/store/store";
-import { setEnrolledCourses, setUserData } from "@/store/slices/authSlice";
-import { setTheme } from "@/store/slices/themeSlice";
-import { setCartData } from "@/store/slices/cartSlice";
-import getThemeCookie from "@/utils/getThemeCookie.mjs";
-import checkToken from "@/utils/checkToken.mjs";
-import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
-import getCartItemsFromDb from "@/components/cart/functions/getCartItemsFromDb.mjs";
-import getEnrolledCourses from "@/utils/getEnrolledCourses.mjs";
+
+// import { makeStore } from "@/store/store";
+// import { setEnrolledCourses, setUserData } from "@/store/slices/authSlice";
+// import { setTheme } from "@/store/slices/themeSlice";
+// import { setCartData } from "@/store/slices/cartSlice";
+// import getThemeCookie from "@/utils/getThemeCookie.mjs";
+// import checkToken from "@/utils/checkToken.mjs";
+// import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
+// import getCartItemsFromDb from "@/components/cart/functions/getCartItemsFromDb.mjs";
+// import getEnrolledCourses from "@/utils/getEnrolledCourses.mjs";
+
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import sukunLifeImage from "@/../public/images/sukunlife.jpg";
 import capitalize from "@/utils/capitalize.mjs";
 import TokenRefresh from "@/components/providers/TokenRefresh";
 import Footer from "@/components/shared/Footer";
+import ClientBootstrap from "@/components/providers/ClientBootstrap";
 
 // Font configurations
 const geistSans = Geist({
@@ -41,7 +50,7 @@ const charisSIL = Charis_SIL({
   variable: "--font-charisSIL",
   subsets: ["latin"],
   display: "swap",
-  weight: ['400', '700']
+  weight: ["400", "700"],
 });
 const sacramento = Sacramento({
   variable: "--font-sacramento",
@@ -132,33 +141,30 @@ export async function generateMetadata() {
 
 export default async function RootLayout({ children }) {
   // Initialize store and fetch initial data
-  const store = makeStore();
-  const refreshToken = await checkToken();
-  const storedTheme = await getThemeCookie();
-  const userData = await getUserDataFromToken();
+  // const store = makeStore();
+  // const refreshToken = await checkToken();
+  // const storedTheme = await getThemeCookie();
+  // const userData = await getUserDataFromToken();
   // Dispatch initial state
-  store.dispatch(setUserData(userData || null));
-  store.dispatch(setTheme(storedTheme || "light")); // Default to light if undefined
+  // store.dispatch(setUserData(userData || null));
+  // store.dispatch(setTheme("light"));
+  // store.dispatch(setTheme(storedTheme || "light"));
 
   // Fetch user-specific data if authenticated
-  if (userData?._id) {
-    const [cartItems, courses] = await Promise.all([
-      getCartItemsFromDb(userData._id),
-      getEnrolledCourses(userData._id),
-    ]);
+  // if (userData?._id) {
+  //   const [cartItems, courses] = await Promise.all([
+  //     getCartItemsFromDb(userData._id),
+  //     getEnrolledCourses(userData._id),
+  //   ]);
 
-    store.dispatch(setCartData(cartItems?.cart?.cart || []));
-    store.dispatch(setEnrolledCourses(courses?.courses?.enrolledCourses || []));
-  }
+  //   store.dispatch(setCartData(cartItems?.cart?.cart || []));
+  //   store.dispatch(setEnrolledCourses(courses?.courses?.enrolledCourses || []));
+  // }
 
-  const initialReduxState = store.getState();
+  // const initialReduxState = store.getState();
 
   return (
-    <html
-      lang="en"
-      data-theme={storedTheme || "light"}
-      suppressHydrationWarning
-    >
+    <html lang="en" data-theme={"light"} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -166,14 +172,16 @@ export default async function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  ${sacramento.variable}  ${charisSIL.variable} antialiased`}
       >
-        <StoreProvider initialReduxState={initialReduxState}>
-          <TokenRefresh refreshToken={refreshToken}>
-            <ThemeProvider>
-              <Navbar />
-              <div className="min-h-[calc(100vh-110px)]">{children}</div>
-              <Footer />
-            </ThemeProvider>
-          </TokenRefresh>
+        <StoreProvider>
+          <ClientBootstrap>
+            <TokenRefresh>
+              <ThemeProvider>
+                <Navbar />
+                <div className="min-h-[calc(100vh-110px)]">{children}</div>
+                <Footer />
+              </ThemeProvider>
+            </TokenRefresh>
+          </ClientBootstrap>
         </StoreProvider>
       </body>
     </html>

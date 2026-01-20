@@ -1,6 +1,6 @@
 import Homepage from "@/components/home/Homepage";
 import { SERVER } from "@/constants/urls.mjs";
-import getAllBlog from "@/utils/getAllBlog.mjs";
+import getAllBlogPublic from "@/utils/getAllBlogPublic.mjs";
 import getTopCourses from "@/utils/gettopCourses.mjs";
 import getTopReviews from "@/utils/getTopReviews.mjs";
 
@@ -13,7 +13,7 @@ const page = async () => {
         }).then((res) => res.json()),
         getTopReviews(),
         getTopCourses(),
-        getAllBlog(1, 3),
+        getAllBlogPublic(1, 3),
       ]);
 
     const topProducts =

@@ -290,7 +290,7 @@ const BookAppointment = ({ dates, status, preSelectedService }) => {
             </section>
             <section className="pricing-section-appointment">
                 <h2 className="charisSIL-font md:text-[60px] text-[30px] font-bold leading-tight text-center ">Our <span className="text-green">Pricing</span></h2>
-                <p className="max-w-[880px] mx-auto text-center">
+                <p className="max-w-[880px] mx-auto text-center px-2">
                     Our services are offered with care, sincerity, and transparency.
                     Below you’ll find clear pricing for our Ruqyah and healing sessions,
                     allowing you to choose what feels right for your situation.
@@ -324,7 +324,7 @@ const BookAppointment = ({ dates, status, preSelectedService }) => {
                         <p className="text-[#878484]">A standard Hijama session performed with care and hygienic practice.</p>
                     </div>
                 </div>
-                <p className="text-center text-sm text-gray-500 mt-8">
+                <p className="text-center text-sm text-gray-500 mt-8 px-2">
                     If you are unsure which service is suitable for you,
                     our team is happy to guide you before booking.
                 </p>

@@ -12,7 +12,7 @@ const checkToken = async () => {
   if (!accessToken && !refreshToken) return null;
   if (accessToken && refreshToken) return null;
   if (!accessToken && refreshToken) {
-    return true;
+    return refreshToken;
   }
 };
 

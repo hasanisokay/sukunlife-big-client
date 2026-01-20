@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioResources from "@/components/resources/AudioResources";
 import Image from "next/image";
-import audioBanner from "@/../public/images/audio.jpg";
+import audioBanner from "@/../public/images/audio_banner.jpg";
 const AUDIO_SECTIONS = [
     { key: "general", title: "General Ruqyah Audios" },
     { key: "topic-based", title: "Topic-Based Ruqyah Audios" },
@@ -29,35 +29,28 @@ export default function AudioAccordion({ audioList = [] }) {
 
     return (
         <section>
-            {/* header */}
-            {/* ===== Banner / Header ===== */}
-            <div className="relative w-full h-[100px] md:h-[280px] mb-8">
-                {/* Banner Image */}
-                <Image
-                    src={audioBanner}
-                    alt="Ruqyah Audio Banner"
-                    className="absolute inset-0 w-full h-full object-cover"
-                />
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/40" />
-
-                {/* Content */}
-                <div className="relative z-10 h-full flex items-center justify-center px-4">
-                    <div className="max-w-[900px] w-full text-center text-white">
-                        <h1 className="text-2xl md:text-4xl font-bold tracking-tight">
-                            Ruqyah Audio
-                        </h1>
-
-                        <p className="mt-3 text-sm md:text-base text-white/90 leading-relaxed">
-                            Powerful Ruqyah recitations and Quranic verses for healing,
-                            protection, and spiritual well-being — listen, reflect, and find peace.
-                        </p>
+            {/* Banner */}
+            <section className="text-white h-[400px]  flex flex-col items-center justify-center  text-center ">
+                <div className="absolute top-0 bottom-0 right-0 left-0 h-[400px] ">
+                    <Image className="w-full h-[400px]   object-cover pointer-events-none select-none" 
+                            src={audioBanner} 
+                            width={1000} height={1000} alt="Audio Banner" />
+                </div>
+                <div className="bg-black bg-opacity-[61%] w-full h-[400px]  absolute top-0 bottom-0 right-0 left-0">
+                </div>
+                <div className="relative z-10 max-w-4xl md:px-6 px-4 md:-mt-0 -mt-[100px]">
+                    <div className="flex flex-col gap-[19px]">
+                          <h1 className="text-white text-[28px] md:text-[40px] font-bold mb-4">
+                        Ruqyah Audio
+                    </h1>
+                         <p className="text-white max-w-[720px] text-base md:text-lg px-2">
+                        Listen to or download Ruqyah audios for healing— including general Ruqyah, topic-based guidance, and audios for specific problems.
+                    </p>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div className="max-w-[900px] mx-auto mb-4 px-4 space-y-4">
+            <div className="max-w-[900px] mx-auto mb-4 px-4 space-y-4 md:-mt-[20px] -mt-[50px]">
                 {AUDIO_SECTIONS?.map((section) => {
                     const isOpen = openKey === section.key;
                     const sectionAudios = groupedAudios[section.key] || [];
