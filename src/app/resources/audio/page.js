@@ -10,7 +10,7 @@ const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
     const page = Number(s?.page) || 1;
-    const limit = Number(s?.limit) || 30;
+    const limit = Number(s?.limit) || 300;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const type = "audio";

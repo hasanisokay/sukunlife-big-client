@@ -6,8 +6,10 @@ import { useDispatch, useSelector } from "react-redux";
 import addToCart from "../cart/functions/addToCart.mjs";
 import { setCartData } from "@/store/slices/cartSlice";
 import { Flip, toast, ToastContainer } from "react-toastify";
-import resourceCover from "@/../public/images/resources.jpg";
+import literatureCover from "@/../public/images/literature.jpg";
 import EmptyState from "../shared/EmptyState";
+
+import literatureBanner from "@/../public/images/literature_banner.jpg";
 
 const LiteratureSection = ({ literatureData = [] }) => {
   const dispatch = useDispatch();
@@ -35,8 +37,27 @@ const LiteratureSection = ({ literatureData = [] }) => {
   };
 
   return (
-    <section id="literature" className="mt-16 mb-12 max-w-[1200px] mx-auto px-4">
-
+    <div className="mt-16 mb-12 max-w-[1200px] mx-auto px-4">
+      {/* Banner */}
+      <section className="text-white h-[400px]  flex flex-col items-center justify-center  text-center ">
+        <div className="absolute top-0 bottom-0 right-0 left-0 h-[400px] ">
+          <Image className="w-full h-[400px]   object-cover pointer-events-none select-none"
+            src={literatureBanner}
+            width={1000} height={1000} alt="Literature Banner" />
+        </div>
+        <div className="bg-black bg-opacity-[51%] w-full h-[400px]  absolute top-0 bottom-0 right-0 left-0">
+        </div>
+        <div className="relative z-10 max-w-4xl md:px-6 px-0  -mt-[150px]">
+          <div className="flex flex-col gap-[19px]">
+            <h1 className="text-white text-[28px] md:text-[40px] font-bold ">
+              Literatire & Guides
+            </h1>
+            <p className="text-white max-w-[720px] text-base md:text-lg px-2">
+              Structured knowledge to help you learn, reflect, and apply.
+            </p>
+          </div>
+        </div>
+      </section>
       {/* Empty State */}
       {literatureData.length === 0 ? (
         <EmptyState
@@ -44,7 +65,7 @@ const LiteratureSection = ({ literatureData = [] }) => {
           description="Guides, books, and learning materials will be added soon, insha Allah."
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:-mt-[20px] -mt-[50px]">
           {literatureData.map((lit) => (
             <div
               key={lit?._id}
@@ -60,7 +81,7 @@ const LiteratureSection = ({ literatureData = [] }) => {
                          (max-width: 1024px) 50vw,
                          33vw"
                   className="object-cover"
-                  src={lit?.coverPhoto || resourceCover}
+                  src={lit?.coverPhoto || literatureCover}
                 />
               </div>
 
@@ -121,7 +142,7 @@ const LiteratureSection = ({ literatureData = [] }) => {
       )}
 
       <ToastContainer transition={Flip} />
-    </section>
+    </div>
   );
 };
 

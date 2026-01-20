@@ -13,16 +13,15 @@ const page = async ({ searchParams }) => {
     const limit =  Number(s?.limit) || 20;
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
-    const subType = s?.lang || "all";
+    const subType = s?.topic || "all";
     const type = "video";
     const r = await getResourcesPublic(page, limit, keyword, sort, type, subType);
-
     if (r?.status === 200) {
       const totalItems = Number(r?.totalCount || 0);
       const totalPages = Math.max(1, Math.ceil(totalItems / limit));
       return (
         <>
-          <VideoResources videos={r?.resources} />
+          <VideoResources videos={r?.resources} allTopic = {r?.videoTopics}/>
           {totalPages > 1 && (
             <Pagination2
               itemsPerPage={limit}
