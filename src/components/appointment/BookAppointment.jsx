@@ -44,10 +44,7 @@ const schema = z.object({
 
 
 const BookAppointment = ({ preSelectedService }) => {
-
     const [selectedService, setSelectedService] = useState(null);
-
-    const [selectedTime, setSelectedTime] = useState("");
     const [showTransactionField, setShowTransactionField] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
     const user = useSelector((state) => state.user.userData);
