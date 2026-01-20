@@ -9,6 +9,7 @@ import { TakaSVG } from "../svg/SvgCollection";
 import { removeVoucher, setCartData, setVoucher } from "@/store/slices/cartSlice";
 import { SERVER } from "@/constants/urls.mjs";
 import { useRouter } from "next/navigation";
+import ProductImage2 from "../home/ProductImage2";
 
 const CartPage = () => {
     const user = useSelector((state) => state.user.userData);
@@ -103,7 +104,6 @@ const CartPage = () => {
     }, []);
 
     if (!isClient) return null
-
     return (
         <div className={`min-h-screen p-8`}>
             <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
@@ -128,10 +128,12 @@ const CartPage = () => {
                                     className={`flex flex-col md:flex-row  justify-between p-6 dark:bg-gray-800 bg-white rounded-lg shadow-lg`}
                                 >
                                     <div className="flex items-center space-x-4">
-                                        <img
+                                        <ProductImage2
+                                            height="80px"
+                                            width="80px"
                                             src={item.image}
                                             alt={item.title}
-                                            className="w-20 h-20 object-cover rounded-lg"
+                                            classProps={"w-20 h-20 object-cover rounded-lg"}
                                         />
                                         <div>
                                             <h2 className="md:text-xl text-base font-semibold">{item.title}</h2>
