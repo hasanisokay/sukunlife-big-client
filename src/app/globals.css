@@ -100,7 +100,7 @@ body {
 
 .load-more-btn {
   padding: 0.5rem 1rem; 
-  background-color: var(--bg-green);
+  background-color: #63953a;
   color: white; 
   border-radius: 9999px; 
   transition: all 0.2s ease-in-out;

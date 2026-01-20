@@ -15,7 +15,7 @@ const BlogTagPage = ({ b, page, selectedTag, tags }) => {
   }, [b, selectedTag]);
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen mb-4">
 
       {/* Main Content */}
       <div className="mt-12 space-y-10 relative z-10 px-6">

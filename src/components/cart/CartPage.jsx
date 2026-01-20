@@ -72,7 +72,7 @@ const CartPage = () => {
     }, [])
     // console.log(cartItems)
     // Update quantity of an item
-    console.log(cartItems)
+
     const updateQuantity = async (id, newQuantity, size) => {
         const updatedCart = cartItems.map((item) =>
             (item._id + item?.size).trim() === (id + size).trim() ? { ...item, quantity: newQuantity } : item
@@ -192,10 +192,12 @@ const CartPage = () => {
                                     placeholder="Enter voucher code"
                                     value={typedVoucher}
                                     onChange={(e) => setTypedVoucher(e.target.value)}
-                                    className={`w-full px-4 py-2 dark:bg-gray-700 dark:text-white bg-gray-200 text-gray-900 rounded-lg focus:outline-none`}
+                                    className={`w-full px-4 py-2 dark:bg-gray-700 dark:text-white bg-gray-200 text-gray-900 rounded-full focus:outline-none`}
                                 />
-                                <button className="md:w-[200px] w-[130px] h-fit md:px-6 py-1 md:py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
-                                    onClick={validateVoucher}>Apply Voucher</button>
+                                {typedVoucher.length > 1 && <button className="md:w-[200px] w-[130px] h-fit md:px-6 py-1 md:py-3 text-white bg-[#63953a] rounded-full  transition"
+                                    onClick={validateVoucher}>
+                                    Apply Voucher
+                                </button>}
                             </div>
                             {voucherMessage?.length > 0 && <p className="text-green-500">{voucherMessage}</p>}
                             {voucherError?.length > 0 && <p className="text-red-500">{voucherError}</p>}
@@ -208,7 +210,7 @@ const CartPage = () => {
                         <button
                             disabled={courseInCart && !user}
                             onClick={() => router.push("/checkout")}
-                            className="w-full mt-6 px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+                            className="w-full mt-6 px-6 py-3 text-white bg-[#63953a] rounded-full font-semibold transition"
                         >
                             Checkout
                         </button>
