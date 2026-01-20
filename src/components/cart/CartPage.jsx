@@ -24,17 +24,21 @@ const CartPage = () => {
     const voucher = useSelector((state) => state.cart.voucher);
     const discount = useSelector((state) => state.cart.discount);
     const totalPrice = useSelector((state) => state.cart.finalPrice);
+    const [isVoucherValidating, setIsVoucherValidating] = useState(false);
+
     const validateVoucher = async (updatedCartItems = [], voucherPassed) => {
         if (!typedVoucher && !voucherPassed) return;
         let newCartItems = updatedCartItems.length > 0 ? updatedCartItems : cartItems;
         try {
+            setIsVoucherValidating(true)
             const subtotal = newCartItems?.reduce(
                 (total, item) => total + item.price * item.quantity,
                 0
             );
 
-            const response = await fetch(`${SERVER}/api/public/check-voucher?code=${typedVoucher || voucherPassed}&&totalPrice=${subtotal}`);
-            const data = await response.json();
+            const res = await fetch(`${SERVER}/api/public/check-voucher?code=${typedVoucher || voucherPassed}&&totalPrice=${subtotal}`);
+            const data = await res.json();
+            console.log(data)
             if (data.isValid) {
                 const calculatedDiscount = data.discount;
                 const calculatedFinalPrice = data.finalPrice;
@@ -50,6 +54,8 @@ const CartPage = () => {
         } catch (error) {
             console.log("Error validating voucher:", error);
             // alert("Failed to validate voucher");
+        } finally {
+            setIsVoucherValidating(false)
         }
     };
     useEffect(() => {
@@ -198,7 +204,7 @@ const CartPage = () => {
                                 />
                                 {typedVoucher.length > 1 && <button className="md:w-[200px] w-[130px] h-fit md:px-6 py-1 md:py-3 text-white bg-[#63953a] rounded-full  transition"
                                     onClick={validateVoucher}>
-                                    Apply Voucher
+                                    {isVoucherValidating ? <span className="btn-loader"></span> : <span className="inline-block">Apply</span>}
                                 </button>}
                             </div>
                             {voucherMessage?.length > 0 && <p className="text-green-500">{voucherMessage}</p>}

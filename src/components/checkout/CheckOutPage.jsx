@@ -335,7 +335,7 @@ const CheckOutPage = () => {
                             <div className="mt-10">
                                 <h3 className="text-lg font-semibold mb-2">Payment Instructions</h3>
                                 <p className="dark:text-gray-400 text-gray-700 mb-4">
-                                    আপনি <strong>017xxx</strong> নাম্বারে বিকাশে/নগদে <strong>{convertToBanglaNumber(finalTotalPrice)}</strong> টাকা সেন্ডমানি করবেন। এরপর বিকাশ নাম্বার অথবা ট্রাঞ্জেকশন আইডি নিচে দিবেন।
+                                    আপনি <strong>01845426881</strong> নাম্বারে বিকাশে <strong>{convertToBanglaNumber(finalTotalPrice)}</strong> টাকা সেন্ডমানি করবেন। এরপর বিকাশ নাম্বার অথবা ট্রাঞ্জেকশন আইডি নিচে দিবেন।
                                 </p>
                                 <div>
                                     <label className="block text-sm font-medium mb-1">বিকাশ নাম্বার বা ট্রাঞ্জেকশন আইডি</label>
@@ -353,7 +353,7 @@ const CheckOutPage = () => {
 
                             <button
                                 type="submit"
-                                className="w-full mt-6 px-6 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+                                className="w-full mt-6 px-6 py-3 text-white bg-[#63953a] rounded-full transition"
                             >
                                 Confirm Order
                             </button>
