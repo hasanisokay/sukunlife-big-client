@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "./constants/names.mjs";
 
 export async function middleware(request) {
-  return NextResponse.next();
+  // return NextResponse.next();
   let accessToken = request.cookies.get(ACCESS_TOKEN)?.value;
   let refreshToken = request.cookies.get(REFRESH_TOKEN)?.value;
 
