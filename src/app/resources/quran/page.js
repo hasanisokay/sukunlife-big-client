@@ -53,7 +53,7 @@ export async function generateMetadata() {
     const metadata = {
       title: `Quran`,
       description:
-        "Explore and manage your Sukunlife resources including PDFs, videos, and audio content tailored for your needs.",
+        "Explore and manage your Sukunlife resources including Quran contents tailored for your needs.",
       keywords: [
         "Sukunlife",
         "resources",
@@ -70,7 +70,7 @@ export async function generateMetadata() {
         canonical: `${host}/resources/quran`,
       },
       openGraph: {
-        title: `Audio - ${websiteName}`,
+        title: `Quran - ${websiteName}`,
         description:
           "Discover a wide range of resources at Sukunlife, from insightful quranic content.",
         url: `${host}/resources/quran`,

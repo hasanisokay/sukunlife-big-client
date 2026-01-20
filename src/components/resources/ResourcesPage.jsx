@@ -43,28 +43,32 @@ const resourceCategories = [
 export default function ResourcesPage() {
   return (
     <div className="min-h-screen bg-[#fafafa]">
+
+
       {/* Banner */}
-      <div className="relative h-[420px]">
-        <Image
-          src={resourceBanner}
-          alt="Resources Banner"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-white text-[28px] md:text-[40px] font-bold mb-4">
-            Explore Our Spiritual Resources
-          </h1>
-          <p className="text-white max-w-[720px] text-base md:text-lg">
-            Choose the type of resource you are looking for and continue your
-            journey with authentic, Quran- and Sunnah-based guidance.
-          </p>
+      <section className="text-white h-[400px]  flex flex-col items-center justify-center  text-center ">
+        <div className="absolute top-0 bottom-0 right-0 left-0 h-[400px] ">
+          <Image className="w-full h-[400px]   object-cover pointer-events-none select-none"
+            src={resourceBanner}
+            width={1000} height={1000} alt="Audio Banner" />
         </div>
-      </div>
+        <div className="bg-black bg-opacity-[41%] w-full h-[400px]  absolute top-0 bottom-0 right-0 left-0">
+        </div>
+        <div className="relative z-10 max-w-4xl md:px-6 px-4 md:-mt-0 -mt-[100px]">
+          <div className="flex flex-col gap-[19px]">
+            <h1 className="text-white text-[28px] md:text-[40px] font-bold mb-4">
+              Explore Our Spiritual Resources
+            </h1>
+            <p className="text-white max-w-[720px] text-base md:text-lg px-2">
+              Choose the type of resource you are looking for and continue your
+              journey with authentic, Quran- and Sunnah-based guidance.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Categories */}
-      <div className="max-w-[1200px] mx-auto py-20 px-4">
+      <section className="max-w-[1200px] mx-auto py-20 px-4  -mt-[100px]">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           {resourceCategories.map((item) => (
             <Link
@@ -95,7 +99,7 @@ export default function ResourcesPage() {
           All resources are curated to help you perform Ruqyah with confidence,
           clarity, and sincerity — at your own pace.
         </p>
-      </div>
+      </section>
     </div>
   );
 }
