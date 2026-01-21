@@ -21,6 +21,7 @@ import TimePicker from "./Timepicker";
 // Zod schema
 const schema = z.object({
     name: z.string().min(1, "Name is required"),
+    email: z.string().email("A valid email is required"),
     mobile: z.string().min(11, "Mobile number must be at least 11 digits"),
     service: z.string().min(1, "Service is required"),
     address: z.string().min(1, "Address is required"),
@@ -37,19 +38,18 @@ const schema = z.object({
 });
 
 
-const BookAppointment = ({ preSelectedService }) => {
+const NewBookAppointment = ({ preSelectedService }) => {
     const [selectedService, setSelectedService] = useState(null);
     const [showTransactionField, setShowTransactionField] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
     const user = useSelector((state) => state.user.userData);
     const [openModal, setOpenModal] = useState(false);
-
+    const [isPaying, setIsPaying] = useState(false);
     const {
         register,
         handleSubmit,
         control,
         setValue,
-        watch,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(schema),
@@ -57,19 +57,24 @@ const BookAppointment = ({ preSelectedService }) => {
 
 
     const onSubmit = async (d) => {
-        const { termsAgreed, ...restData } = d;
+        if (isPaying) return;
+ 
+       const { termsAgreed, ...restData } = d;
         try {
             let bookingData = {
                 ...restData,
+                source: 'appointment',
                 advancePayment: d.advancePayment ?? false,
                 reviewed: false //tag for admins only, after admin review it will be true . 
             };
-            if (d.advancePayment) {
-                await startPaystationPayment(restData);
-                return;
-            }
-            if (user) {
+            if (Object?.entries(user)?.length !== 0) {
                 bookingData.loggedInUser = { _id: user._id, name: user.name };
+            }
+            if (d.advancePayment) {
+                setIsPaying(true);
+             console.log(bookingData)
+                await startPaystationPayment(bookingData);
+                return;
             }
             const res = await fetch(`${SERVER}/api/public/book-appointment`, {
                 method: "POST",
@@ -84,8 +89,10 @@ const BookAppointment = ({ preSelectedService }) => {
                 toast.error(data.message);
             }
         } catch (e) {
+            console.log(e)
             toast.error("Server is busy. Please try again later.");
         } finally {
+            setIsPaying(false);
             // router.push("/");
         }
     };
@@ -107,31 +114,18 @@ const BookAppointment = ({ preSelectedService }) => {
     };
 
     const startPaystationPayment = async (formData) => {
-        const invoice = `APT-${Date.now()}`;
-
-        // store appointment data temporarily
-        localStorage.setItem(
-            "pendingAppointment",
-            JSON.stringify({ ...formData, invoice })
-        );
-
         const res = await fetch(`${SERVER}/api/paystation/initiate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                invoice,
-                name: formData.name,
-                mobile: formData.mobile,
-                address: formData.address,
-                reference: formData.reference
+                ...formData,
             })
         });
 
         const data = await res.json();
         console.log(data)
-
         if (data?.payment_url) {
-            window.location.href = data.payment_url;
+            window.location.assign(data.payment_url);
         } else {
             toast.error("Payment initialization failed");
         }
@@ -211,6 +205,22 @@ const BookAppointment = ({ preSelectedService }) => {
                                     />
                                     {errors.name && (
                                         <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name.message}</p>
+                                    )}
+                                </div>
+
+                                {/* Name Field */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                                        Email
+                                    </label>
+                                    <input
+                                        {...register("email")}
+                                        type="email"
+                                        className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
+                                        placeholder="Enter your email"
+                                    />
+                                    {errors.name && (
+                                        <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email.message}</p>
                                     )}
                                 </div>
 
@@ -423,6 +433,7 @@ const BookAppointment = ({ preSelectedService }) => {
                                 {/* Submit Button */}
                                 <button
                                     type="submit"
+                                    disabled={isPaying}
                                     className="w-full p-3 bg-[#2e3e23] text-white rounded-full font-medium hover:bg-[#4a5e3a] transition-colors"
                                 >
                                     Book Appointment
@@ -490,4 +501,4 @@ const BookAppointment = ({ preSelectedService }) => {
     );
 };
 
-export default BookAppointment;
+export default NewBookAppointment;

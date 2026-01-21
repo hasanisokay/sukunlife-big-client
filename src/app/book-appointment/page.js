@@ -1,15 +1,15 @@
-import BookAppointment from "@/components/appointment/BookAppointment";
 import appointmentCover from "@/../public/images/blog.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import hostname from "@/constants/hostname.mjs";
 import NotFound from "@/components/not-found/NotFound";
+import NewBookAppointment from "../../components/appointment/NewBookAppoitnment";
 
 const page = async ({ searchParams }) => {
   try {
     const s = await searchParams;
     const selected = s?.selected || '';
 
-    return <BookAppointment preSelectedService={selected} />;
+    return <NewBookAppointment preSelectedService={selected} />;
   } catch {
     return <NotFound />;
   }

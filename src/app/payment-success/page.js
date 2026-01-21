@@ -1,30 +1,99 @@
 "use client";
-import { useEffect } from "react";
+
+import { SERVER } from "@/constants/urls.mjs";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 
 export default function PaymentSuccess() {
+  const params = useSearchParams();
+  const router = useRouter();
   const user = useSelector((state) => state.user.userData);
-  
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("pendingAppointment"));
-    if (!data) return;
-    let dataToSave = data;
-    if (user?._id) {
-      dataToSave.loggedInUser = { _id: user?._id, name: user?.name };
-    }
-    fetch(`${process.env.NEXT_PUBLIC_SERVER}/api/public/book-appointment`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...data,
-        advancePayment: true,
-        reviewed: false,
-      }),
-    });
 
-    localStorage.removeItem("pendingAppointment");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const invoice = params.get("invoice");
+  const source = params.get("source"); 
 
-  return <h1>✅ Payment Successful — Appointment Confirmed</h1>;
+  const isLoggedIn = !!user && Object.keys(user).length > 0;
+
+  const title =
+    source === "shop" ? "Order Confirmed" : "Appointment Confirmed";
+
+  const subtitle =
+    source === "shop"
+      ? "Your payment was successful and your order is being processed."
+      : "Your payment was successful and your appointment has been booked.";
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
+
+        {/* Success Icon */}
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <svg
+            className="h-8 w-8 text-green-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={3}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+
+        {/* Subtitle */}
+        <p className="mt-2 text-gray-600">{subtitle}</p>
+
+        {/* Invoice */}
+        {invoice && (
+          <p className="mt-4 text-sm text-gray-500">
+            Invoice Number:
+            <span className="ml-1 font-medium text-gray-700">{invoice}</span>
+          </p>
+        )}
+
+        {/* Actions */}
+        <div className="mt-6 flex flex-col gap-3">
+
+          {isLoggedIn && invoice && (
+            <button
+              onClick={() =>
+                window.open(
+                  `${SERVER}/api/paystation/invoice/${invoice}`,
+                  "_blank"
+                )
+              }
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-700 hover:bg-gray-100 transition"
+            >
+              View / Print Invoice
+            </button>
+          )}
+
+          <button
+            onClick={() =>
+              router.push(source === "shop" ? "/shop/orders" : "/appointments")
+            }
+            className="w-full rounded-lg bg-[#2e3e23] px-4 py-3 text-white font-medium hover:bg-[#4a5e3a] transition"
+          >
+            {source === "shop" ? "View Orders" : "View Appointments"}
+          </button>
+
+          <button
+            onClick={() => router.push("/")}
+            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-700 hover:bg-gray-100 transition"
+          >
+            Go to Home
+          </button>
+        </div>
+
+        {/* Footer reassurance */}
+        <p className="mt-6 text-xs text-gray-400">
+          A confirmation has been recorded in our system.
+          <br />
+          If you need help, please contact support.
+        </p>
+      </div>
+    </div>
+  );
 }
