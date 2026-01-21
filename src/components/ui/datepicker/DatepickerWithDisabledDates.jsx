@@ -14,7 +14,7 @@ const DatePickerWithDisableDates = ({
   useEffect(() => {
     const fp = flatpickr(inputRef.current, {
       dateFormat: 'd-m-Y',
-
+  disableMobile:true,
       // If enabledDates is passed → use it
       ...(enabledDates?.length
         ? { enable: enabledDates }
