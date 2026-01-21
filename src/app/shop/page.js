@@ -6,8 +6,7 @@ import getAllProducts from "@/utils/getAllProducts.mjs";
 import shopCover from "@/../public/images/shop.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import SukunLifeMission from "@/components/shared/SukunLifeMission";
-
-
+import EmptyState from "@/components/shared/EmptyState";
 
 const shopPage = async ({ searchParams }) => {
   try {
@@ -27,17 +26,25 @@ const shopPage = async ({ searchParams }) => {
       tags,
       sort,
       skip,
-      category
+      category,
     );
 
-    if (products.status === 200 && products.products.length === 0)
+    if (products?.status === 200 && products?.products?.length === 0)
       return (
         <div className="mt-10">
-          <SearchBar placeholder={"Search for products"}/>
-          <p className="text-center">No Product found</p>
+          <SearchBar placeholder={"Search for products"} />
+
+          <EmptyState
+            description="Try searching with name."
+            title="No Product"
+          />
         </div>
       );
-    if (products?.status !== 200) return <NotFound />;
+    if (products?.status !== 200)
+      return (
+        <EmptyState
+        />
+      );
     return (
       <div>
         <AllShopItems p={products?.products} totalCount={products.totalCount} />
@@ -51,14 +58,13 @@ const shopPage = async ({ searchParams }) => {
 
 export default shopPage;
 
-
 export async function generateMetadata() {
   try {
     const host = await hostname();
     const shopCoverUrl = `${host}${shopCover.src}`;
 
     const metadata = {
-      title: `Shop Products`,
+      title: `Products`,
       description:
         "Browse premium products at Sukunlife. Discover our curated shop collection today!",
       keywords: [
@@ -98,16 +104,14 @@ export async function generateMetadata() {
         images: [shopCoverUrl],
       },
     };
-
-    // Remove duplicate keywords and ensure relevance
     metadata.keywords = [...new Set(metadata.keywords)]
-      .filter(kw => kw && kw.length > 2)
+      .filter((kw) => kw && kw.length > 2)
       .slice(0, 10);
 
     return metadata;
   } catch (error) {
     console.error("Shop metadata generation failed:", error);
-    const host = await hostname(); // Ensure host is available in fallback
+    const host = await hostname();
     return {
       title: `Shop - ${websiteName}`,
       description: "Explore products at Sukunlife's online shop.",

@@ -3,9 +3,7 @@ import NotFound from "@/components/not-found/NotFound";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import blogCover from "@/../public/images/blog.jpg";
-import getAllCategoryFiveBlogs from "@/utils/getAllCategoryFiveBlogs.mjs";
-
-
+import getAllCategoryFiveBlogsPublic from "@/utils/getAllCategoryFiveBlogsPublic.mjs";
 
 const publicBlogPage = async ({ searchParams }) => {
   try {
@@ -17,7 +15,7 @@ const publicBlogPage = async ({ searchParams }) => {
     const tags = s?.tags || "";
     const skip = 0;
 
-    const blogs = await getAllCategoryFiveBlogs(page, limit, keyword, tags, sort, skip);
+    const blogs = await getAllCategoryFiveBlogsPublic(page, limit, keyword, tags, sort, skip);
     if (blogs?.status === 200) {
       return (
         <>

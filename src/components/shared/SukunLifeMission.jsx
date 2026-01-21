@@ -1,5 +1,3 @@
-import React from 'react';
-
 const SukunLifeMission = () => {
   return (
     <div className="flex flex-col ">

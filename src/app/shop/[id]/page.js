@@ -4,6 +4,7 @@ import getSingleProduct from "@/utils/getSingleProduct.mjs";
 import productCover from "@/../public/images/product.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
+import EmptyState from "@/components/shared/EmptyState";
 
 
 
@@ -14,7 +15,7 @@ const page = async ({ params }) => {
     let product = await getSingleProduct(productId);
     if (product?.status === 200) {
       return <SingleProductPage product={product?.product} />;
-    } else return <NotFound />;
+    } else return <EmptyState description="Maybe the link is broken or product is removed."  />;
   } catch {
     return <NotFound />;
   }

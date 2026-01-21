@@ -7,17 +7,17 @@ import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import getAdminDashboardData from "@/utils/getAdminDashboardData.mjs";
 import UserDashboard from "@/components/dashboard/user/UserDashboard";
+import EmptyState from "@/components/shared/EmptyState";
 
 const dashboardPage = async () => {
   try {
     const user = await getUserDataFromToken();
     if (user?.role === "admin") {
       const dashboardData = await getAdminDashboardData();
-      // return <p>da</p>
       if (dashboardData.status === 200) {
         return <AdminDashboard dashboardData={dashboardData} />;
       } else {
-        return <NotFound />;
+        return <EmptyState description="Reload or contact support." title="No data found." />;
       }
     } else if (user?.role === "user"){
       

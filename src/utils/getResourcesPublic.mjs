@@ -1,3 +1,4 @@
+import { REVALIDATE_TIME } from "@/constants/times.mjs";
 import { SERVER } from "@/constants/urls.mjs";
 
 const getResourcesPublic = async (
@@ -18,7 +19,7 @@ const getResourcesPublic = async (
           "Content-Type": "application/json",
         },
         credentials: "include",
-        // next: { revalidate: 7200 },
+        next: { revalidate: REVALIDATE_TIME },
       },
     );
     const data = await res.json();

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import flatpickr from 'flatpickr';
-import 'flatpickr/dist/themes/material_blue.css';
+
 
 const TimePicker = ({
     label = "Time",

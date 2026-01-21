@@ -39,7 +39,7 @@ export async function generateMetadata() {
         images: [
           {
             url: signupCoverUrl,
-            width: 1200, // Optimized for social sharing
+            width: 1200, 
             height: 630,
             alt: `${websiteName} Sign Up Page`,
           },
@@ -54,10 +54,9 @@ export async function generateMetadata() {
           "Create your Sukunlife account now and start exploring!",
         images: [signupCoverUrl],
       },
-      robots: "noindex", // Optional: prevents indexing of signup page
+      robots: "noindex", 
     };
 
-    // Remove duplicates and limit keywords
     metadata.keywords = [...new Set(metadata.keywords)]
       .filter(kw => kw && kw.length > 2)
       .slice(0, 10);

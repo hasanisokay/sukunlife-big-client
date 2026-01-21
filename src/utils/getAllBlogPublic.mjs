@@ -1,4 +1,5 @@
 "use server";
+import { REVALIDATE_TIME } from "@/constants/times.mjs";
 import { SERVER } from "@/constants/urls.mjs";
 
 const getAllBlogPublic = async (
@@ -19,7 +20,7 @@ const getAllBlogPublic = async (
           "Content-Type": "application/json",
         },
         credentials: "include",
-    next:{revalidate:3600}  
+    next:{revalidate:REVALIDATE_TIME}  
     }
     );
     const data = await res.json();

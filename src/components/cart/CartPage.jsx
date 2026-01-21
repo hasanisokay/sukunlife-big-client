@@ -112,11 +112,11 @@ const CartPage = () => {
     if (!isClient) return null
     return (
         <div className={`min-h-screen p-8`}>
-            <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
+            <h1 className="text-3xl font-bold mb-8">My Cart</h1>
             {cartItems?.length === 0 ? (
                 <div className="text-center py-12 mx-auto max-w-fit">
-                    <p className="text-xl">Your cart is empty.</p>
-                    <Link href="/shop" className="mt-4 block w-fit px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <p className="text-xl">Cart is empty.</p>
+                    <Link href="/shop" className="mt-4 block w-fit px-6 py-2 bg-[#63953a] text-white rounded-full transition">
                         Continue Shopping
                     </Link>
                 </div>
