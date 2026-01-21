@@ -50,9 +50,9 @@
   .ruqyah-session-card {
     width: 395px;
   }
-  .book-appointment-modal {
+  /* .book-appointment-modal {
     width: 390px;
-  }
+  } */
 }
 @media (min-width: 500px) {
   .book-appointment-modal {
