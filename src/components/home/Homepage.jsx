@@ -63,12 +63,12 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
             <div>
               <h3 className="font-bold">Ruqyah Helpline</h3>
               <p className="text-2xl font-semibold text-gray-800">01915 109430</p>
-              <p className="text-sm text-gray-600">Mon – Thu | 11AM – 4PM</p>
+              <p className="text-sm text-gray-600">Mon – Sun | 10AM – 10PM</p>
             </div>
             <div>
               <h3 className="font-bold">Booking Information</h3>
-              <p className="text-2xl font-semibold text-gray-800">01915 109430</p>
-              <p className="text-sm text-gray-600">Mon – Thu | 11AM – 4PM</p>
+              <p className="text-2xl font-semibold text-gray-800">01887 753555</p>
+              <p className="text-sm text-gray-600">Mon – Sun | 10AM – 10PM</p>
             </div>
           </div>
         </section>
