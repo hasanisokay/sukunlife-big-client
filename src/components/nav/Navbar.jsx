@@ -263,7 +263,7 @@ const Navbar = () => {
                   Book Appointment
                 </Link>
               </button>
-              {Object?.entries(user)?.length !== 0 ? (
+              {Object.entries(user ?? {}).length !== 0 ? (
                 <button className="block w-[173px] h-[54px]">
                   <Link
                     href="/dashboard"
@@ -322,7 +322,7 @@ const Navbar = () => {
                       Book Appointment
                     </Link>
                   </button>
-                  {Object?.entries(user)?.length !== 0 ? (
+                  {Object.entries(user ?? {}).length !== 0  ? (
                     <button className="block w-[173px] h-[54px]">
                       <Link
                         href="/dashboard"

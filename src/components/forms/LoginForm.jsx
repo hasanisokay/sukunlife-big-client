@@ -72,7 +72,7 @@ export default function LoginForm({ redirectTo }) {
     }
   };
   useEffect(() => {
-    if (Object?.entries(user)?.length !== 0) {
+    if (user && Object.entries(user).length !== 0) {
       router.replace("/dashboard")
     }
   }, [user])

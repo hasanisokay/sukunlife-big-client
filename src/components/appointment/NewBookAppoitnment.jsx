@@ -67,7 +67,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
                 advancePayment: d.advancePayment ?? false,
                 reviewed: false //tag for admins only, after admin review it will be true . 
             };
-            if (Object?.entries(user)?.length !== 0) {
+            if (user && Object.entries(user).length !== 0) {
                 bookingData.loggedInUser = { _id: user._id, name: user.name };
             }
             if (d.advancePayment) {

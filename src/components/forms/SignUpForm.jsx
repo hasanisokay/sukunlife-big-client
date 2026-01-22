@@ -68,7 +68,7 @@ export default function SignupForm() {
     }
   };
   useEffect(() => {
-    if (Object?.entries(user)?.length !== 0) {
+    if (user && Object.entries(user).length !== 0) {
       router.replace("/")
     }
   }, [user])

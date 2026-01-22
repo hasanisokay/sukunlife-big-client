@@ -23,7 +23,7 @@ const VideoResources = ({ videos = [], allTopic = [] }) => {
 
   // stop other videos when one starts playing
   useEffect(() => {
-    Object.entries(videoRefs.current).forEach(([id, el]) => {
+    Object.entries(videoRefs?.current).forEach(([id, el]) => {
       if (id !== activeVideo && el?.pause) {
         el.pause();
         el.currentTime = 0;
