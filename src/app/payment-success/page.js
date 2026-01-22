@@ -8,37 +8,63 @@ import { useSelector } from "react-redux";
 export default function PaymentSuccess() {
   const params = useSearchParams();
   const router = useRouter();
+
   const user = useSelector((state) => state.user.userData);
-  const [loading, setLoading] = useState(true);
+  const isLoggedIn = Boolean(user && Object.keys(user).length);
+
   const invoice = params.get("invoice");
   const source = params.get("source");
-  const isLoggedIn = !!user && Object.keys(user).length > 0;
 
+  const [loading, setLoading] = useState(true);
   const hasFinalized = useRef(false);
 
   useEffect(() => {
-    // if (!invoice || hasFinalized.current) return;
-    // hasFinalized.current = true;
+    if (!invoice || hasFinalized.current) {
+      setLoading(false);
+      return;
+    }
 
-    const finalize = async () => {
-      const res = await fetch(`${SERVER}/api/paystation/finalize-payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invoice_number: invoice }),
-      });
-      const data = await res.json();
-      console.log(data);
+    hasFinalized.current = true;
+
+    const finalizePayment = async () => {
+      try {
+        const res = await fetch(
+          `${SERVER}/api/paystation/finalize-payment`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ invoice_number: invoice }),
+          }
+        );
+
+        // if (!res.ok) {
+        //   throw new Error("Failed to finalize payment");
+        // }
+
+        const data = await res.json();
+        console.log("Payment finalized:", data);
+      } catch (error) {
+        console.error("Finalize payment error:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    finalize();
-  }, [invoice, router]);
 
-  const title = source === "shop" ? "Order Confirmed" : "Appointment Confirmed";
+    finalizePayment();
+  }, [invoice]);
+
+  if (loading) {
+    return <p className="text-center mt-10">Processing payment, please wait...</p>;
+  }
+
+  const title =
+    source === "shop" ? "Order Confirmed" : "Appointment Confirmed";
 
   const subtitle =
     source === "shop"
       ? "Your payment was successful and your order is being processed."
       : "Your payment was successful and your appointment has been booked.";
-  if (loading) return <p>Processing payment. please wait...</p>;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
@@ -69,7 +95,9 @@ export default function PaymentSuccess() {
         {invoice && (
           <p className="mt-4 text-sm text-gray-500">
             Invoice Number:
-            <span className="ml-1 font-medium text-gray-700">{invoice}</span>
+            <span className="ml-1 font-medium text-gray-700">
+              {invoice}
+            </span>
           </p>
         )}
 
@@ -80,7 +108,7 @@ export default function PaymentSuccess() {
               onClick={() =>
                 window.open(
                   `${SERVER}/api/paystation/invoice/${invoice}`,
-                  "_blank",
+                  "_blank"
                 )
               }
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-700 hover:bg-gray-100 transition"
@@ -88,15 +116,6 @@ export default function PaymentSuccess() {
               View / Print Invoice
             </button>
           )}
-
-          {/* <button
-            onClick={() =>
-              router.push(source === "shop" ? "/shop/orders" : "/appointments")
-            }
-            className="w-full rounded-lg bg-[#2e3e23] px-4 py-3 text-white font-medium hover:bg-[#4a5e3a] transition"
-          >
-            {source === "shop" ? "View Orders" : "View Appointments"}
-          </button> */}
 
           <button
             onClick={() => router.push("/")}
@@ -106,7 +125,7 @@ export default function PaymentSuccess() {
           </button>
         </div>
 
-        {/* Footer reassurance */}
+        {/* Footer */}
         <p className="mt-6 text-xs text-gray-400">
           A confirmation has been recorded in our system.
           <br />
