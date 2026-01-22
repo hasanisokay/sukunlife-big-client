@@ -72,7 +72,6 @@ const NewBookAppointment = ({ preSelectedService }) => {
             }
             if (d.advancePayment) {
                 setIsPaying(true);
-             console.log(bookingData)
                 await startPaystationPayment(bookingData);
                 return;
             }
@@ -123,7 +122,6 @@ const NewBookAppointment = ({ preSelectedService }) => {
         });
 
         const data = await res.json();
-        console.log(data)
         if (data?.payment_url) {
             window.location.assign(data.payment_url);
         } else {

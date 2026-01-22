@@ -17,7 +17,7 @@ const TimePicker = ({
         const fp = flatpickr(inputRef.current, {
             enableTime: true,
             noCalendar: true,
-            disableMobile: true,
+            // disableMobile: true,
             dateFormat: time24hr ? "H:i" : "h:i K",
             defaultDate: defaultTime,
             time_24hr: time24hr,
