@@ -16,6 +16,7 @@ import WhyChoosSukunLIfeBookingAppointment from "./WhyChoosSukunLIfeBookingAppoi
 import AppointmentBannerSection from "./AppointmentBannerSection";
 import PricingSectionAppointment from "./PricingSectionAppointment";
 import TimePicker from "./Timepicker";
+import startPaystationPayment from "@/payments/startPaystationPayment.mjs";
 
 
 // Zod schema
@@ -112,22 +113,6 @@ const NewBookAppointment = ({ preSelectedService }) => {
         setOpenModal(true);
     };
 
-    const startPaystationPayment = async (formData) => {
-        const res = await fetch(`${SERVER}/api/paystation/initiate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ...formData,
-            })
-        });
-
-        const data = await res.json();
-        if (data?.payment_url) {
-            window.location.assign(data.payment_url);
-        } else {
-            toast.error("Payment initialization failed");
-        }
-    };
 
 
     return (

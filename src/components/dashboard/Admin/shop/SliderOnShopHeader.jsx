@@ -25,7 +25,7 @@ const SliderOnShopHeader = () => {
             }
         })()
     }, [])
-    if (topProducts.length === 0) return;
+    if (topProducts?.length === 0) return;
     return (
         <div className="w-full max-w-6xl mx-auto mt-8 px-4 md:min-h-[405px] min-h-[336px]">
             <div className="relative">

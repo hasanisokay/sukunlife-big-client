@@ -13,6 +13,7 @@ import { setCartData, setVoucher } from "@/store/slices/cartSlice";
 import convertToBanglaNumber from "../cart/functions/convertToBanglaNumber.mjs";
 import updateCart from "../cart/functions/updateCart.mjs";
 import { Flip, toast, ToastContainer } from "react-toastify";
+import startPaystationPayment from "@/payments/startPaystationPayment.mjs";
 
 const CheckOutPage = () => {
     const router = useRouter();
@@ -35,7 +36,7 @@ const CheckOutPage = () => {
 
     // React Hook Form
     const { register, handleSubmit, setValue, control, formState: { errors } } = useForm();
-    const [deliveryCharge, setDeliveryCharge] = useState(120); // Default to Outside Dhaka
+    const [deliveryCharge, setDeliveryCharge] = useState(120);
 
     // Delivery Options
     const deliveryOptions = [
@@ -66,59 +67,38 @@ const CheckOutPage = () => {
     }, [])
     // Calculate Final Total
     const finalTotalPrice = totalPrice + deliveryCharge;
-
-    // Handle Form Submission
     const onSubmit = async (data) => {
-        if (courseInCart && !user) return toast.error("Login to buy course.")
-        const orderDetails = {
-            ...data,
-            cartItems,
-            voucher,
-            discount,
-            subtotalPrice,
-            deliveryCharge,
-            finalTotalPrice,
-        };
-        delete orderDetails.deliveryArea;
-        if (user) {
-            orderDetails.userId = user._id;
+        if (courseInCart && Object.entries(user ?? {}).length !== 0) {
+            return toast.error("Login to buy course.");
         }
-        orderDetails.date = new Date();
-        // Call API to submit order
-        try {
-            const response = await fetch(`${SERVER}/api/public/place-order`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(orderDetails),
-            });
 
-            const resData = await response.json();
-            if (resData.status === 200) {
-                const cartProducts = cartItems.filter(p => p.type === 'product');
-                if (cartProducts?.length > 0) {
-                    await fetch(`${SERVER}/api/public/update-stock-quantity`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(cartProducts),
-                    });
-                }
-                toast.success(resData.message)
-                localStorage.removeItem("voucher")
-                dispatch(setCartData([]));
-                await updateCart([], user);
-                router.replace("/")
-            } else {
-                toast.error(resData.message)
-            }
-        } catch (error) {
-            console.log("Error placing order:", error);
-            // alert("An error occurred. Please try again.");
+        const payload = {
+            source: "shop",
+            name: data.name,
+            mobile: data.phone,
+            email: data.email,
+            address: data.address,
+            items: cartItems?.map(item => ({
+                productId: item._id,
+                quantity: item.quantity,
+                variant: {
+                    size: item.size || null,
+                    color: item.color || null,
+                },
+                unit: item?.unit || "",
+                type: item.type,
+            })),
+            voucherCode: voucher?.code || null,
+            deliveryArea: data.deliveryArea?.value === 80 ? "Inside Dhaka" : "Outside Dhaka",
+        };
+
+        try {
+            await startPaystationPayment(payload);
+        } catch (err) {
+            toast.error("Something went wrong");
         }
     };
+
 
     useEffect(() => {
         (async () => {
@@ -332,7 +312,7 @@ const CheckOutPage = () => {
                             </div>}
 
                             {/* Payment Instructions */}
-                            <div className="mt-10">
+                            {/* <div className="mt-10">
                                 <h3 className="text-lg font-semibold mb-2">Payment Instructions</h3>
                                 <p className="dark:text-gray-400 text-gray-700 mb-4">
                                     আপনি <strong>01845426881</strong> নাম্বারে বিকাশে <strong>{convertToBanglaNumber(finalTotalPrice)}</strong> টাকা সেন্ডমানি করবেন। এরপর বিকাশ নাম্বার অথবা ট্রাঞ্জেকশন আইডি নিচে দিবেন।
@@ -349,7 +329,7 @@ const CheckOutPage = () => {
                                         <p className="text-red-500 text-sm mt-1">{errors.transactionId.message}</p>
                                     )}
                                 </div>
-                            </div>
+                            </div> */}
 
                             <button
                                 type="submit"
