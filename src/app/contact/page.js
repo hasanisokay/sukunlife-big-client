@@ -18,7 +18,7 @@ const Page = () => {
             </svg>
           </span>
           <p className="py-2">
-            Dhanmondi 32 area, near sobhanbag jame mosque, Dhanmondi, Dhaka.
+            Dhanmondi 32 area, Near Sobhanbag Jame Mosque, Dhanmondi, Dhaka.
           </p>
         </div>
 
