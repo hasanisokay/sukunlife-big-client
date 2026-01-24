@@ -1,4 +1,6 @@
-import { toast } from 'react-toastify';
+import { SERVER } from "@/constants/urls.mjs";
+import tokenParser from "@/server-functions/tokenParser.mjs";
+import { toast } from "react-toastify";
 
 const uploadImage = async (file) => {
   const formData = new FormData();
@@ -8,22 +10,24 @@ const uploadImage = async (file) => {
   const loadingToast = toast.loading("Uploading...");
 
   try {
-    const response = await fetch(
-      `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
+    const tokens = await tokenParser();
+    const response = await fetch(`${SERVER}/api/user/upload/image`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${tokens?.accessToken?.value || ""}`,
+        "X-Refresh-Token": tokens?.refreshToken?.value || "",
+      },
+      credentials: "include",
+    });
     const data = await response.json();
     if (response.ok) {
-      const imageUrl = data.data.url;
+      const imageUrl = data?.url;
       toast.update(loadingToast, {
         render: "Image uploaded successfully!",
         type: "success",
         isLoading: false,
-        autoClose: 3000, // Auto close after 3 seconds
+        autoClose: 3000,
       });
       return imageUrl;
     } else {

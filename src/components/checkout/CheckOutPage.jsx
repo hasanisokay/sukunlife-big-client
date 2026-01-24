@@ -92,6 +92,10 @@ const CheckOutPage = () => {
             deliveryArea: data.deliveryArea?.value === 80 ? "Inside Dhaka" : "Outside Dhaka",
         };
 
+        if (user && Object.entries(user).length !== 0) {
+            payload.loggedInUser = { _id: user._id, name: user.name };
+        }
+
         try {
             await startPaystationPayment(payload);
         } catch (err) {
