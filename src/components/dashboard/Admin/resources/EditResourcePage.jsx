@@ -4,7 +4,7 @@ import RichTextEditor from '@/components/editor/RichTextEditor';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import editResource from '@/server-functions/editResource.mjs';
-import uploadImage from '@/utils/uploadImage.mjs';
+import uploadFile from '@/utils/uploadFile.mjs';
 
 const EditResourcePage = ({ resource }) => {
     const [litType, setLitType] = useState("free");
@@ -73,7 +73,7 @@ const EditResourcePage = ({ resource }) => {
     const handleCoverUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const url = await uploadImage(file);
+            const url = await uploadFile(file);
             setCoverPhoto(url);
         }
     };

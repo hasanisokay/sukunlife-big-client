@@ -3,7 +3,7 @@ import { useState } from 'react';
 import RichTextEditor from '@/components/editor/RichTextEditor';
 import { toast, ToastContainer } from 'react-toastify';
 import addNewResource from '@/server-functions/addNewResource.mjs';
-import uploadImage from '@/utils/uploadImage.mjs';
+import uploadFile from '@/utils/uploadFile.mjs';
 
 const AddResource = () => {
     const [selectedType, setSelectedType] = useState(null);
@@ -56,7 +56,7 @@ const AddResource = () => {
     const handleCoverUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const url = await uploadImage(file);
+            const url = await uploadFile(file);
             setCoverPhoto(url);
         }
     };

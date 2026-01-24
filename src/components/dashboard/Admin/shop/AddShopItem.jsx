@@ -6,11 +6,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import CreatableSelect from 'react-select/creatable';
 import { Flip, toast, ToastContainer } from 'react-toastify';
-import uploadImage from '@/utils/uploadImage.mjs'; // Import the uploadImage function
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
 import checkProductId from '@/server-functions/checkProductId.mjs';
 import addNewProduct from '@/server-functions/addNewProduct.mjs';
 import formatUrlAdIds from '@/utils/formatUrlAdIds.mjs';
+import uploadFile from '@/utils/uploadFile.mjs';
 
 const AddShopItem = () => {
     const { register, handleSubmit,    setValue, control, formState: { errors } } = useForm({
@@ -68,7 +68,7 @@ const AddShopItem = () => {
     const handleUploadImage = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            const imageUrl = await uploadImage(file);
+            const imageUrl = await uploadFile(file);
             setImages(prev => [...prev, imageUrl])
         }
     };

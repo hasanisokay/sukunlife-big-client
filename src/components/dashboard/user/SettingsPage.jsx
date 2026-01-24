@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { setUserData } from "@/store/slices/authSlice";
-import uploadImage from "@/utils/uploadImage.mjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useRef, useEffect } from "react";
 import formatDate from "@/utils/formatDate.mjs";
@@ -11,6 +10,7 @@ import { Flip, toast, ToastContainer } from 'react-toastify';
 import changePassword from '@/utils/changePassword.mjs';
 import updateUserPhoto from '@/utils/updateUserPhoto.mjs';
 import { toggleTheme } from "@/store/slices/themeSlice";
+import uploadFile from '@/utils/uploadFile.mjs';
 const SettingsPage = () => {
     const user = useSelector((state) => state.user.userData);
     const dispatch = useDispatch();
@@ -104,7 +104,7 @@ const SettingsPage = () => {
             setLoading(true);
             const file = e.target.files[0];
             if (!file) return;
-            const imageUrl = await uploadImage(file);
+            const imageUrl = await uploadFile(file);
             const resData = await updateUserPhoto(imageUrl)
             if (resData.status === 200) {
                 await refreshAccessToken();

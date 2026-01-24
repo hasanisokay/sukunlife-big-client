@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import RichTextEditor from '@/components/editor/RichTextEditor';
-import uploadImage from '@/utils/uploadImage.mjs';
+
 import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import DatePicker from '@/components/ui/datepicker/Datepicker';
@@ -11,6 +11,7 @@ import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
 import addNewCourse from '@/server-functions/addNewCourse.mjs';
 import checkCourseId from '@/server-functions/checkCourseId.mjs';
 import formatUrlAdIds from '@/utils/formatUrlAdIds.mjs';
+import uploadFile from '@/utils/uploadFile.mjs';
 
 const AddCourse = () => {
     const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
@@ -377,14 +378,14 @@ const AddCourse = () => {
     const handleUploadImage = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            const imageUrl = await uploadImage(file);
+            const imageUrl = await uploadFile(file);
             setCoverPhotoUrl(imageUrl);
         }
     };
     const handleUploadInstructorImage = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            const imageUrl = await uploadImage(file);
+            const imageUrl = await uploadFile(file);
             setInstructorImage(imageUrl);
         }
     };

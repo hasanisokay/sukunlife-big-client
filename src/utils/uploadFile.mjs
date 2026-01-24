@@ -2,7 +2,7 @@ import { SERVER } from "@/constants/urls.mjs";
 import tokenParser from "@/server-functions/tokenParser.mjs";
 import { toast } from "react-toastify";
 
-const uploadImage = async (file) => {
+const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append("image", file);
 
@@ -24,7 +24,7 @@ const uploadImage = async (file) => {
     if (response.ok) {
       const imageUrl = data?.url;
       toast.update(loadingToast, {
-        render: "Image uploaded successfully!",
+        render: "File uploaded successfully!",
         type: "success",
         isLoading: false,
         autoClose: 3000,
@@ -32,7 +32,7 @@ const uploadImage = async (file) => {
       return imageUrl;
     } else {
       toast.update(loadingToast, {
-        render: "Failed to upload image.",
+        render: "Failed to upload file.",
         type: "error",
         isLoading: false,
         autoClose: 3000,
@@ -40,7 +40,7 @@ const uploadImage = async (file) => {
       return "";
     }
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("Error uploading file:", error);
     toast.update(loadingToast, {
       render: "An error occurred while uploading.",
       type: "error",
@@ -51,4 +51,4 @@ const uploadImage = async (file) => {
   }
 };
 
-export default uploadImage;
+export default uploadFile;

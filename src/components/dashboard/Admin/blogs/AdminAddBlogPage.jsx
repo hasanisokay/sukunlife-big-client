@@ -8,12 +8,12 @@ import RichTextEditor from "@/components/editor/RichTextEditor";
 import DatePicker from "@/components/ui/datepicker/Datepicker";
 import CreatableSelect from "react-select/creatable";
 import { Flip, toast, ToastContainer } from "react-toastify";
-import uploadImage from "@/utils/uploadImage.mjs";
 import getAllBlogTags from "@/utils/getAllBlogTags.mjs";
 import generateUniqueIds from "@/utils/generateUniqueIds.mjs";
 import addNewBlog from "@/server-functions/addNewBlog.mjs";
 import checkBlogUrl from "@/server-functions/checkBlogUrl.mjs";
 import formatUrlAdIds from "@/utils/formatUrlAdIds.mjs";
+import uploadFile from "@/utils/uploadFile.mjs";
 
 const blogSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters long"),
@@ -126,7 +126,7 @@ const AdminAddBlogPage = () => {
   const uploadImageHandler = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const url = await uploadImage(file);
+      const url = await uploadFile(file);
       if (url.length > 0) {
         setValue('blogCoverPhoto', url)
       }
