@@ -11,7 +11,7 @@ const uploadImage = async (file) => {
 
   try {
     const tokens = await tokenParser();
-    const response = await fetch(`${SERVER}/api/user/upload/image`, {
+    const response = await fetch(`${SERVER}/api/user/upload/file`, {
       method: "POST",
       body: formData,
       headers: {
