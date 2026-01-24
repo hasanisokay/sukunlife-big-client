@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 
 const uploadFile = async (file) => {
   const formData = new FormData();
-  formData.append("image", file);
+  formData.append("file", file);
 
   // Show a loading toast at the beginning
   const loadingToast = toast.loading("Uploading...");
