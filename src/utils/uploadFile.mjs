@@ -21,7 +21,9 @@ const uploadFile = async (file) => {
       credentials: "include",
     });
 // repo
+console.log(response)
     const data = await response.json();
+    console.log(data)
     if (response.ok) {
       const imageUrl = data?.url;
       toast.update(loadingToast, {
