@@ -6,42 +6,77 @@ const uploadFile = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  // Show a loading toast at the beginning
-  const loadingToast = toast.loading("Uploading...");
+  const loadingToast = toast.loading("Uploading... 0%");
 
   try {
     const tokens = await tokenParser();
-    const response = await fetch(`${SERVER}/api/user/upload/file`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${tokens?.accessToken?.value || ""}`,
-        "X-Refresh-Token": tokens?.refreshToken?.value || "",
-      },
-      credentials: "include",
+
+    return await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("POST", `${SERVER}/api/user/upload/file`);
+
+      xhr.setRequestHeader(
+        "Authorization",
+        `Bearer ${tokens?.accessToken?.value || ""}`
+      );
+      xhr.setRequestHeader(
+        "X-Refresh-Token",
+        tokens?.refreshToken?.value || ""
+      );
+
+      xhr.withCredentials = true;
+
+      // 🔥 Upload progress
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+
+          toast.update(loadingToast, {
+            render: `Uploading... ${percent}%`,
+            isLoading: true,
+          });
+        }
+      };
+
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+
+          if (xhr.status >= 200 && xhr.status < 300) {
+            toast.update(loadingToast, {
+              render: "File uploaded successfully!",
+              type: "success",
+              isLoading: false,
+              autoClose: 3000,
+            });
+            resolve(data?.url || "");
+          } else {
+            toast.update(loadingToast, {
+              render: "Failed to upload file.",
+              type: "error",
+              isLoading: false,
+              autoClose: 3000,
+            });
+            resolve("");
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      xhr.onerror = () => {
+        toast.update(loadingToast, {
+          render: "An error occurred while uploading.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+        reject("");
+      };
+
+      xhr.send(formData);
     });
-// repo
-console.log(response)
-    const data = await response.json();
-    console.log(data)
-    if (response.ok) {
-      const imageUrl = data?.url;
-      toast.update(loadingToast, {
-        render: "File uploaded successfully!",
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
-      return imageUrl;
-    } else {
-      toast.update(loadingToast, {
-        render: "Failed to upload file.",
-        type: "error",
-        isLoading: false,
-        autoClose: 3000,
-      });
-      return "";
-    }
   } catch (error) {
     console.error("Error uploading file:", error);
     toast.update(loadingToast, {

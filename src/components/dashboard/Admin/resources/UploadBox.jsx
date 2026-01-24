@@ -38,15 +38,20 @@ export default function UploadBox({ links, setLinks, label, fileType }) {
     // SIZE CHECK
     if (file.size > MAX_SIZES[fileType]) {
       toast.error(
-        `File too large. Max allowed size is ${(MAX_SIZES[fileType] / (1024*1024)).toFixed(0)}MB`
+        `File too large. Max allowed size is ${(MAX_SIZES[fileType] / (1024 * 1024)).toFixed(0)}MB`
       );
       return;
     }
 
     try {
       setUploading(true);
+
       const url = await uploadFile(file);
-      setLinks([...links, url]);
+
+      // 🔥 YOUR RULE:
+      // New uploaded file replaces old links and goes on top
+      setLinks([url]);
+
     } catch (err) {
       toast.error("Upload failed");
     } finally {
@@ -111,7 +116,7 @@ export default function UploadBox({ links, setLinks, label, fileType }) {
         </label>
 
         <p className="text-xs text-gray-500 mt-1">
-          Max size: {(MAX_SIZES[fileType] / (1024*1024)).toFixed(0)}MB
+          Max size: {(MAX_SIZES[fileType] / (1024 * 1024)).toFixed(0)}MB
         </p>
 
         {uploading && <p className="text-sm mt-2">Uploading...</p>}
