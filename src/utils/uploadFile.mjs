@@ -20,7 +20,7 @@ const uploadFile = async (file) => {
       },
       credentials: "include",
     });
-    console.log(response)
+
     const data = await response.json();
     if (response.ok) {
       const imageUrl = data?.url;
