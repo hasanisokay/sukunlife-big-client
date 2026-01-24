@@ -14,7 +14,7 @@ const uploadFile = async (file) => {
     return await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
-      xhr.open("POST", `${SERVER}/api/user/upload/file`);
+      xhr.open("POST", `https://upload.sukunlife.com/api/user/upload/file`);
 
       xhr.setRequestHeader(
         "Authorization",
