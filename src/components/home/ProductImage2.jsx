@@ -26,7 +26,7 @@ const ProductImage2 = ({ src, alt, height = "100px", width = "100px", classProps
         width={1000}
         style={{ width: width, height: height }}
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        className={`object-cover ${classProps}`}
+        className={`object-cover ${classProps|| ""}`}
         blurDataURL={fallbackBlurDataURL}
         onError={() => setImageError(true)}
     />
