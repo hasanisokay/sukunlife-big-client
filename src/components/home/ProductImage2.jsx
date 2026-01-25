@@ -6,14 +6,20 @@ import { fallbackBlurDataURL } from "@/constants/fallbackBlurDataUrl.mjs";
 
 const ProductImage2 = ({ src, alt, height = "100px", width = "100px", classProps, fallbackImage }) => {
     const [imageError, setImageError] = useState(false);
-    const imageUrl = src?.trim().length > 0 ? src : null;
+    // const imageUrl = src?.trim()?.length > 0 ? src : null;
+    const imageUrl =
+  src?.trim()?.length > 0
+    ? src
+    : (fallbackImage || productFallbackImage);
+
 
     return (<Image
-        src={
-            imageError
-                ? (fallbackImage ? fallbackImage : productFallbackImage)
-                : imageUrl
-        }
+        // src={
+        //     imageError
+        //         ? (fallbackImage ? fallbackImage : productFallbackImage)
+        //         : imageUrl
+        // }
+          src={imageError ? (fallbackImage || productFallbackImage) : imageUrl}
 
         alt={alt || "image"}
         height={1000}
