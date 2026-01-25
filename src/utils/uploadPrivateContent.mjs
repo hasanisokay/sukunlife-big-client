@@ -26,7 +26,6 @@ const uploadPrivateContent = async (file) => {
 
       xhr.withCredentials = true;
 
-      // Upload progress
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percent = Math.round((event.loaded / event.total) * 100);
@@ -49,15 +48,24 @@ const uploadPrivateContent = async (file) => {
               isLoading: false,
               autoClose: 3000,
             });
-            resolve(data?.url || "");
+
+            // ✅ RETURN BACKEND RESPONSE
+            resolve({
+              fileId: data.fileId,
+              filename: data.filename,
+              originalName: data.originalName,
+              mime: data.mime,
+              size: data.size,
+              type: data.type,
+            });
           } else {
             toast.update(loadingToast, {
-              render: "Failed to upload file.",
+              render: data?.error || "Failed to upload file.",
               type: "error",
               isLoading: false,
               autoClose: 3000,
             });
-            resolve("");
+            reject(data);
           }
         } catch (err) {
           reject(err);
@@ -71,7 +79,7 @@ const uploadPrivateContent = async (file) => {
           isLoading: false,
           autoClose: 3000,
         });
-        reject("");
+        reject(new Error("XHR error"));
       };
 
       xhr.send(formData);
@@ -84,7 +92,7 @@ const uploadPrivateContent = async (file) => {
       isLoading: false,
       autoClose: 3000,
     });
-    return "";
+    throw error;
   }
 };
 

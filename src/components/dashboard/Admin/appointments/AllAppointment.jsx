@@ -64,6 +64,7 @@ const AllAppointment = ({ a, page, limit }) => {
         query.set('endDate', endDate);
         router.replace(`${window.location.pathname}?${query.toString()}`,);
     }
+
     return (
         <div className="bg-gray-100 dark:bg-gray-900 w-full min-h-screen">
             <div className="mx-auto">

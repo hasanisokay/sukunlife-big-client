@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import RichTextEditor from '@/components/editor/RichTextEditor';
 
@@ -12,7 +12,7 @@ import addNewCourse from '@/server-functions/addNewCourse.mjs';
 import checkCourseId from '@/server-functions/checkCourseId.mjs';
 import formatUrlAdIds from '@/utils/formatUrlAdIds.mjs';
 import uploadFile from '@/utils/uploadFile.mjs';
-import uploadPrivateContent from '@/utils/uploadPrivateContent.mjs';
+import CourseUploadBox from '@/components/shared/CourseUploadBox';
 
 const AddCourse = () => {
     const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
@@ -26,8 +26,6 @@ const AddCourse = () => {
     const [additionalMaterials, setAdditionalMaterials] = useState([{ text: '' }]);
     const [courseIncludes, setCourseIncludes] = useState([{ text: '' }]);
 
-    // upload private content for any course module content. and cover or other should just fine with uploadFile 
-    // uploadPrivateContent(file)
     const onSubmit = async (data) => {
         if (!idAvailable) return toast.error("Course Id is not available.")
 
@@ -157,6 +155,7 @@ const AddCourse = () => {
         });
         setModules(updatedModules);
     };
+
     const handleVideoStatusChange = (moduleId, itemIndex, status) => {
         const updatedModules = modules.map((module, index) => {
             if (index === moduleId) {
@@ -430,7 +429,7 @@ const AddCourse = () => {
         return () => window.removeEventListener("beforeunload", handler);
     }, []);
 
-
+console.log(modules)
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-4 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Add Course</h2>
@@ -497,7 +496,7 @@ const AddCourse = () => {
                 {errors?.instructor && <p className="text-red-500 text-sm mt-1">{errors?.instructor?.message}</p>}
             </div>
             <div className="mb-4">
-                <label htmlFor="instructorDesignation" className="block text-sm font-medium text-gray-700">Instructor Designations</label>
+                <label htmlFor="instructorDesignation" className="block text-sm font-medium text-gray-700">Instructor Designations(ex: Dawi, Teacher, Writer, Columnist etc)</label>
                 <input
                     type="text"
                     id="instructorDesignation"
@@ -763,13 +762,22 @@ const AddCourse = () => {
                                             placeholder="Video Description"
                                             className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                                         />
-                                        <input
-                                            type="text"
-                                            value={item.url}
-                                            onChange={(e) => handleVideoUrlChange(moduleId, itemIndex, e.target.value)}
-                                            placeholder="Video URL"
-                                            className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                                        <CourseUploadBox
+                                            label="Upload Video"
+                                            accept="video/*,audio/*,application/pdf,image/*"
+                                            isPrivate={true}
+                                            onUpload={(fileData) =>
+                                                handleVideoUrlChange(moduleId, itemIndex, fileData)
+                                            }
                                         />
+
+                                        {item.url && (
+                                            <div className="text-xs text-green-600 mt-1">
+                                                Uploaded: {item.url.originalName || item.url.filename}
+                                            </div>
+                                        )}
+
+
                                     </div>
                                 )}
 

@@ -1,4 +1,3 @@
-import { REVALIDATE_TIME } from "@/constants/times.mjs";
 import { SERVER } from "@/constants/urls.mjs";
 
 const getAllProducts = async (
