@@ -395,6 +395,7 @@ const AddCourse = () => {
     const DRAFT_KEY = "add_course_draft";
 
     const saveDraft = () => {
+        return
         const draft = {
             modules,
             coverPhotoUrl,
@@ -741,6 +742,7 @@ console.log(modules)
                                                 id={`visibility[${moduleId}].items[${itemIndex}].content`}
                                                 name={`visibility[${moduleId}].items[${itemIndex}].content`}
                                                 value={item.status}
+                                                disabled={item.url}
                                                 onChange={(e) => handleVideoStatusChange(moduleId, itemIndex, e.target.value)}
                                                 className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                             >

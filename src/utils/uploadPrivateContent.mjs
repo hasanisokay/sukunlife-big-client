@@ -51,7 +51,6 @@ const uploadPrivateContent = async (file) => {
 
             // ✅ RETURN BACKEND RESPONSE
             resolve({
-              fileId: data.fileId,
               filename: data.filename,
               originalName: data.originalName,
               mime: data.mime,

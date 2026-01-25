@@ -15,7 +15,12 @@ const coursesPage = async ({ searchParams }) => {
     const sort = s?.sort || "newest";
     const tags = s?.tags || "";
     const skip = 0;
-
+     return (
+        <EmptyState
+          title="No courses yet"
+          description="New courses are coming soon."
+        />
+      );
     const courses = await getAllCoursePublic(
       page,
       limit,
