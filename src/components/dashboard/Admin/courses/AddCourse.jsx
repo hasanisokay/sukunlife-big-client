@@ -57,24 +57,13 @@ const AddCourse = () => {
         setModules([...modules, { title: '', items: [] }]);
     };
 
-    const handleLearningInputChange = (e, index) => {
-        const updatedItems = learningItems.map((item, idx) =>
-            idx === index ? { ...item, text: e.target.value } : item
+    const handleSimpleListTextChange = (setter, list, index, value) => {
+        const updatedItems = list.map((item, idx) =>
+            idx === index ? { ...item, text: value } : item
         );
-        setLearningItems(updatedItems);
+        setter(updatedItems);
     };
-    const handleAdditionalMaterialInputChange = (e, index) => {
-        const updatedItems = additionalMaterials?.map((item, idx) =>
-            idx === index ? { ...item, text: e.target.value } : item
-        );
-        setAdditionalMaterials(updatedItems);
-    };
-    const handleCourseIncludesInputChange = (e, index) => {
-        const updatedItems = courseIncludes?.map((item, idx) =>
-            idx === index ? { ...item, text: e.target.value } : item
-        );
-        setCourseIncludes(updatedItems);
-    };
+
 
     const checkIdAvailability = async (id) => {
         setCheckingId(true);
@@ -109,43 +98,20 @@ const AddCourse = () => {
         setModules(updatedModules);
     };
 
-    const handleAddVideo = (moduleId) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: [
-                        ...module.items,
-                        { type: 'video', title: '', description: '', url: '', status: 'private' },
-                    ],
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleRemoveVideo = (moduleId, itemIndex) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.filter((_, idx) => idx !== itemIndex),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleVideoTitleChange = (moduleId, itemIndex, title) => {
+    const handleClearFields = (moduleId, itemIndex, type) => {
         const updatedModules = modules.map((module, index) => {
             if (index === moduleId) {
                 return {
                     ...module,
                     items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, title };
+                        if (idx === itemIndex && item.type === type) {
+                            return {
+                                ...item,
+                                title: '',
+                                description: '',
+                                url: '',
+                                status: 'private',
+                            };
                         }
                         return item;
                     }),
@@ -153,92 +119,56 @@ const AddCourse = () => {
             }
             return module;
         });
+
         setModules(updatedModules);
     };
 
-    const handleVideoStatusChange = (moduleId, itemIndex, status) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, status };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
+    const handleItemFieldChange = (moduleId, itemIndex, type, field, value) => {
+        setModules(prevModules =>
+            prevModules.map((module, index) => {
+                if (index === moduleId) {
+                    return {
+                        ...module,
+                        items: module.items.map((item, idx) => {
+                            if (idx === itemIndex && item.type === type) {
+                                return { ...item, [field]: value };
+                            }
+                            return item;
+                        }),
+                    };
+                }
+                return module;
+            })
+        );
     };
 
-    const handleVideoDescriptionChange = (moduleId, itemIndex, description) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, description };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
+    const handleAddItem = (moduleId, newItem) => {
+        setModules(prevModules =>
+            prevModules.map((module, index) => {
+                if (index === moduleId) {
+                    return {
+                        ...module,
+                        items: [...module.items, newItem],
+                    };
+                }
+                return module;
+            })
+        );
     };
 
-    const handleVideoUrlChange = (moduleId, itemIndex, url) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, url };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
+    const handleRemoveItem = (moduleId, itemIndex) => {
+        setModules(prevModules =>
+            prevModules.map((module, index) => {
+                if (index === moduleId) {
+                    return {
+                        ...module,
+                        items: module.items.filter((_, idx) => idx !== itemIndex),
+                    };
+                }
+                return module;
+            })
+        );
     };
-
-    const handleAddQuiz = (moduleId) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: [
-                        ...module.items,
-                        { type: 'quiz', question: '', options: ['', '', '', ''], answer: 0, status: 'private' },
-                    ],
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleRemoveQuiz = (moduleId, itemIndex) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.filter((_, idx) => idx !== itemIndex),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
     const handleQuizQuestionChange = (moduleId, itemIndex, question) => {
         const updatedModules = modules.map((module, index) => {
             if (index === moduleId) {
@@ -295,88 +225,6 @@ const AddCourse = () => {
         setModules(updatedModules);
     };
 
-    const handleAddTextInstruction = (moduleId) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: [
-                        ...module.items,
-                        { type: 'textInstruction', title: '', content: '', status: 'private' },
-                    ],
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleRemoveTextInstruction = (moduleId, itemIndex) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.filter((_, idx) => idx !== itemIndex),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleTextInstructionTitleChange = (moduleId, itemIndex, title) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'textInstruction') {
-                            return { ...item, title };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-    const handleTextInstructionStatusChange = (moduleId, itemIndex, status) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'textInstruction') {
-                            return { ...item, status };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleTextInstructionContentChange = (moduleId, itemIndex, content) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'textInstruction') {
-                            return { ...item, content };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
     const handleUploadImage = async (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -394,32 +242,6 @@ const AddCourse = () => {
 
     const DRAFT_KEY = "add_course_draft";
 
-    const saveDraft = () => {
-        return
-        const draft = {
-            modules,
-            coverPhotoUrl,
-            instructorImage,
-            learningItems,
-            additionalMaterials,
-            courseIncludes,
-        };
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    };
-    useEffect(() => {
-        const draft = localStorage.getItem(DRAFT_KEY);
-        if (draft) {
-            const parsed = JSON.parse(draft);
-            setModules(parsed.modules || []);
-            setCoverPhotoUrl(parsed.coverPhotoUrl || "");
-            setInstructorImage(parsed.instructorImage || "");
-            setLearningItems(parsed.learningItems || [{ text: "" }]);
-            setAdditionalMaterials(parsed.additionalMaterials || [{ text: "" }]);
-            setCourseIncludes(parsed.courseIncludes || [{ text: "" }]);
-            toast.info("Draft restored");
-        }
-    }, []);
-
     useEffect(() => {
         const handler = (e) => {
             e.preventDefault();
@@ -429,8 +251,6 @@ const AddCourse = () => {
         window.addEventListener("beforeunload", handler);
         return () => window.removeEventListener("beforeunload", handler);
     }, []);
-
-console.log(modules)
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-4 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Add Course</h2>
@@ -550,6 +370,15 @@ console.log(modules)
                 {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
             </div>
             <div className="mb-4">
+                <label htmlFor="offerPrice" className="block text-sm font-medium text-gray-700">Offer Price</label>
+                <input
+                    type="number"
+                    id="offerPrice"
+                    {...register('offerPrice')}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+            </div>
+            <div className="mb-4">
                 <Controller
                     name="addedOn"
                     control={control}
@@ -626,7 +455,9 @@ console.log(modules)
                         <input
                             type="text"
                             value={item.text}
-                            onChange={(e) => handleLearningInputChange(e, index)}
+                            onChange={(e) =>
+                                handleSimpleListTextChange(setLearningItems, learningItems, index, e.target.value)
+                            }
                             placeholder={`Enter text ${index + 1}`}
                             className="p-2 border rounded-md w-full"
                         />
@@ -654,7 +485,10 @@ console.log(modules)
                         <input
                             type="text"
                             value={item.text}
-                            onChange={(e) => handleAdditionalMaterialInputChange(e, index)}
+                            onChange={(e) =>
+                                handleSimpleListTextChange(setAdditionalMaterials, additionalMaterials, index, e.target.value)
+                            }
+
                             placeholder={`Enter text ${index + 1}`}
                             className="p-2 border rounded-md w-full"
                         />
@@ -682,7 +516,10 @@ console.log(modules)
                         <input
                             type="text"
                             value={item.text}
-                            onChange={(e) => handleCourseIncludesInputChange(e, index)}
+                            onChange={(e) =>
+                                handleSimpleListTextChange(setCourseIncludes, courseIncludes, index, e.target.value)
+                            }
+
                             placeholder={`Enter text ${index + 1}`}
                             className="p-2 border rounded-md w-full"
                         />
@@ -734,7 +571,10 @@ console.log(modules)
                                             <input
                                                 type="text"
                                                 value={item.title}
-                                                onChange={(e) => handleVideoTitleChange(moduleId, itemIndex, e.target.value)}
+                                                onChange={(e) =>
+                                                    handleItemFieldChange(moduleId, itemIndex, 'video', 'title', e.target.value)
+                                                }
+
                                                 placeholder="Video Title"
                                                 className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                                             />
@@ -743,7 +583,10 @@ console.log(modules)
                                                 name={`visibility[${moduleId}].items[${itemIndex}].content`}
                                                 value={item.status}
                                                 disabled={item.url}
-                                                onChange={(e) => handleVideoStatusChange(moduleId, itemIndex, e.target.value)}
+                                                onChange={(e) =>
+                                                    handleItemFieldChange(moduleId, itemIndex, 'video', 'status', e.target.value)
+                                                }
+
                                                 className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                             >
                                                 <option value="private">Private</option>
@@ -751,35 +594,104 @@ console.log(modules)
                                             </select>
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveVideo(moduleId, itemIndex)}
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
                                                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             >
                                                 Remove Video
                                             </button>
+
                                         </div>
                                         <input
                                             type="text"
                                             value={item.description}
-                                            onChange={(e) => handleVideoDescriptionChange(moduleId, itemIndex, e.target.value)}
+                                            onChange={(e) =>
+                                                handleItemFieldChange(moduleId, itemIndex, 'video', 'description', e.target.value)
+                                            }
+
                                             placeholder="Video Description"
                                             className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                                         />
+                                        {item.title && <button
+                                            type="button"
+                                            onClick={() => handleClearFields(moduleId, itemIndex, 'video')}
+                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            Clear Fields
+                                        </button>}
                                         <CourseUploadBox
+                                            key={`${generateUniqueIds(1)}+${item.status}`}
                                             label="Upload Video"
                                             accept="video/*,audio/*,application/pdf,image/*"
-                                            isPrivate={true}
+                                            isPrivate={item.status === 'private'}
                                             onUpload={(fileData) =>
-                                                handleVideoUrlChange(moduleId, itemIndex, fileData)
+                                                handleItemFieldChange(moduleId, itemIndex, 'video', 'url', fileData)
                                             }
                                         />
 
                                         {item.url && (
                                             <div className="text-xs text-green-600 mt-1">
-                                                Uploaded: {item.url.originalName || item.url.filename}
+                                                {item.url.originalName || item.url.filename}
                                             </div>
                                         )}
 
 
+                                    </div>
+                                )}
+                                {item.type === 'file' && (
+                                    <div className="bg-gray-100 p-2 mb-2 rounded-md">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <input
+                                                type="text"
+                                                value={item.title}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'title', e.target.value)}
+                                                placeholder="File Title"
+                                                className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                            />
+                                            <select
+                                                value={item.status}
+                                                disabled={item.url}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'status', e.target.value)}
+                                                className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md"
+                                            >
+                                                <option value="private">Private</option>
+                                                <option value="public">Public</option>
+                                            </select>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
+                                                className="px-4 py-2 bg-red-500 text-white rounded-md"
+                                            >
+                                                Remove File
+                                            </button>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={item.description}
+                                            onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'description', e.target.value)}
+                                            placeholder="File Description"
+                                            className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                                        />
+                                                         {item.title && <button
+                                            type="button"
+                                            onClick={() => handleClearFields(moduleId, itemIndex, 'file')}
+                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            Clear Fields
+                                        </button>}
+                                        <CourseUploadBox
+                                            key={`${generateUniqueIds(1)}+${item.status}`}
+                                            label="Upload File / PDF"
+                                            accept="application/pdf,image/*,audio/*,video/*"
+                                            isPrivate={item.status === 'private'}
+                                            onUpload={(fileData) => handleItemFieldChange(moduleId, itemIndex, 'file', 'url', fileData)}
+                                        />
+
+                                        {item.url && (
+                                            <div className="text-xs text-green-600 mt-1">
+                                                {item.url.originalName || item.url.filename}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -789,7 +701,7 @@ console.log(modules)
                                             <input
                                                 type="text"
                                                 value={item.title}
-                                                onChange={(e) => handleTextInstructionTitleChange(moduleId, itemIndex, e.target.value)}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'title', e.target.value)}
                                                 placeholder="Text Instruction Title"
                                                 className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                                             />
@@ -797,7 +709,7 @@ console.log(modules)
                                                 id={`visibility[${moduleId}].items[${itemIndex}].content`}
                                                 name={`visibility[${moduleId}].items[${itemIndex}].content`}
                                                 value={item.status}
-                                                onChange={(e) => handleTextInstructionStatusChange(moduleId, itemIndex, e.target.value)}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'status', e.target.value)}
                                                 className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                             >
                                                 <option value="private">Private</option>
@@ -805,7 +717,7 @@ console.log(modules)
                                             </select>
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveTextInstruction(moduleId, itemIndex)}
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
                                                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             >
                                                 Remove Text Instruction
@@ -817,12 +729,19 @@ console.log(modules)
                                             defaultValue=""
                                             render={({ field }) => (
                                                 <RichTextEditor
-                                                    onContentChange={(content) => handleTextInstructionContentChange(moduleId, itemIndex, content)}
+                                                    onContentChange={(content) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'content', content)}
                                                     key={`Text Instruction key`}
                                                     uniqueKey={generateUniqueIds(1)}
                                                 />
                                             )}
                                         />
+                                                         {item.title && <button
+                                            type="button"
+                                            onClick={() => handleClearFields(moduleId, itemIndex, 'textInstruction')}
+                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            Clear Fields
+                                        </button>}
                                     </div>
                                 )}
 
@@ -838,7 +757,7 @@ console.log(modules)
                                             />
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveQuiz(moduleId, itemIndex)}
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
                                                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             >
                                                 Remove Quiz
@@ -870,24 +789,31 @@ console.log(modules)
                         <div className="flex space-x-2">
                             <button
                                 type="button"
-                                onClick={() => handleAddVideo(moduleId)}
+                                onClick={() => handleAddItem(moduleId, { type: 'video', title: '', description: '', url: '', status: 'private' })}
                                 className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
                             >
                                 Add Video <VideoSVG />
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleAddTextInstruction(moduleId)}
+                                onClick={() => handleAddItem(moduleId, { type: 'textInstruction', title: '', content: '', status: 'private' })}
                                 className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
                             >
                                 Add Text Instruction <ClipboardSVG />
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleAddQuiz(moduleId)}
+                                onClick={() => handleAddItem(moduleId, { type: 'quiz', question: '', options: ['', '', '', ''], answer: 0, status: 'private' })}
                                 className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
                             >
                                 Add Quiz <QuizSVG />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleAddItem(moduleId, { type: 'file', title: '', url: '', description: '', status: 'private' })}
+                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
+                            >
+                                Add File
                             </button>
                         </div>
                     </div>

@@ -77,7 +77,7 @@ const Homepage = ({ topProducts, appointmentReviews, shopReviews, courseReviews,
         </div>
       </div>
       <SelfDiagnosisSection />
-      <CoursesSectionHome topCourses={topCourses} />
+      {/* <CoursesSectionHome topCourses={topCourses} /> */}
       <ProductSectionHome topProducts={topProducts} />
       <SelfRuqyahResoursesSectionHome />
       <BlogsAndArticleSectionHome recentBlogs={recentBlogs} />

@@ -10,6 +10,8 @@ import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
 import checkCourseId from '@/server-functions/checkCourseId.mjs';
 import editCourse from '@/server-functions/editCourse.mjs';
 import uploadFile from '@/utils/uploadFile.mjs';
+import CourseUploadBox from '@/components/shared/CourseUploadBox';
+import { ClipboardSVG, QuizSVG, VideoSVG } from '@/components/svg/SvgCollection';
 
 
 const EditCourse = ({ course }) => {
@@ -34,6 +36,7 @@ const EditCourse = ({ course }) => {
             setInstructorImage(course?.instructorImage)
             setValue('courseId', course.courseId || '');
             setValue('price', course.price || '');
+            setValue('offerPrice', course.offerPrice || '');
             setValue('description', course.description || '');
             setValue('aboutInstructor', course.aboutInstructor || '');
             setValue('addedOn', course.addedOn ? new Date(course?.addedOn) : new Date());
@@ -97,134 +100,6 @@ const EditCourse = ({ course }) => {
         setModules(updatedModules);
     };
 
-    const handleAddVideo = (moduleId) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: [
-                        ...module.items,
-                        { type: 'video', title: '', description: '', url: '' },
-                    ],
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleRemoveVideo = (moduleId, itemIndex) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.filter((_, idx) => idx !== itemIndex),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleVideoTitleChange = (moduleId, itemIndex, title) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, title };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleVideoDescriptionChange = (moduleId, itemIndex, description) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, description };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleVideoUrlChange = (moduleId, itemIndex, url) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, url };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-    const handleVideoStatusChange = (moduleId, itemIndex, status) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'video') {
-                            return { ...item, status };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-    const handleAddQuiz = (moduleId) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: [
-                        ...module.items,
-                        { type: 'quiz', question: '', options: ['', '', '', ''], answer: 0 },
-                    ],
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleRemoveQuiz = (moduleId, itemIndex) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.filter((_, idx) => idx !== itemIndex),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
     const handleQuizQuestionChange = (moduleId, itemIndex, question) => {
         const updatedModules = modules.map((module, index) => {
             if (index === moduleId) {
@@ -281,86 +156,7 @@ const EditCourse = ({ course }) => {
         setModules(updatedModules);
     };
 
-    const handleAddTextInstruction = (moduleId) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: [
-                        ...module.items,
-                        { type: 'textInstruction', title: '', content: '' },
-                    ],
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
 
-    const handleRemoveTextInstruction = (moduleId, itemIndex) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.filter((_, idx) => idx !== itemIndex),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleTextInstructionTitleChange = (moduleId, itemIndex, title) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'textInstruction') {
-                            return { ...item, title };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-    const handleTextInstructionStatusChange = (moduleId, itemIndex, status) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'textInstruction') {
-                            return { ...item, status };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-    const handleTextInstructionContentChange = (moduleId, itemIndex, content) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'textInstruction') {
-                            return { ...item, content: content };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
 
     const handleUploadImage = async (event) => {
         const file = event.target.files[0];
@@ -396,9 +192,75 @@ const EditCourse = ({ course }) => {
     };
 
 
+    // new functions
+
+    const handleClearFields = (moduleId, itemIndex, type) => {
+        const updatedModules = modules.map((module, index) => {
+            if (index === moduleId) {
+                return {
+                    ...module,
+                    items: module.items.map((item, idx) => {
+                        if (idx === itemIndex && item.type === type) {
+                            return {
+                                ...item,
+                                title: '',
+                                description: '',
+                                url: '',
+                                status: 'private',
+                            };
+                        }
+                        return item;
+                    }),
+                };
+            }
+            return module;
+        });
+
+        setModules(updatedModules);
+    };
+    const handleItemFieldChange = (moduleId, itemIndex, type, field, value) => {
+        setModules(prev =>
+            prev.map((module, index) => {
+                if (index === moduleId) {
+                    return {
+                        ...module,
+                        items: module.items.map((item, idx) => {
+                            if (idx === itemIndex && item.type === type) {
+                                return { ...item, [field]: value };
+                            }
+                            return item;
+                        }),
+                    };
+                }
+                return module;
+            })
+        );
+    };
+
+    const handleAddItem = (moduleId, newItem) => {
+        setModules(prev =>
+            prev.map((module, index) =>
+                index === moduleId
+                    ? { ...module, items: [...module.items, newItem] }
+                    : module
+            )
+        );
+    };
+
+    const handleRemoveItem = (moduleId, itemIndex) => {
+        setModules(prev =>
+            prev.map((module, index) =>
+                index === moduleId
+                    ? { ...module, items: module.items.filter((_, i) => i !== itemIndex) }
+                    : module
+            )
+        );
+    };
+
+
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-4 bg-white shadow-md rounded-lg">
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-full mx-auto p-4 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Edit Course</h2>
 
             {/* Course Title */}
@@ -559,6 +421,15 @@ const EditCourse = ({ course }) => {
                 />
                 {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
             </div>
+                        <div className="mb-4">
+                <label htmlFor="offerPrice" className="block text-sm font-medium text-gray-700">Offer Price</label>
+                <input
+                    type="number"
+                    id="offerPrice"
+                    {...register('offerPrice')}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                />
+            </div>
             <div className='mb-4'>
                 <h3 className="text-xl font-semibold mb-2 text-gray-900">Course Includes</h3>
                 {courseIncludes?.map((item, index) => (
@@ -714,32 +585,127 @@ const EditCourse = ({ course }) => {
                                             <input
                                                 type="text"
                                                 value={item.title}
-                                                onChange={(e) => handleVideoTitleChange(moduleId, itemIndex, e.target.value)}
+                                                onChange={(e) =>
+                                                    handleItemFieldChange(moduleId, itemIndex, 'video', 'title', e.target.value)
+                                                }
+
                                                 placeholder="Video Title"
                                                 className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                                             />
+                                            <select
+                                                id={`visibility[${moduleId}].items[${itemIndex}].content`}
+                                                name={`visibility[${moduleId}].items[${itemIndex}].content`}
+                                                value={item.status}
+                                                disabled={item.url}
+                                                onChange={(e) =>
+                                                    handleItemFieldChange(moduleId, itemIndex, 'video', 'status', e.target.value)
+                                                }
+
+                                                className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            >
+                                                <option value="private">Private</option>
+                                                <option value="public">Public</option>
+                                            </select>
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveVideo(moduleId, itemIndex)}
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
                                                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             >
                                                 Remove Video
+                                            </button>
+
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={item.description}
+                                            onChange={(e) =>
+                                                handleItemFieldChange(moduleId, itemIndex, 'video', 'description', e.target.value)
+                                            }
+
+                                            placeholder="Video Description"
+                                            className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                                        />
+                                        {item.title && <button
+                                            type="button"
+                                            onClick={() => handleClearFields(moduleId, itemIndex, 'video')}
+                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            Clear Fields
+                                        </button>}
+                                        <CourseUploadBox
+                                            key={`${generateUniqueIds(1)}+${item.status}`}
+                                            label="Upload Video"
+                                            accept="video/*,audio/*,application/pdf,image/*"
+                                            isPrivate={item.status === 'private'}
+                                            onUpload={(fileData) =>
+                                                handleItemFieldChange(moduleId, itemIndex, 'video', 'url', fileData)
+                                            }
+                                        />
+
+                                        {item.url && (
+                                            <div className="text-xs text-green-600 mt-1">
+                                                {item.url.originalName || item.url.filename}
+                                            </div>
+                                        )}
+
+
+                                    </div>
+                                )}
+                                {item.type === 'file' && (
+                                    <div className="bg-gray-100 p-2 mb-2 rounded-md">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <input
+                                                type="text"
+                                                value={item.title}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'title', e.target.value)}
+                                                placeholder="File Title"
+                                                className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                            />
+                                            <select
+                                                value={item.status}
+                                                disabled={item.url}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'status', e.target.value)}
+                                                className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md"
+                                            >
+                                                <option value="private">Private</option>
+                                                <option value="public">Public</option>
+                                            </select>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
+                                                className="px-4 py-2 bg-red-500 text-white rounded-md"
+                                            >
+                                                Remove File
                                             </button>
                                         </div>
                                         <input
                                             type="text"
                                             value={item.description}
-                                            onChange={(e) => handleVideoDescriptionChange(moduleId, itemIndex, e.target.value)}
-                                            placeholder="Video Description"
+                                            onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'description', e.target.value)}
+                                            placeholder="File Description"
                                             className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                                         />
-                                        <input
-                                            type="text"
-                                            value={item.url}
-                                            onChange={(e) => handleVideoUrlChange(moduleId, itemIndex, e.target.value)}
-                                            placeholder="Video URL"
-                                            className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                                        {item.title && <button
+                                            type="button"
+                                            onClick={() => handleClearFields(moduleId, itemIndex, 'file')}
+                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            Clear Fields
+                                        </button>}
+                                        <CourseUploadBox
+                                            key={`${generateUniqueIds(1)}+${item.status}`}
+                                            label="Upload File / PDF"
+                                            accept="application/pdf,image/*,audio/*,video/*"
+                                            isPrivate={item.status === 'private'}
+                                            onUpload={(fileData) => handleItemFieldChange(moduleId, itemIndex, 'file', 'url', fileData)}
                                         />
+
+                                        {item.url && (
+                                            <div className="text-xs text-green-600 mt-1">
+                                                {item.url.originalName || item.url.filename}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
@@ -749,13 +715,23 @@ const EditCourse = ({ course }) => {
                                             <input
                                                 type="text"
                                                 value={item.title}
-                                                onChange={(e) => handleTextInstructionTitleChange(moduleId, itemIndex, e.target.value)}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'title', e.target.value)}
                                                 placeholder="Text Instruction Title"
                                                 className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
                                             />
+                                            <select
+                                                id={`visibility[${moduleId}].items[${itemIndex}].content`}
+                                                name={`visibility[${moduleId}].items[${itemIndex}].content`}
+                                                value={item.status}
+                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'status', e.target.value)}
+                                                className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                            >
+                                                <option value="private">Private</option>
+                                                <option value="public">Public</option>
+                                            </select>
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveTextInstruction(moduleId, itemIndex)}
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
                                                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             >
                                                 Remove Text Instruction
@@ -764,14 +740,22 @@ const EditCourse = ({ course }) => {
                                         <Controller
                                             name={`modules[${moduleId}].items[${itemIndex}].content`}
                                             control={control}
-                                            render={({ field }) => (<RichTextEditor
-                                                onContentChange={(content) => handleTextInstructionContentChange(moduleId, itemIndex, content)}
-                                                initialContent={field?.value}
-                                                key={`Text Instruction key`}
-                                                uniqueKey={generateUniqueIds(1)}
-                                            />)
-                                            }
+                                            defaultValue=""
+                                            render={({ field }) => (
+                                                <RichTextEditor
+                                                    onContentChange={(content) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'content', content)}
+                                                    key={`Text Instruction key`}
+                                                    uniqueKey={generateUniqueIds(1)}
+                                                />
+                                            )}
                                         />
+                                        {item.title && <button
+                                            type="button"
+                                            onClick={() => handleClearFields(moduleId, itemIndex, 'textInstruction')}
+                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        >
+                                            Clear Fields
+                                        </button>}
                                     </div>
                                 )}
 
@@ -787,7 +771,7 @@ const EditCourse = ({ course }) => {
                                             />
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveQuiz(moduleId, itemIndex)}
+                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
                                                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                             >
                                                 Remove Quiz
@@ -819,24 +803,31 @@ const EditCourse = ({ course }) => {
                         <div className="flex space-x-2">
                             <button
                                 type="button"
-                                onClick={() => handleAddVideo(moduleId)}
-                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                onClick={() => handleAddItem(moduleId, { type: 'video', title: '', description: '', url: '', status: 'private' })}
+                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
                             >
-                                Add Video
+                                Add Video <VideoSVG />
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleAddTextInstruction(moduleId)}
-                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                onClick={() => handleAddItem(moduleId, { type: 'textInstruction', title: '', content: '', status: 'private' })}
+                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
                             >
-                                Add Text Instruction
+                                Add Text Instruction <ClipboardSVG />
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleAddQuiz(moduleId)}
-                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                onClick={() => handleAddItem(moduleId, { type: 'quiz', question: '', options: ['', '', '', ''], answer: 0, status: 'private' })}
+                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
                             >
-                                Add Quiz
+                                Add Quiz <QuizSVG />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleAddItem(moduleId, { type: 'file', title: '', url: '', description: '', status: 'private' })}
+                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
+                            >
+                                Add File
                             </button>
                         </div>
                     </div>

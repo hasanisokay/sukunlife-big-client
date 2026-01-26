@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import StarRating from '../rating/StarRating';
 import Link from 'next/link';
 import formatDate from '@/utils/formatDate.mjs';
-import CoursePrice, { formatPrice } from './CoursePrice';
-import { CertificateSVG, QuizSVG, StatsSVG, TakaSVG, UpdateSVG, VideoSVG } from '../svg/SvgCollection';
+import { formatPrice } from './CoursePrice';
+import { QuizSVG, TakaSVG, } from '../svg/SvgCollection';
 import CustomYouTubePlayer from '../player/CustomPlayer';
 import StarsOnly from '../rating/StarsOnly';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,9 +13,7 @@ import addToCart from '../cart/functions/addToCart.mjs';
 import { setCartData } from '@/store/slices/cartSlice';
 import { Flip, toast, ToastContainer } from 'react-toastify';
 import Image from 'next/image';
-import courseCover from "@/../public/images/course.jpg";
 import FixedCart from '../shared/FixedCart';
-import getTwoLinesOfDescription from '@/utils/getTwoLinesOfDescription.mjs';
 import TickSVG from '../svg/TickSVG';
 import BlogContent from '../blogs/BlogContnet';
 import { SERVER } from '@/constants/urls.mjs';
@@ -124,9 +122,9 @@ const SingleCoursePage = ({ course }) => {
         return text.split(",").join(" | ")
     }
 
-    // console.log(course)
+    console.log(course)
     return (
-        <div className="bg-white  text-black rounded-xl min-w-full max-w-7xl mx-auto  montserrat-font">
+        <div className="bg-white  min-h-fit text-black rounded-xl min-w-full max-w-7xl mx-auto  montserrat-font">
             {/* Cover Photo with Instructor, Tags, and Enroll Button */}
             {course?.coverPhotoUrl &&
                 <section className="h-[690px] md:w-[calc(100vw-450px)] flex flex-col items-center justify-center md:px-4 px-2 text-center ">
@@ -253,9 +251,12 @@ const SingleCoursePage = ({ course }) => {
                     </div>
 
                 </div>
-                {course?.description && <div className='w-[350px] p-6'>
+                {course?.description && <div className='w-[350px] p-6 '>
                     <h3 className="charisSIL-font md:text-[32px] text-[26px] leading-tight font-semibold text-black dark:text-white">About This Course</h3>
-                    <BlogContent content={course?.description} />
+                    <div className='md:overflow-y-auto md:h-screen'>
+
+                        <BlogContent content={course?.description} />
+                    </div>
                 </div>}
             </div>
 
@@ -344,6 +345,32 @@ const SingleCoursePage = ({ course }) => {
                                                             )}
                                                         </>
                                                     )}
+                                                    {item.type === 'file' && (
+                                                        <div className='flex items-center justify-between pr-4'>
+                                                            <button
+                                                                onClick={() => item.url && window.open(item.url.url || item.url, "_blank")}
+                                                                className={`hover:underline text-start ${item.url && 'font-bold'}`}
+                                                            >
+                                                                {item.title || item.url?.originalName || 'File'}
+                                                            </button>
+
+                                                            <span>
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="22"
+                                                                    height="22"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        fill={item.url ? "#2563EB" : "#9CA3AF"}
+                                                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 2.5L19.5 10H14z"
+                                                                    />
+                                                                </svg>
+                                                            </span>
+                                                        </div>
+                                                    )}
+
                                                     {item.type === 'quiz' && (
                                                         <div className='flex items-center justify-between pr-4'>
                                                             <span>

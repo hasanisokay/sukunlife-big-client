@@ -21,9 +21,9 @@ const CourseUploadBox = ({
     try {
       const result = isPrivate
         ? await uploadPrivateContent(file)
-        : await uploadFile(file); // your public upload likely returns URL
+        : await uploadFile(file); // public upload  returns URL only
       if (!result) return;
-
+console.log(result)
       // Normalize result
       const normalized =
         typeof result === "string"

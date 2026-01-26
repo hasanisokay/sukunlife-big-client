@@ -204,20 +204,29 @@ export const CertificateSVG = ({ color, width, height, classes }) => {
 };
 export const QuizSVG = ({ color, width, height, classes }) => {
   const theme = useSelector(state => state.theme.mode);
-  return <svg
-    className={`${classes}`}
-    xmlns="http://www.w3.org/2000/svg"
-    width={width || "24"}
-    height={height || "24"}
-    viewBox="0 0 24 24"
-  >
-    <g id="SVGRepo_iconCarrier" fill={color ? color : theme === "light" ? "#343541" : "#d9eff1"} fillRule="evenodd">
-      <path d="M13 0H3a3.01 3.01 0 0 0-3 3v13.99a3.01 3.01 0 0 0 3 3h10a3.01 3.01 0 0 0 3-3V3a3.01 3.01 0 0 0-3-3m1 16.99a1.016 1.016 0 0 1-1 1H3a1.016 1.016 0 0 1-1-1V3a1.016 1.016 0 0 1 1-1h10c.549.009.991.451 1 1z"></path>
-      <path d="M20 7v14a3.01 3.01 0 0 1-3 3H5a1 1 0 0 1 0-2h12a1.016 1.016 0 0 0 1-1V7a1 1 0 0 1 2 0"></path>
-      <circle cx="8" cy="15" r="1"></circle>
-      <path d="M12 8a3.99 3.99 0 0 1-3 3.87V12a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1 2 2 0 1 0-2-2 1 1 0 1 1-2 0 4 4 0 1 1 8 0"></path>
-    </g>
-  </svg>
+  const fillColor = color ? color : theme === "light" ? "#343541" : "#d9eff1";
+
+  return (
+    <svg
+      className={classes}
+      xmlns="http://www.w3.org/2000/svg"
+      width={width || "24"}
+      height={height || "24"}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={fillColor}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Clipboard */}
+      <rect x="9" y="2" width="6" height="4" rx="1" />
+      <path d="M9 4H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />
+
+      {/* Check */}
+      <path d="M9 14l2 2 4-4" />
+    </svg>
+  );
 };
 export const CartSVG = ({ color }) => {
   const theme = useSelector(state => state.theme.mode);
