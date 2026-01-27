@@ -17,7 +17,7 @@ const SliderOnShopHeader = () => {
             try {
                 const res = await fetch(`${SERVER}/api/public/top-sold-items?limit=3`)
                 const data = await res.json()
-                if (data.status === 200) {
+                if (data?.status === 200) {
                     setTopProducts(data.data)
                 }
             } catch (err) {

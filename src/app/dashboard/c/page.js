@@ -24,17 +24,17 @@ const userCoursePage = async () => {
 export default userCoursePage;
 
 export async function generateMetadata() {
-    try {
-      const host = await hostname();
-      let metadata = {
-        title: `My Courses`,
-        description: "All enrolled courses.",
-        keywords: ["Dashboard, sukunlife, courses"],
-        url: `${host}/dashboard/c`,
-        canonical: `${host}/dashboard/c`,
-      };
-      return metadata;
-    } catch (error) {
-      console.log("error occured")
-    }
+  try {
+    const host = await hostname();
+    let metadata = {
+      title: `My Courses`,
+      description: "All enrolled courses.",
+      keywords: ["Dashboard, sukunlife, courses"],
+      url: `${host}/dashboard/c`,
+      canonical: `${host}/dashboard/c`,
+    };
+    return metadata;
+  } catch (error) {
+    console.log("error occured");
   }
+}

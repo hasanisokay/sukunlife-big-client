@@ -48,8 +48,6 @@ const uploadPrivateContent = async (file) => {
               isLoading: false,
               autoClose: 3000,
             });
-
-            // ✅ RETURN BACKEND RESPONSE
             resolve({
               filename: data.filename,
               originalName: data.originalName,

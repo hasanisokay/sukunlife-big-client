@@ -52,16 +52,16 @@ export default function LoginForm({ redirectTo }) {
       setLoading(false);
 
       if (data?.status === 200) {
-        const accessToken = data?.accessToken;
-        const refreshToken = data?.refreshToken;
-        await fetch("/api/login", {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ accessToken, refreshToken }),
-          credentials: 'include'
-        })
+        // const accessToken = data?.accessToken;
+        // const refreshToken = data?.refreshToken;
+        // await fetch("/api/login", {
+        //   method: "POST",
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   },
+        //   body: JSON.stringify({ accessToken, refreshToken }),
+        //   credentials: 'include'
+        // })
 
         window.location.href = redirectTo === "/" ? "/dashboard" : redirectTo
       } else {

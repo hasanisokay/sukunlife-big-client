@@ -55,7 +55,8 @@ const Navbar = () => {
     } catch {
       localStorage.removeItem("cart");
     }
-  }, []);
+  }, [user]);
+
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);

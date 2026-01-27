@@ -16,7 +16,7 @@ const UserDashboard = () => {
     useEffect(() => {
         (async () => {
             const data = await getUserOrders(false, true)
-            if (data.status === 200) {
+            if (data?.status === 200) {
                 setUserOrderCount(data?.orderCount)
                 setUserAppointmentCount(data?.appointmentCount)
             } else {

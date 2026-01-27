@@ -3,9 +3,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReactPlayer from 'react-player';
 import {
-  CertificateSVG,
   ClipboardSVG,
   DownArrowSVG,
   LeftArrowSVG,
@@ -36,7 +34,7 @@ const UserSingleCoursePage = ({ course }) => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const dispatch = useDispatch();
-  // Initialize progress
+
   useEffect(() => {
     const enrollment = enrolledCourses.find((c) => c.courseId === course._id);
     if (enrollment && enrollment?.lastSync) {
@@ -182,7 +180,7 @@ const UserSingleCoursePage = ({ course }) => {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
+  console.log(course)
   if (!isClient) return null
   return (
     <div className="dark:bg-gray-900 dark:text-gray-100 min-h-screen ">
@@ -227,27 +225,38 @@ const UserSingleCoursePage = ({ course }) => {
                 {currentItem.type !== 'quiz' && (
                   <>
                     {currentItem.type === 'video' && (
-                      <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                        <ReactPlayer
-                          key={currentItem.url} // Force re-render on video change
-                          // url={currentItem.url}
-                          url={`${currentItem.url}?cc_load_policy=0`}
-                          width="100%"
-                          height="100%"
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                        <video
+                          key={currentItem.url.filename}
+                          src={
+                            currentItem.status === "public"
+                              ? currentItem.url.filename
+                              : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
+                          }
+  crossOrigin={currentItem.status === "public" ? "anonymous" : "use-credentials"}
+                          className="w-full h-full"
                           controls
-                          playsinline
-                          playing={true}
+                          playsInline
+                          autoPlay
+                          preload="metadata"
+                          controlsList="nodownload"
+                          disablePictureInPicture
+                          onContextMenu={(e) => e.preventDefault()}
                           onEnded={() => {
                             if (activeItemIndex < currentModule.items.length - 1) {
-                              handleItemSelect(activeModuleIndex, activeItemIndex + 1); // Move to next item in the same module
+                              handleItemSelect(activeModuleIndex, activeItemIndex + 1);
                             } else if (activeModuleIndex < course.modules.length - 1) {
-                              setExpandedModule(activeModuleIndex + 1); // Expand next module
-                              handleItemSelect(activeModuleIndex + 1, 0); // Move to first item of next module
+                              setExpandedModule(activeModuleIndex + 1);
+                              handleItemSelect(activeModuleIndex + 1, 0);
                             }
                           }}
-                        />
+                        >
+                          Sorry, your browser does not support embedded videos.
+                        </video>
+
                       </div>
                     )}
+
 
                     {currentItem.type === 'textInstruction' && (
                       <div

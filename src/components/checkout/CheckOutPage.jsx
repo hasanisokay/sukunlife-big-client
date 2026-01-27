@@ -68,7 +68,7 @@ const CheckOutPage = () => {
     // Calculate Final Total
     const finalTotalPrice = totalPrice + deliveryCharge;
     const onSubmit = async (data) => {
-        if (courseInCart && Object.entries(user ?? {}).length !== 0) {
+        if (courseInCart && Object.entries(user ?? {}).length === 0) {
             return toast.error("Login to buy course.");
         }
 
@@ -89,10 +89,11 @@ const CheckOutPage = () => {
                 type: item.type,
             })),
             voucherCode: voucher?.code || null,
-            deliveryArea: data.deliveryArea?.value === 80 ? "Inside Dhaka" : "Outside Dhaka",
+            // deliveryArea: data.deliveryArea?.value === 80 ? "Inside Dhaka" : "Outside Dhaka",
+            deliveryArea: "test",
         };
 
-        if (user && Object.entries(user).length !== 0) {
+        if (user) {
             payload.loggedInUser = { _id: user._id, name: user.name };
         }
 // return payload;
@@ -165,7 +166,6 @@ const CheckOutPage = () => {
     useEffect(() => {
         setIsClient(true);
     }, []);
-
     if (!isClient) return null
     return (
         <>

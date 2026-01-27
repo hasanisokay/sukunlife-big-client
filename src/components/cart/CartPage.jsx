@@ -90,6 +90,26 @@ const CartPage = () => {
         await validateVoucher(updatedCart);
     };
 
+    useEffect(() => {
+        try {
+            const cartInStorage = localStorage.getItem('cart')
+            console.log(cartInStorage)
+            let cartFromStorage;
+            if (cartInStorage) {
+                cartFromStorage = JSON.parse(cartInStorage) || [];
+            } else {
+                cartFromStorage = []
+            }
+            if (cart?.length < cartFromStorage?.length) {
+                dispatch(setCartData(cartFromStorage));
+            } else {
+                localStorage.setItem("cart", JSON.stringify(cart));
+            }
+        } catch {
+            localStorage.removeItem("cart");
+        }
+    }, [user]);
+
     // Remove item from cart
     const removeItem = async (item) => {
         const uniqueId = `${item?._id}-${item?.size || "default"}-${item?.color || "default"}`;

@@ -13,10 +13,10 @@ export default function PaymentSuccess() {
   const isLoggedIn = Boolean(user && Object.keys(user).length);
 
   const invoice = params.get("invoice");
-  const source = params.get("source");
-
+  const so = params.get("source");
+  const [source, setSource] = useState(so || "");
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState("success"); // success | error
+  const [status, setStatus] = useState("success"); 
   const [message, setMessage] = useState("");
 
   const hasFinalized = useRef(false);
@@ -32,21 +32,19 @@ export default function PaymentSuccess() {
 
     const finalizePayment = async () => {
       try {
-        const res = await fetch(
-          `${SERVER}/api/paystation/finalize-payment`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ invoice_number: invoice }),
-          }
-        );
+        const res = await fetch(`${SERVER}/api/paystation/finalize-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invoice_number: invoice }),
+        });
 
         const data = await res.json();
 
         const isAlreadyProcessed = data?.alreadyProcessed === true;
-        const isConfirmed =
-          data?.success === true
-
+        const isConfirmed = data?.success === true;
+        if (data?.source) {
+          setSource(data?.source);
+        }
         if (isAlreadyProcessed) {
           setStatus("success");
           setMessage("This order was already processed earlier.");
@@ -70,40 +68,31 @@ export default function PaymentSuccess() {
 
     finalizePayment();
 
-    return cancelRedirect;
   }, [invoice]);
 
-  const startRedirect = () => {
-    redirectTimer.current = setTimeout(() => {
-      router.push("/");
-    }, 3000);
-  };
 
-  const cancelRedirect = () => {
-    if (redirectTimer.current) {
-      clearTimeout(redirectTimer.current);
-      redirectTimer.current = null;
-    }
-  };
 
-  const handleUserAction = (action) => {
-    cancelRedirect();
-    action();
-  };
+if (loading) {
+return (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+    <div className="flex items-center gap-2">
+      <span className="loader-dot delay-1" />
+      <span className="loader-dot delay-2" />
+      <span className="loader-dot delay-3" />
+    </div>
 
-  if (loading) {
-    return (
-      <p className="text-center mt-10">
-        Processing payment, please wait...
-      </p>
-    );
-  }
+    <p className="mt-4 text-gray-600 text-sm">Finalizing payment…</p>
+  </div>
+);
+
+
+}
 
   const title =
     status === "success"
-      ? source === "shop"
-        ? "Order Status"
-        : "Appointment Status"
+      ? source === "appointment"
+        ? "Appointment Status"
+        : "Order Status"
       : "Payment Issue";
 
   return (
@@ -152,21 +141,19 @@ export default function PaymentSuccess() {
         {invoice && (
           <p className="mt-4 text-sm text-gray-500">
             Invoice Number:
-            <span className="ml-1 font-medium text-gray-700">
-              {invoice}
-            </span>
+            <span className="ml-1 font-medium text-gray-700">{invoice}</span>
           </p>
         )}
 
         <div className="mt-6 flex flex-col gap-3">
-          {status === "success"  && invoice && (
+          {status === "success" && invoice && (
             <button
               onClick={() =>
                 handleUserAction(() =>
                   window.open(
                     `${SERVER}/api/paystation/invoice/${invoice}`,
-                    "_blank"
-                  )
+                    "_blank",
+                  ),
                 )
               }
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-700 hover:bg-gray-100 transition"
@@ -176,9 +163,7 @@ export default function PaymentSuccess() {
           )}
 
           <button
-            onClick={() =>
-              handleUserAction(() => router.push("/"))
-            }
+            onClick={() => handleUserAction(() => router.push("/"))}
             className={`w-full rounded-lg px-4 py-3 font-medium transition ${
               status === "success"
                 ? "border border-gray-300 text-gray-700 hover:bg-gray-100"
@@ -188,7 +173,7 @@ export default function PaymentSuccess() {
             Go to Home
           </button>
         </div>
-{/* 
+        {/* 
         {status === "success" && (
           <p className="mt-6 text-xs text-gray-400">
             You will be redirected automatically in a few seconds.

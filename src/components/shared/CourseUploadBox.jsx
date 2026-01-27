@@ -23,11 +23,10 @@ const CourseUploadBox = ({
         ? await uploadPrivateContent(file)
         : await uploadFile(file); // public upload  returns URL only
       if (!result) return;
-console.log(result)
       // Normalize result
       const normalized =
         typeof result === "string"
-          ? { url: result, originalName: file.name, type: "public" }
+          ? { filename: result, originalName: file.name, type: "public" }
           : result;
 
       setFileInfo(normalized);
