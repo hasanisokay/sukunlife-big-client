@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -180,7 +180,72 @@ const UserSingleCoursePage = ({ course }) => {
   useEffect(() => {
     setIsClient(true);
   }, []);
-  console.log(course)
+
+
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      if (document.hidden) {
+        video.pause();
+        video.style.filter = "blur(20px)";
+      } else {
+        video.style.filter = "none";
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const threshold = 160;
+      if (
+        window.outerWidth - window.innerWidth > threshold ||
+        window.outerHeight - window.innerHeight > threshold
+      ) {
+        videoRef.current?.pause();
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const blockKeys = (e) => {
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && ["s", "u", "i", "j"].includes(e.key.toLowerCase()))
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("keydown", blockKeys);
+    return () => window.removeEventListener("keydown", blockKeys);
+  }, []);
+
+  useEffect(() => {
+    const ping = setInterval(() => {
+      fetch(`${SERVER}/api/user/ping-stream`, { credentials: "include" });
+    }, 30000);
+
+    return () => clearInterval(ping);
+  }, []);
+
+  useEffect(() => {
+    const onBlur = () => {
+      videoRef.current?.pause();
+    };
+
+    window.addEventListener("blur", onBlur);
+    return () => window.removeEventListener("blur", onBlur);
+  }, []);
+
   if (!isClient) return null
   return (
     <div className="dark:bg-gray-900 dark:text-gray-100 min-h-screen ">
@@ -228,12 +293,13 @@ const UserSingleCoursePage = ({ course }) => {
                       <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
                         <video
                           key={currentItem.url.filename}
+                            ref={videoRef}
                           src={
                             currentItem.status === "public"
                               ? currentItem.url.filename
                               : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
                           }
-  crossOrigin={currentItem.status === "public" ? "anonymous" : "use-credentials"}
+                          {...(currentItem.status !== "public" && { crossOrigin: "use-credentials" })}
                           className="w-full h-full"
                           controls
                           playsInline
