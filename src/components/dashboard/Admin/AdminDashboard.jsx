@@ -24,7 +24,7 @@ const AdminDashboard = ({ dashboardData }) => {
     visible: { opacity: 1, y: 0 },
   };
   const handleLogOut = async () => {
-    await fetch("/api/logout")
+    // await fetch("/api/logout")
     await logOut();
     dispatch(setUserData(null));
     window.location.reload();
