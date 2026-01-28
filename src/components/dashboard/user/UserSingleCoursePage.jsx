@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import Hls from "hls.js";
 import {
   ClipboardSVG,
   DownArrowSVG,
@@ -22,8 +23,47 @@ const itemVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
+const VideoHLS = ({ videoRef, hlsRef, src }) => {
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // cleanup old
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    // Safari (native HLS)
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = src;
+      return;
+    }
+
+    // Chrome/Firefox
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+      });
+
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hlsRef.current = hls;
+
+      return () => {
+        hls.destroy();
+      };
+    }
+  }, [src]);
+
+  return null;
+};
+
+
 const UserSingleCoursePage = ({ course }) => {
   const router = useRouter();
+  const hlsRef = useRef(null);
   const enrolledCourses = useSelector((state) => state.user.enrolledCourses);
   const [activeModuleIndex, setActiveModuleIndex] = useState(0);
   const [activeItemIndex, setActiveItemIndex] = useState(0);
@@ -126,13 +166,20 @@ const UserSingleCoursePage = ({ course }) => {
   const getItemIcon = (type) => {
     switch (type) {
       case 'video':
-        return <VideoSVG height={'20px'} width={'20px'} classes={'mr-1'} />;
+        return <VideoSVG height="20px" width="20px" classes="mr-1" />;
       case 'quiz':
-        return <QuizSVG height={'20px'} width={'20px'} classes={'mr-1'} />;
+        return <QuizSVG height="20px" width="20px" classes="mr-1" />;
+      case 'audio':
+        return <span className="mr-1">🎧</span>;
+      case 'pdf':
+        return <span className="mr-1">📄</span>;
+      case 'image':
+        return <span className="mr-1">🖼️</span>;
       default:
-        return <ClipboardSVG height={'20px'} width={'20px'} classes={'mr-1'} />;
+        return <ClipboardSVG height="20px" width="20px" classes="mr-1" />;
     }
   };
+
 
   const renderQuizResults = () => {
     return currentGroup.map((item, idx) => {
@@ -289,17 +336,41 @@ const UserSingleCoursePage = ({ course }) => {
                 {/* Video or Text Content */}
                 {currentItem.type !== 'quiz' && (
                   <>
-                    {currentItem.type === 'video' && (
+                  {currentItem.type === "video" && (
+  <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+
+    <video
+      ref={videoRef}
+      className="w-full h-full"
+      controls
+      playsInline
+      autoPlay
+      preload="metadata"
+      controlsList="nodownload"
+      disablePictureInPicture
+      onContextMenu={(e) => e.preventDefault()}
+    />
+
+    {/* HLS loader */}
+    <VideoHLS
+      videoRef={videoRef}
+      hlsRef={hlsRef}
+      src={`${SERVER}/api/user/course/stream/${course.courseId}/${currentItem.url.filename}/index.m3u8`}
+    />
+
+  </div>
+)}
+
+                    {/* {currentItem.type === 'video' && (
                       <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
                         <video
                           key={currentItem.url.filename}
-                            ref={videoRef}
+                          ref={videoRef}
                           src={
                             currentItem.status === "public"
                               ? currentItem.url.filename
                               : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
                           }
-                          {...(currentItem.status !== "public" && { crossOrigin: "use-credentials" })}
                           className="w-full h-full"
                           controls
                           playsInline
@@ -321,8 +392,41 @@ const UserSingleCoursePage = ({ course }) => {
                         </video>
 
                       </div>
+                    )} */}
+                    {currentItem.type === 'image' && (
+                      <div className="rounded-lg overflow-hidden">
+                        <img
+                          src={
+                            currentItem.status === "public"
+                              ? currentItem.url.filename
+                              : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
+                          }
+                          alt={currentItem.title}
+                          className="max-w-full rounded-lg"
+                        />
+                      </div>
                     )}
-
+                    {currentItem.type === 'audio' && (
+                      <audio
+                        controls
+                        src={
+                          currentItem.status === "public"
+                            ? currentItem.url.filename
+                            : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
+                        }
+                        className="w-full"
+                      />
+                    )}
+                        {currentItem.type === 'pdf' && (
+      <iframe
+        src={
+          currentItem.status === "public"
+            ? currentItem.url.filename
+            : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
+        }
+        className="w-full h-[80vh] rounded-lg"
+      />
+    )}
 
                     {currentItem.type === 'textInstruction' && (
                       <div
