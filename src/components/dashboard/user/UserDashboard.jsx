@@ -26,7 +26,7 @@ const UserDashboard = () => {
         })()
     }, [])
     const handleLogOut = async () => {
-        await fetch("/api/logout")
+        // await fetch("/api/logout")
         await logOut();
         dispatch(setUserData(null));
         window.location.reload();
