@@ -1,7 +1,7 @@
 import tokenParser from "@/server-functions/tokenParser.mjs";
 import { toast } from "react-toastify";
 
-const uploadPrivateContent = async (file) => {
+const uploadCoursePublicVideo = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -12,7 +12,7 @@ const uploadPrivateContent = async (file) => {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
-    xhr.open("POST", `https://upload.sukunlife.com/api/admin/course/upload`);
+    xhr.open("POST", `https://upload.sukunlife.com/api/admin/course/public/upload`);
 
     xhr.setRequestHeader(
       "Authorization",
@@ -123,4 +123,4 @@ const uploadPrivateContent = async (file) => {
   });
 };
 
-export default uploadPrivateContent;
+export default uploadCoursePublicVideo;

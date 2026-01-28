@@ -64,6 +64,8 @@ const VideoHLS = ({ videoRef, hlsRef, src }) => {
 const UserSingleCoursePage = ({ course }) => {
   const router = useRouter();
   const hlsRef = useRef(null);
+  const [hlsUrl, setHlsUrl] = useState(null);
+
   const enrolledCourses = useSelector((state) => state.user.enrolledCourses);
   const [activeModuleIndex, setActiveModuleIndex] = useState(0);
   const [activeItemIndex, setActiveItemIndex] = useState(0);
@@ -74,7 +76,7 @@ const UserSingleCoursePage = ({ course }) => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const dispatch = useDispatch();
-
+  console.log(course)
   useEffect(() => {
     const enrollment = enrolledCourses.find((c) => c.courseId === course._id);
     if (enrollment && enrollment?.lastSync) {
@@ -86,6 +88,22 @@ const UserSingleCoursePage = ({ course }) => {
       setExpandedModule(0)
     }
   }, [enrolledCourses, course._id]);
+
+  useEffect(() => {
+    if (!currentItem || currentItem.type !== "video") return;
+
+    const loadStreamUrl = async () => {
+      const res = await fetch(
+        `${SERVER}/api/user/course/stream-url/${course.courseId}/${currentItem.url.filename}`,
+        { credentials: "include" }
+      );
+
+      const data = await res.json();
+      setHlsUrl(data.url);
+    };
+
+    loadStreamUrl();
+  }, [currentItem?.url?.filename]);
 
   const currentModule = course.modules[activeModuleIndex];
   const currentItem = currentModule.items[activeItemIndex];
@@ -336,30 +354,33 @@ const UserSingleCoursePage = ({ course }) => {
                 {/* Video or Text Content */}
                 {currentItem.type !== 'quiz' && (
                   <>
-                  {currentItem.type === "video" && (
-  <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                    {currentItem.type === "video" && (
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
 
-    <video
-      ref={videoRef}
-      className="w-full h-full"
-      controls
-      playsInline
-      autoPlay
-      preload="metadata"
-      controlsList="nodownload"
-      disablePictureInPicture
-      onContextMenu={(e) => e.preventDefault()}
-    />
+                        <video
+                          ref={videoRef}
+                          className="w-full h-full"
+                          controls
+                          playsInline
+                          autoPlay
+                          preload="metadata"
+                          controlsList="nodownload"
+                          disablePictureInPicture
+                          onContextMenu={(e) => e.preventDefault()}
+                        />
 
-    {/* HLS loader */}
-    <VideoHLS
-      videoRef={videoRef}
-      hlsRef={hlsRef}
-      src={`${SERVER}/api/user/course/stream/${course.courseId}/${currentItem.url.filename}/index.m3u8`}
-    />
-
-  </div>
+                        {/* HLS loader */}
+               {hlsUrl && (
+  <VideoHLS
+    videoRef={videoRef}
+    hlsRef={hlsRef}
+    src={hlsUrl}
+  />
 )}
+
+
+                      </div>
+                    )}
 
                     {/* {currentItem.type === 'video' && (
                       <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
@@ -417,16 +438,16 @@ const UserSingleCoursePage = ({ course }) => {
                         className="w-full"
                       />
                     )}
-                        {currentItem.type === 'pdf' && (
-      <iframe
-        src={
-          currentItem.status === "public"
-            ? currentItem.url.filename
-            : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
-        }
-        className="w-full h-[80vh] rounded-lg"
-      />
-    )}
+                    {currentItem.type === 'pdf' && (
+                      <iframe
+                        src={
+                          currentItem.status === "public"
+                            ? currentItem.url.filename
+                            : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
+                        }
+                        className="w-full h-[80vh] rounded-lg"
+                      />
+                    )}
 
                     {currentItem.type === 'textInstruction' && (
                       <div
