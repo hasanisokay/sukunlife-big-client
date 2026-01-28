@@ -370,13 +370,13 @@ const UserSingleCoursePage = ({ course }) => {
                         />
 
                         {/* HLS loader */}
-               {hlsUrl && (
-  <VideoHLS
-    videoRef={videoRef}
-    hlsRef={hlsRef}
-    src={hlsUrl}
-  />
-)}
+                        {hlsUrl && (
+                          <VideoHLS
+                            videoRef={videoRef}
+                            hlsRef={hlsRef}
+                            src={hlsUrl}
+                          />
+                        )}
 
 
                       </div>

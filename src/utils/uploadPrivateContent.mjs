@@ -1,18 +1,21 @@
 import tokenParser from "@/server-functions/tokenParser.mjs";
 import { toast } from "react-toastify";
 
-const uploadPrivateContent = async (file) => {
+const uploadPrivateContent = async (file, isPrivate) => {
   const formData = new FormData();
   formData.append("file", file);
 
   const uploadToast = toast.loading("Uploading… 0%");
-
   const tokens = await tokenParser();
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
-    xhr.open("POST", `https://upload.sukunlife.com/api/admin/course/upload`);
+    const url = isPrivate
+      ? `https://upload.sukunlife.com/api/admin/course/upload`
+      : `https://upload.sukunlife.com/api/admin/course/public/upload`;
+
+    xhr.open("POST", url);
 
     xhr.setRequestHeader(
       "Authorization",
@@ -48,16 +51,14 @@ const uploadPrivateContent = async (file) => {
           return reject(data);
         }
 
-        // ✅ upload finished
         toast.update(uploadToast, {
           render: "Upload finished. Processing…",
           isLoading: true,
         });
 
-        // 🔥 NEW BACKEND: videoId exists only for videos
         const videoId = data.videoId;
 
-        // NON-VIDEO
+        // 🟢 NON-VIDEO
         if (!videoId) {
           toast.update(uploadToast, {
             render: "File ready",
@@ -68,13 +69,12 @@ const uploadPrivateContent = async (file) => {
           return resolve(data);
         }
 
-        // 🎥 VIDEO → poll HLS status
+        // 🎥 VIDEO → poll processing status
         const poll = setInterval(async () => {
           const res = await fetch(
             `https://upload.sukunlife.com/api/admin/course/video-status/${videoId}`,
             { credentials: "include" }
           );
-
           const status = await res.json();
 
           if (status.status === "processing") {

@@ -1,6 +1,5 @@
 'use client'
 import React, { useState } from "react";
-import uploadFile from "@/utils/uploadFile.mjs";
 import uploadPrivateContent from "@/utils/uploadPrivateContent.mjs";
 
 const CourseUploadBox = ({
@@ -17,29 +16,22 @@ const CourseUploadBox = ({
     if (!file) return;
 
     setLoading(true);
+    setFileInfo(null);
 
     try {
-      const result = isPrivate
-        ? await uploadPrivateContent(file)
-        : await uploadFile(file); // public upload  returns URL only
+      const result = await uploadPrivateContent(file, isPrivate);
       if (!result) return;
-      console.log(result)
-      // Normalize result
-      const normalized =
-        typeof result === "string"
-          ? { filename: result, originalName: file.name, type: "public" }
-          : {
-            // for videos backend returns { videoId }
-            filename: result.videoId || result.filename,
-            originalName: result.originalName || file.name,
-            mime: result.mime || file.type,
-            size: result.size || file.size,
-            type: isPrivate ? "private" : "public",
-          };
 
+      // Normalize backend response
+      const normalized = {
+        filename: result.videoId || result.filename,
+        originalName: result.originalName || file.name,
+        mime: result.mime || file.type,
+        size: result.size || file.size,
+        type: isPrivate ? "private" : "public",
+      };
 
       setFileInfo({ ...normalized, status: "ready" });
-
       onUpload(normalized, file);
     } catch (err) {
       console.error("Upload failed:", err);
@@ -56,23 +48,21 @@ const CourseUploadBox = ({
           hidden
           accept={accept}
           onChange={handleFileChange}
-            disabled={loading}
+          disabled={loading}
         />
 
         <div className="text-sm text-gray-600">
-          {loading ? "Uploading & processing..." : label}
-
+          {loading ? "Uploading & processing…" : label}
         </div>
 
         {fileInfo && (
           <div
-            className={`mt-2 text-xs space-y-1 ${loading ? "text-yellow-600" : "text-green-600"
-              }`}
+            className={`mt-2 text-xs space-y-1 ${
+              loading ? "text-yellow-600" : "text-green-600"
+            }`}
           >
             <div className="truncate">{fileInfo.originalName}</div>
-            <div>
-              Status: {loading ? "⏳ Processing…" : "✅ Ready"}
-            </div>
+            <div>Status: {loading ? "⏳ Processing…" : "✅ Ready"}</div>
             {fileInfo.size && (
               <div>
                 Size: {(fileInfo.size / 1024 / 1024).toFixed(2)} MB
@@ -80,8 +70,6 @@ const CourseUploadBox = ({
             )}
           </div>
         )}
-
-
       </label>
     </div>
   );
