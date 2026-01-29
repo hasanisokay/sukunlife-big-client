@@ -24,6 +24,22 @@ export async function middleware(request) {
     loginUrl.searchParams.set("redirectTo", pathName);
     return NextResponse.redirect(loginUrl);
   }
+  // Protect course modules/items
+  if (pathName.startsWith("/courses/")) {
+    const segments = pathName.split("/").filter(Boolean); 
+    // ["courses", ":courseId", ":moduleId", ":itemId"]
+
+    if (segments.length > 2 && (!accessToken && refreshToken)) {
+      const loginUrl = new URL("/", request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (segments.length > 2 && (!accessToken && !refreshToken)) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirectTo", pathName);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   
   return NextResponse.next();
 }

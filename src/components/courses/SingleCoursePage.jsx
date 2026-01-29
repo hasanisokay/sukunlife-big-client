@@ -42,6 +42,7 @@ const SingleCoursePage = ({ course }) => {
             setAlreadyEnrolled(true);
         }
     }, [coursesEnrolled]);
+    console.log(course)
     const groupItems = (items) => {
         return items.reduce((acc, item) => {
             if (item.type === 'quiz') {
@@ -214,7 +215,7 @@ const SingleCoursePage = ({ course }) => {
                                 className="bg-[#ffc267] md:h-[50px] h-[40px] md:w-[160px] w-[120px]  text-black rounded-full transition-colors"
                                 onClick={() => {
                                     if (alreadyEnrolled) {
-                                        return window.location.href = `/dashboard/c/${course?.courseId}`
+                                        return window.location.href = `/courses/${course?.courseId}/${course?.modules[0]?.moduleId}/${course?.modules[0]?.items[0].itemId}`
                                     }
                                     return handleAddToCart(false)
                                 }}

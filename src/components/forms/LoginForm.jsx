@@ -50,7 +50,7 @@ export default function LoginForm({ redirectTo }) {
       })
       const data = await res.json();
       setLoading(false);
-
+console.log(data)
       if (data?.status === 200) {
         // const accessToken = data?.accessToken;
         // const refreshToken = data?.refreshToken;

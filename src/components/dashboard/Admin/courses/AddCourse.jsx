@@ -26,15 +26,160 @@ const AddCourse = () => {
     const [courseIncludes, setCourseIncludes] = useState([{ text: '' }]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
+    const [idValidation, setIdValidation] = useState({
+        moduleIds: {},
+        itemIds: {}
+    });
 
     // Watch courseId for auto-save
     const courseId = watch('courseId');
 
     // Generate unique IDs
-    const generateModuleId = () => `module_${uuidv4().split('-')[0]}`;
-    const generateItemId = () => `item_${uuidv4().split('-')[0]}`;
+    const generateModuleId = () => `module-${uuidv4().split('-')[0]}`;
+    const generateItemId = () => `item-${uuidv4().split('-')[0]}`;
 
-    // Calculate durations with debounce
+  // Reusable validation function
+const validateId = (id, type = "ID") => {
+  if (!id || id.trim() === "") {
+    return { isValid: false, message: `${type} is required` };
+  }
+
+  // Regex: only lowercase letters, numbers, hyphens, and underscores
+  const regex = /^[a-z0-9-_]+$/;
+  if (!regex.test(id)) {
+    return { isValid: false, message: "Only lowercase letters, numbers, hyphens, and underscores allowed" };
+  }
+
+  return { isValid: true, message: "✓ Format valid" };
+};
+
+// Validate Module ID
+const validateModuleId = (moduleId, currentModuleIndex) => {
+  const baseValidation = validateId(moduleId, "Module ID");
+  if (!baseValidation.isValid) return baseValidation;
+
+  // Check for duplicates
+  const duplicateIndex = modules.findIndex(
+    (module, index) => index !== currentModuleIndex && module.moduleId === moduleId
+  );
+
+  if (duplicateIndex !== -1) {
+    return { isValid: false, message: `Duplicate ID used in module ${duplicateIndex + 1}` };
+  }
+
+  return { isValid: true, message: "✓ Available" };
+};
+
+// Validate Item ID
+const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
+  const baseValidation = validateId(itemId, "Item ID");
+  if (!baseValidation.isValid) return baseValidation;
+
+  // Check for duplicates within the same module
+  const currentModule = modules[moduleIndex];
+  if (currentModule?.items) {
+    const duplicateIndex = currentModule.items.findIndex(
+      (item, index) => index !== currentItemIndex && item.itemId === itemId
+    );
+
+    if (duplicateIndex !== -1) {
+      return { isValid: false, message: "Duplicate ID in same module" };
+    }
+  }
+
+  return { isValid: true, message: "✓ Available" };
+};
+
+    const handleIdChange = (type, moduleIndex, itemIndex, value) => {
+        const formatted = formatUrlAdIds(value);
+        
+        if (type === 'module') {
+            // Update module ID directly
+            setModules(prevModules => 
+                prevModules.map((module, idx) => 
+                    idx === moduleIndex ? { ...module, moduleId: formatted } : module
+                )
+            );
+            
+            // Validate immediately
+            const validation = validateModuleId(formatted, moduleIndex);
+            setIdValidation(prev => ({
+                ...prev,
+                moduleIds: {
+                    ...prev.moduleIds,
+                    [`${moduleIndex}`]: validation
+                }
+            }));
+        } else if (type === 'item') {
+            // Update item ID directly
+            setModules(prevModules => 
+                prevModules.map((module, modIdx) => {
+                    if (modIdx === moduleIndex) {
+                        return {
+                            ...module,
+                            items: module.items.map((item, itmIdx) => 
+                                itmIdx === itemIndex ? { ...item, itemId: formatted } : item
+                            )
+                        };
+                    }
+                    return module;
+                })
+            );
+            
+            // Validate immediately
+            const validation = validateItemId(formatted, moduleIndex, itemIndex);
+            setIdValidation(prev => ({
+                ...prev,
+                itemIds: {
+                    ...prev.itemIds,
+                    [`${moduleIndex}-${itemIndex}`]: validation
+                }
+            }));
+        }
+    };
+
+    const handleIdBlur = (type, moduleIndex, itemIndex, value) => {
+        if (!value || value.trim() === '') return;
+        
+        if (type === 'module') {
+            const validation = validateModuleId(value, moduleIndex);
+            setIdValidation(prev => ({
+                ...prev,
+                moduleIds: {
+                    ...prev.moduleIds,
+                    [`${moduleIndex}`]: validation
+                }
+            }));
+            
+            if (!validation.isValid) {
+                toast.error(`Module ID error: ${validation.message}`);
+            }
+        } else if (type === 'item') {
+            const validation = validateItemId(value, moduleIndex, itemIndex);
+            setIdValidation(prev => ({
+                ...prev,
+                itemIds: {
+                    ...prev.itemIds,
+                    [`${moduleIndex}-${itemIndex}`]: validation
+                }
+            }));
+            
+            if (!validation.isValid) {
+                toast.error(`Item ID error: ${validation.message}`);
+            }
+        }
+    };
+
+    // Helper functions to get validation state
+    const getModuleValidation = (moduleIndex) => {
+        return idValidation.moduleIds[`${moduleIndex}`] || null;
+    };
+
+    const getItemValidation = (moduleIndex, itemIndex) => {
+        return idValidation.itemIds[`${moduleIndex}-${itemIndex}`] || null;
+    };
+
+    // Calculate durations
     const calculateModuleDuration = (items) => {
         let totalMinutes = 0;
 
@@ -43,9 +188,9 @@ const AddCourse = () => {
                 totalMinutes += parseInt(item.duration) || 0;
             } else if (item.type === 'textInstruction' && item.content) {
                 const wordCount = item.content.replace(/<[^>]*>/g, '').split(/\s+/).length;
-                totalMinutes += Math.max(1, Math.ceil(wordCount / 200)); // Min 1 minute
+                totalMinutes += Math.max(1, Math.ceil(wordCount / 200));
             } else if (item.type === 'quiz') {
-                totalMinutes += 5; // Estimate 5 minutes per quiz
+                totalMinutes += 5;
             } else if (item.type === 'file' && item.duration) {
                 totalMinutes += parseInt(item.duration) || 0;
             }
@@ -90,7 +235,29 @@ const AddCourse = () => {
         }
     };
 
-    // Form submission
+    // Form submission with ID validation
+    const validateAllIds = () => {
+        const errors = [];
+        
+        // Validate module IDs
+        modules.forEach((module, moduleIndex) => {
+            const validation = validateModuleId(module.moduleId, moduleIndex);
+            if (!validation.isValid) {
+                errors.push(`Module ${moduleIndex + 1}: ${validation.message}`);
+            }
+            
+            // Validate item IDs
+            module.items.forEach((item, itemIndex) => {
+                const itemValidation = validateItemId(item.itemId, moduleIndex, itemIndex);
+                if (!itemValidation.isValid) {
+                    errors.push(`Module ${moduleIndex + 1}, Item ${itemIndex + 1}: ${itemValidation.message}`);
+                }
+            });
+        });
+        
+        return errors;
+    };
+
     const onSubmit = async (data) => {
         if (!idAvailable) {
             toast.error("Course ID is not available.");
@@ -102,8 +269,18 @@ const AddCourse = () => {
             return;
         }
 
+        // Validate all IDs before submission
+        const idErrors = validateAllIds();
+        if (idErrors.length > 0) {
+            toast.error("Please fix the ID errors before submitting:");
+            idErrors.forEach(error => {
+                toast.error(error, { autoClose: 3000 });
+            });
+            return;
+        }
+
         setIsSubmitting(true);
-        setFormSubmitted(true); // Mark form as submitted
+        setFormSubmitted(true);
 
         try {
             const totalDuration = calculateTotalDuration();
@@ -138,18 +315,16 @@ const AddCourse = () => {
                 toast.success(result?.message || "Course created successfully!");
                 localStorage.removeItem('add_course_draft');
                 resetForm();
-                // Remove beforeunload listener after successful submission
                 window.removeEventListener("beforeunload", handleBeforeUnload);
-                // Reload page after a short delay
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 toast.error(result?.message || "Failed to create course.");
-                setFormSubmitted(false); // Reset if failed
+                setFormSubmitted(false);
             }
         } catch (error) {
             console.error("Error creating course:", error);
             toast.error("An error occurred while creating the course.");
-            setFormSubmitted(false); // Reset if error
+            setFormSubmitted(false);
         } finally {
             setIsSubmitting(false);
         }
@@ -166,6 +341,7 @@ const AddCourse = () => {
         setCourseIncludes([{ text: '' }]);
         setIdAvailable(false);
         setIdCheckMessage('');
+        setIdValidation({ moduleIds: {}, itemIds: {} });
     };
 
     // Check ID availability
@@ -205,7 +381,6 @@ const AddCourse = () => {
             order: modules.length + 1
         };
         setModules([...modules, newModule]);
-        // Don't show toast for adding module
     };
 
     const handleRemoveModule = (moduleIndex) => {
@@ -223,7 +398,6 @@ const AddCourse = () => {
             if (index === moduleIndex) {
                 const updatedModule = { ...module, [field]: value };
 
-                // Recalculate duration if items changed
                 if (field === 'items') {
                     updatedModule.duration = calculateModuleDuration(value);
                 }
@@ -283,7 +457,6 @@ const AddCourse = () => {
 
         const updatedItems = [...modules[moduleIndex].items, newItem];
         handleModuleFieldChange(moduleIndex, 'items', updatedItems);
-        // Don't show toast for adding item
     };
 
     const handleRemoveItem = (moduleIndex, itemIndex) => {
@@ -295,7 +468,6 @@ const AddCourse = () => {
         handleModuleFieldChange(moduleIndex, 'items', reorderedItems);
     };
 
-    // Fixed: Handle item field change without flickering
     const handleItemFieldChange = (moduleIndex, itemIndex, field, value) => {
         setModules(prevModules => {
             return prevModules.map((module, modIdx) => {
@@ -307,13 +479,12 @@ const AddCourse = () => {
                         return item;
                     });
 
-                    // Recalculate module duration (debounced)
-                    setTimeout(() => {
-                        const newModuleDuration = calculateModuleDuration(updatedItems);
-                        if (newModuleDuration !== module.duration) {
-                            handleModuleFieldChange(moduleIndex, 'duration', newModuleDuration);
-                        }
-                    }, 300); // 300ms debounce
+                    // setTimeout(() => {
+                    //     const newModuleDuration = calculateModuleDuration(updatedItems);
+                    //     if (newModuleDuration !== module.duration) {
+                    //         handleModuleFieldChange(moduleIndex, 'duration', newModuleDuration);
+                    //     }
+                    // }, 300);
 
                     return { ...module, items: updatedItems };
                 }
@@ -322,7 +493,7 @@ const AddCourse = () => {
         });
     };
 
-    // Clear item fields (without deleting the item)
+    // Clear item fields
     const handleClearItemFields = (moduleIndex, itemIndex, type) => {
         const currentItem = modules[moduleIndex]?.items[itemIndex];
         if (!currentItem) return;
@@ -381,11 +552,9 @@ const AddCourse = () => {
         const currentItem = currentModule.items[itemIndex];
         if (!currentItem) return;
 
-        // Update only the URL field and duration if provided
         const updatedItem = {
             ...currentItem,
             url: fileData,
-            // Only update duration if it comes from fileData and is valid
             duration: fileData.duration && fileData.duration > 0 ? fileData.duration : currentItem.duration || ''
         };
 
@@ -453,7 +622,7 @@ const AddCourse = () => {
         handleItemFieldChange(moduleIndex, itemIndex, 'answer', answerIndex);
     };
 
-    // List handlers (learningItems, additionalMaterials, courseIncludes)
+    // List handlers
     const handleListTextChange = (setter, list, index, value) => {
         const updatedList = list.map((item, idx) =>
             idx === index ? { ...item, text: value } : item
@@ -510,11 +679,9 @@ const AddCourse = () => {
         if (draft) {
             try {
                 const parsed = JSON.parse(draft);
-                // Load form data
                 Object.keys(parsed.formData || {}).forEach(key => {
                     setValue(key, parsed.formData[key]);
                 });
-                // Load other states
                 setModules(parsed.modules || []);
                 setCoverPhotoUrl(parsed.coverPhotoUrl || '');
                 setInstructorImage(parsed.instructorImage || '');
@@ -522,7 +689,6 @@ const AddCourse = () => {
                 setAdditionalMaterials(parsed.additionalMaterials || [{ text: '' }]);
                 setCourseIncludes(parsed.courseIncludes || [{ text: '' }]);
 
-                // Check ID availability
                 if (parsed.formData?.courseId) {
                     checkIdAvailability(parsed.formData.courseId);
                 }
@@ -533,13 +699,14 @@ const AddCourse = () => {
             }
         }
     }, []);
+    
     const handleBeforeUnload = (e) => {
         if (!formSubmitted) {
             e.preventDefault();
             e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
         }
     };
-    // Prevent accidental navigation - Only show if form not submitted
+    
     useEffect(() => {
         window.addEventListener("beforeunload", handleBeforeUnload);
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -556,155 +723,243 @@ const AddCourse = () => {
         );
     };
 
-    const renderQuizItem = (moduleIndex, itemIndex, item) => (
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-3">
-                <div className="flex-1">
-                    <input
-                        type="text"
-                        value={item.question || ''}
-                        onChange={(e) =>
-                            handleItemFieldChange(moduleIndex, itemIndex, 'question', e.target.value)
-                        }
-                        placeholder="Quiz Question"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'quiz')}
-                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
-                        title="Clear Fields"
-                    >
-                        Clear
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-full"
-                        title="Remove Quiz"
-                    >
-                        <TrashSVG className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                {item.options.map((option, optionIndex) => (
-                    <div key={optionIndex} className="flex items-center gap-2">
-                        <input
-                            type="radio"
-                            name={`quiz-${moduleIndex}-${itemIndex}`}
-                            checked={item.answer === optionIndex}
-                            onChange={() => handleQuizAnswerChange(moduleIndex, itemIndex, optionIndex)}
-                            className="h-4 w-4 text-blue-600"
-                        />
+    const renderQuizItem = (moduleIndex, itemIndex, item) => {
+        const itemValidation = getItemValidation(moduleIndex, itemIndex);
+        
+        return (
+            <div key={`quiz-${moduleIndex}-${itemIndex}`} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                    <div className="flex-1 flex items-center gap-2">
                         <input
                             type="text"
-                            value={option || ''}
+                            value={item.question || ''}
                             onChange={(e) =>
-                                handleQuizOptionChange(moduleIndex, itemIndex, optionIndex, e.target.value)
+                                handleItemFieldChange(moduleIndex, itemIndex, 'question', e.target.value)
                             }
-                            placeholder={`Option ${optionIndex + 1}`}
+                            placeholder="Quiz Question"
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-500">ID:</span>
+                                <input
+                                    key={`quiz-id-${moduleIndex}-${itemIndex}`}
+                                    type="text"
+                                    value={item.itemId || ''}
+                                    onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
+                                    onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
+                                    placeholder="item-xyz123"
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                                        itemValidation
+                                            ? itemValidation.isValid
+                                                ? 'border-green-500 bg-green-50'
+                                                : 'border-red-500 bg-red-50'
+                                            : 'border-gray-300'
+                                    }`}
+                                />
+                            </div>
+                            {itemValidation && (
+                                <span className={`text-xs mt-1 ${itemValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                                    {itemValidation.message}
+                                </span>
+                            )}
+                        </div>
                     </div>
-                ))}
-            </div>
-        </div>
-    );
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'quiz')}
+                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
+                            title="Clear Fields"
+                        >
+                            Clear
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                            title="Remove Quiz"
+                        >
+                            <TrashSVG className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
 
-    const renderTextInstructionItem = (moduleIndex, itemIndex, item) => (
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-3">
-                <input
-                    type="text"
-                    value={item.title || ''}
-                    onChange={(e) =>
-                        handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
-                    }
-                    placeholder="Instruction Title"
-                    className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-                <select
-                    value={item.status || 'private'}
-                    onChange={(e) =>
-                        handleItemFieldChange(moduleIndex, itemIndex, 'status', e.target.value)
-                    }
-                    className="mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                    <option value="private">Private</option>
-                    <option value="public">Public</option>
-                </select>
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'textInstruction')}
-                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
-                        title="Clear Fields"
-                    >
-                        Clear
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-full"
-                        title="Remove Instruction"
-                    >
-                        <TrashSVG className="w-5 h-5" />
-                    </button>
+                <div className="space-y-2">
+                    {item.options.map((option, optionIndex) => (
+                        <div key={optionIndex} className="flex items-center gap-2">
+                            <input
+                                type="radio"
+                                name={`quiz-${moduleIndex}-${itemIndex}-${item.itemId}`}
+                                checked={item.answer === optionIndex}
+                                onChange={() => handleQuizAnswerChange(moduleIndex, itemIndex, optionIndex)}
+                                className="h-4 w-4 text-blue-600"
+                            />
+                            <input
+                                type="text"
+                                value={option || ''}
+                                onChange={(e) =>
+                                    handleQuizOptionChange(moduleIndex, itemIndex, optionIndex, e.target.value)
+                                }
+                                placeholder={`Option ${optionIndex + 1}`}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            />
+                        </div>
+                    ))}
                 </div>
             </div>
+        );
+    };
 
-            <div className="mb-3">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Content
-                </label>
-                <RichTextEditor
-                    onContentChange={(content) =>
-                        handleItemFieldChange(moduleIndex, itemIndex, 'content', content)
-                    }
-                    initialContent={item.content}
-                    uniqueKey={`text-instruction-${moduleIndex}-${itemIndex}`}
-                />
-            </div>
-
-            {item.content && (
-                <div className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded">
-                    <strong>Estimated reading time:</strong> {
-                        Math.max(1, Math.ceil(
-                            item.content.replace(/<[^>]*>/g, '').split(/\s+/).length / 200
-                        ))
-                    } minutes
-                </div>
-            )}
-        </div>
-    );
-
-    const renderVideoItem = (moduleIndex, itemIndex, item) => {
-        const handleUpload = (fileData) => {
-            handleVideoUploadComplete(moduleIndex, itemIndex, fileData);
-        };
-
+    const renderTextInstructionItem = (moduleIndex, itemIndex, item) => {
+        const itemValidation = getItemValidation(moduleIndex, itemIndex);
+        
         return (
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div key={`text-${moduleIndex}-${itemIndex}`} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="flex justify-between items-center mb-3">
-                    <input
-                        type="text"
-                        value={item.title || ''}
-                        onChange={(e) =>
-                            handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
-                        }
-                        placeholder="Video Title"
-                        className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    <div className="flex items-center gap-2 flex-1">
+                        <input
+                            type="text"
+                            value={item.title || ''}
+                            onChange={(e) =>
+                                handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
+                            }
+                            placeholder="Instruction Title"
+                            className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-500">ID:</span>
+                                <input
+                                    key={`text-id-${moduleIndex}-${itemIndex}`}
+                                    type="text"
+                                    value={item.itemId || ''}
+                                    onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
+                                    onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
+                                    placeholder="item-xyz123"
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                                        itemValidation
+                                            ? itemValidation.isValid
+                                                ? 'border-green-500 bg-green-50'
+                                                : 'border-red-500 bg-red-50'
+                                            : 'border-gray-300'
+                                    }`}
+                                />
+                            </div>
+                            {itemValidation && (
+                                <span className={`text-xs mt-1 ${itemValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                                    {itemValidation.message}
+                                </span>
+                            )}
+                        </div>
+                    </div>
                     <select
                         value={item.status || 'private'}
                         onChange={(e) =>
                             handleItemFieldChange(moduleIndex, itemIndex, 'status', e.target.value)
                         }
-                        disabled={item.url} // Disable when file is uploaded
+                        className="mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                        <option value="private">Private</option>
+                        <option value="public">Public</option>
+                    </select>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'textInstruction')}
+                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
+                            title="Clear Fields"
+                        >
+                            Clear
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                            title="Remove Instruction"
+                        >
+                            <TrashSVG className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Content
+                    </label>
+                    <RichTextEditor
+                        onContentChange={(content) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'content', content)
+                        }
+                        initialContent={item.content}
+                        uniqueKey={`text-instruction-${moduleIndex}-${itemIndex}`}
+                    />
+                </div>
+
+                {item.content && (
+                    <div className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded">
+                        <strong>Estimated reading time:</strong> {
+                            Math.max(1, Math.ceil(
+                                item.content.replace(/<[^>]*>/g, '').split(/\s+/).length / 200
+                            ))
+                        } minutes
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const renderVideoItem = (moduleIndex, itemIndex, item) => {
+        const itemValidation = getItemValidation(moduleIndex, itemIndex);
+        const handleUpload = (fileData) => {
+            handleVideoUploadComplete(moduleIndex, itemIndex, fileData);
+        };
+
+        return (
+            <div key={`video-${moduleIndex}-${itemIndex}`} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-2 flex-1">
+                        <input
+                            type="text"
+                            value={item.title || ''}
+                            onChange={(e) =>
+                                handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
+                            }
+                            placeholder="Video Title"
+                            className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-500">ID:</span>
+                                <input
+                                    key={`video-id-${moduleIndex}-${itemIndex}`}
+                                    type="text"
+                                    value={item.itemId || ''}
+                                    onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
+                                    onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
+                                    placeholder="item-xyz123"
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                                        itemValidation
+                                            ? itemValidation.isValid
+                                                ? 'border-green-500 bg-green-50'
+                                                : 'border-red-500 bg-red-50'
+                                            : 'border-gray-300'
+                                    }`}
+                                />
+                            </div>
+                            {itemValidation && (
+                                <span className={`text-xs mt-1 ${itemValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                                    {itemValidation.message}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <select
+                        value={item.status || 'private'}
+                        onChange={(e) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'status', e.target.value)
+                        }
+                        disabled={item.url}
                         className="mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                         <option value="private">Private</option>
@@ -740,7 +995,6 @@ const AddCourse = () => {
                     className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
 
-                {/* Single duration input - removed from CourseUploadBox */}
                 <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         <div className="flex items-center gap-2">
@@ -753,9 +1007,7 @@ const AddCourse = () => {
                         min="1"
                         value={item.duration || ''}
                         onChange={(e) => {
-                            const value = e.target.value;
-                            // Update local state immediately for better UX
-                            handleItemFieldChange(moduleIndex, itemIndex, 'duration', value);
+                            handleItemFieldChange(moduleIndex, itemIndex, 'duration', e.target.value);
                         }}
                         placeholder="Estimated duration in minutes"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -764,7 +1016,7 @@ const AddCourse = () => {
 
                 <div className="mb-3">
                     <CourseUploadBox
-                        key={`upload-${moduleIndex}-${itemIndex}-${item.itemId}`}
+                        key={`upload-video-${moduleIndex}-${itemIndex}`}
                         label="Upload Video"
                         accept="video/*"
                         status={item.status || 'private'}
@@ -775,7 +1027,7 @@ const AddCourse = () => {
                         }
                         onUpload={handleUpload}
                         itemId={item.itemId}
-                        disableStatusChange={!!item.url} // Disable status change when file exists
+                        disableStatusChange={!!item.url}
                     />
                     {item.url && (
                         <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -812,28 +1064,56 @@ const AddCourse = () => {
     };
 
     const renderFileItem = (moduleIndex, itemIndex, item) => {
+        const itemValidation = getItemValidation(moduleIndex, itemIndex);
         const handleUpload = (fileData) => {
             handleFileUploadComplete(moduleIndex, itemIndex, fileData);
         };
 
         return (
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div key={`file-${moduleIndex}-${itemIndex}`} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="flex justify-between items-center mb-3">
-                    <input
-                        type="text"
-                        value={item.title || ''}
-                        onChange={(e) =>
-                            handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
-                        }
-                        placeholder="File Title"
-                        className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    <div className="flex items-center gap-2 flex-1">
+                        <input
+                            type="text"
+                            value={item.title || ''}
+                            onChange={(e) =>
+                                handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
+                            }
+                            placeholder="File Title"
+                            className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs text-gray-500">ID:</span>
+                                <input
+                                    key={`file-id-${moduleIndex}-${itemIndex}`}
+                                    type="text"
+                                    value={item.itemId || ''}
+                                    onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
+                                    onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
+                                    placeholder="item-xyz123"
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                                        itemValidation
+                                            ? itemValidation.isValid
+                                                ? 'border-green-500 bg-green-50'
+                                                : 'border-red-500 bg-red-50'
+                                            : 'border-gray-300'
+                                    }`}
+                                />
+                            </div>
+                            {itemValidation && (
+                                <span className={`text-xs mt-1 ${itemValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                                    {itemValidation.message}
+                                </span>
+                            )}
+                        </div>
+                    </div>
                     <select
                         value={item.status || 'private'}
                         onChange={(e) =>
                             handleItemFieldChange(moduleIndex, itemIndex, 'status', e.target.value)
                         }
-                        disabled={item.url} // Disable when file is uploaded
+                        disabled={item.url}
                         className="mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                         <option value="private">Private</option>
@@ -869,7 +1149,6 @@ const AddCourse = () => {
                     className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
 
-                {/* Optional duration for files */}
                 <div className="mb-3">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Estimated Time (minutes, optional)
@@ -888,14 +1167,14 @@ const AddCourse = () => {
 
                 <div className="mb-3">
                     <CourseUploadBox
-                        key={`upload-file-${moduleIndex}-${itemIndex}-${item.itemId}`}
+                        key={`upload-file-${moduleIndex}-${itemIndex}`}
                         label="Upload File"
                         accept="application/pdf,image/*,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
                         status={item.status || 'private'}
                         type="file"
                         onUpload={handleUpload}
                         itemId={item.itemId}
-                        disableStatusChange={!!item.url} // Disable status change when file exists
+                        disableStatusChange={!!item.url}
                     />
                     {item.url && (
                         <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -1417,143 +1696,163 @@ const AddCourse = () => {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        {modules.map((module, moduleIndex) => (
-                            <div key={module.moduleId} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-medium">
-                                                {module.order}
-                                            </span>
-                                            <div>
-                                                <input
-                                                    type="text"
-                                                    value={module.title}
-                                                    onChange={(e) => handleModuleFieldChange(moduleIndex, 'title', e.target.value)}
-                                                    placeholder="Module Title"
-                                                    className="text-lg font-semibold bg-transparent border-none focus:outline-none focus:ring-0 w-full"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    value={module.description}
-                                                    onChange={(e) => handleModuleFieldChange(moduleIndex, 'description', e.target.value)}
-                                                    placeholder="Module Description (optional)"
-                                                    className="text-sm text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0 w-full mt-1"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {renderModuleDuration(module)}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveModule(moduleIndex)}
-                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                                title="Remove Module"
-                                            >
-                                                <TrashSVG className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="p-6">
-                                    {/* Module Items */}
-                                    {module.items.length === 0 ? (
-                                        <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                                            <p className="text-gray-500 mb-4">No items in this module yet</p>
-                                            <div className="flex flex-wrap gap-2 justify-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'video')}
-                                                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center gap-2"
-                                                >
-                                                    <VideoSVG className="w-4 h-4" />
-                                                    Add Video
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'textInstruction')}
-                                                    className="px-4 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center gap-2"
-                                                >
-                                                    <ClipboardSVG className="w-4 h-4" />
-                                                    Add Text
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'quiz')}
-                                                    className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 flex items-center gap-2"
-                                                >
-                                                    <QuizSVG className="w-4 h-4" />
-                                                    Add Quiz
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'file')}
-                                                    className="px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 flex items-center gap-2"
-                                                >
-                                                    <FileSVG className="w-4 h-4" />
-                                                    Add File
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {module.items.map((item, itemIndex) => (
-                                                <div key={item.itemId} className="relative">
-                                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
-                                                    <div className="ml-4">
-                                                        {item.type === 'video' && renderVideoItem(moduleIndex, itemIndex, item)}
-                                                        {item.type === 'textInstruction' && renderTextInstructionItem(moduleIndex, itemIndex, item)}
-                                                        {item.type === 'quiz' && renderQuizItem(moduleIndex, itemIndex, item)}
-                                                        {item.type === 'file' && renderFileItem(moduleIndex, itemIndex, item)}
+                        {modules.map((module, moduleIndex) => {
+                            const moduleValidation = getModuleValidation(moduleIndex);
+                            
+                            return (
+                                <div key={`module-${moduleIndex}`} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-3">
+                                                <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-medium">
+                                                    {module.order}
+                                                </span>
+                                                <div className="flex flex-col">
+                                                    <input
+                                                        type="text"
+                                                        value={module.title}
+                                                        onChange={(e) => handleModuleFieldChange(moduleIndex, 'title', e.target.value)}
+                                                        placeholder="Module Title"
+                                                        className="text-lg font-semibold bg-transparent border-none focus:outline-none focus:ring-0 w-full"
+                                                    />
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="text-xs text-gray-500">ID:</span>
+                                                        <input
+                                                            key={`module-id-${moduleIndex}`}
+                                                            type="text"
+                                                            value={module.moduleId || ''}
+                                                            onChange={(e) => handleIdChange('module', moduleIndex, null, e.target.value)}
+                                                            onBlur={(e) => handleIdBlur('module', moduleIndex, null, e.target.value)}
+                                                            placeholder="module-xyz123"
+                                                            className={`text-xs w-32 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                                                                moduleValidation
+                                                                    ? moduleValidation.isValid
+                                                                        ? 'border-green-500 bg-green-50'
+                                                                        : 'border-red-500 bg-red-50'
+                                                                    : 'border-gray-300'
+                                                            }`}
+                                                        />
+                                                        {moduleValidation && (
+                                                            <span className={`text-xs ${moduleValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                                                                {moduleValidation.message}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Add Item Buttons */}
-                                    {module.items.length > 0 && (
-                                        <div className="mt-6 pt-6 border-t border-gray-200">
-                                            <div className="flex flex-wrap gap-2">
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {renderModuleDuration(module)}
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'video')}
-                                                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center gap-2"
+                                                    onClick={() => handleRemoveModule(moduleIndex)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                                    title="Remove Module"
                                                 >
-                                                    <VideoSVG className="w-4 h-4" />
-                                                    Add Video
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'textInstruction')}
-                                                    className="px-4 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center gap-2"
-                                                >
-                                                    <ClipboardSVG className="w-4 h-4" />
-                                                    Add Text
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'quiz')}
-                                                    className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 flex items-center gap-2"
-                                                >
-                                                    <QuizSVG className="w-4 h-4" />
-                                                    Add Quiz
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAddItem(moduleIndex, 'file')}
-                                                    className="px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 flex items-center gap-2"
-                                                >
-                                                    <FileSVG className="w-4 h-4" />
-                                                    Add File
+                                                    <TrashSVG className="w-5 h-5" />
                                                 </button>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
+
+                                    <div className="p-6">
+                                        {/* Module Items */}
+                                        {module.items.length === 0 ? (
+                                            <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+                                                <p className="text-gray-500 mb-4">No items in this module yet</p>
+                                                <div className="flex flex-wrap gap-2 justify-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'video')}
+                                                        className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center gap-2"
+                                                    >
+                                                        <VideoSVG className="w-4 h-4" />
+                                                        Add Video
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'textInstruction')}
+                                                        className="px-4 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center gap-2"
+                                                    >
+                                                        <ClipboardSVG className="w-4 h-4" />
+                                                        Add Text
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'quiz')}
+                                                        className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 flex items-center gap-2"
+                                                    >
+                                                        <QuizSVG className="w-4 h-4" />
+                                                        Add Quiz
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'file')}
+                                                        className="px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 flex items-center gap-2"
+                                                    >
+                                                        <FileSVG className="w-4 h-4" />
+                                                        Add File
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                {module.items.map((item, itemIndex) => (
+                                                    <div key={`item-${moduleIndex}-${itemIndex}`} className="relative">
+                                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
+                                                        <div className="ml-4">
+                                                            {item.type === 'video' && renderVideoItem(moduleIndex, itemIndex, item)}
+                                                            {item.type === 'textInstruction' && renderTextInstructionItem(moduleIndex, itemIndex, item)}
+                                                            {item.type === 'quiz' && renderQuizItem(moduleIndex, itemIndex, item)}
+                                                            {item.type === 'file' && renderFileItem(moduleIndex, itemIndex, item)}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Add Item Buttons */}
+                                        {module.items.length > 0 && (
+                                            <div className="mt-6 pt-6 border-t border-gray-200">
+                                                <div className="flex flex-wrap gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'video')}
+                                                        className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center gap-2"
+                                                    >
+                                                        <VideoSVG className="w-4 h-4" />
+                                                        Add Video
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'textInstruction')}
+                                                        className="px-4 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center gap-2"
+                                                    >
+                                                        <ClipboardSVG className="w-4 h-4" />
+                                                        Add Text
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'quiz')}
+                                                        className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 flex items-center gap-2"
+                                                    >
+                                                        <QuizSVG className="w-4 h-4" />
+                                                        Add Quiz
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleAddItem(moduleIndex, 'file')}
+                                                        className="px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 flex items-center gap-2"
+                                                    >
+                                                        <FileSVG className="w-4 h-4" />
+                                                        Add File
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
