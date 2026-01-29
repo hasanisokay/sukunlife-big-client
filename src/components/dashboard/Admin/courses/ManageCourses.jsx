@@ -8,6 +8,7 @@ import { Flip, toast, ToastContainer } from 'react-toastify';
 import { DeleteSVG } from '@/components/svg/SvgCollection';
 import SearchBar from '@/components/search/SearchBar';
 import deleteCourse from '@/server-functions/deleteCourse.mjs';
+import EmptyState from '@/components/shared/EmptyState';
 
 const ManageCourses = ({ courses }) => {
     const [previousCourses, setPreviousCourses] = useState(courses.courses);
@@ -52,12 +53,15 @@ const ManageCourses = ({ courses }) => {
 
     }
 
+    if (memorizedCourses?.length === 0) return <div className='w-full flex items-center justify-center flex-col overflow-hidden'>
 
+        <EmptyState description='No course added. add course to see' title='No course.' />
+    </div>
 
     return (
         <div className="max-w-full mx-auto p-4 bg-white shadow-md rounded-lg">
             <h2 className="text-3xl text-center font-bold mb-6 text-gray-900">Manage Courses</h2>
-            <SearchBar placeholder={'Search course with title, instructor, id '}/>
+            <SearchBar placeholder={'Search course with title, instructor, id '} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {memorizedCourses?.map((course) => (
                     <div key={course._id} className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -81,7 +85,7 @@ const ManageCourses = ({ courses }) => {
                                     Edit Course
                                 </Link>
                                 <button className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" onClick={() => openModal(course.courseId, 'delete')}
-                                ><DeleteSVG  color={'#d7d2b7'}/></button>
+                                ><DeleteSVG color={'#d7d2b7'} /></button>
                             </div>
                         </div>
                     </div>

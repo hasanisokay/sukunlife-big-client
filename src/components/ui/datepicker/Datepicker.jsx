@@ -6,7 +6,7 @@ import 'flatpickr/dist/themes/material_blue.css';
 // import 'flatpickr/dist/themes/confetti.css';
 
 
-const DatePicker = ({ defaultDate, onChangeHanlder, label }) => {
+const DatePicker = ({ defaultDate, onChangeHanlder, label, noLabel=false }) => {
     const inputRef = useRef(null);
     useEffect(() => {
         const fp = flatpickr(inputRef.current, {
@@ -23,12 +23,12 @@ const DatePicker = ({ defaultDate, onChangeHanlder, label }) => {
 
     return (
         <div>
-            <label
+          {!noLabel &&  <label
                 htmlFor="datepicker"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
                 {label || "Date"}
-            </label>
+            </label>}
             <input id="datepicker" ref={inputRef} className='bg-inherit p-1 rounded' placeholder="Select a date" />
         </div>
     );

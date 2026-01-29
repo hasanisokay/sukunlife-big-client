@@ -20,9 +20,9 @@ const page = async ({ searchParams }) => {
     if (courses?.status !== 200) return <NotFound />;
 
     return (
-      <section>
+      <div>
         <ManageCourses courses={courses} />
-      </section>
+      </div>
     );
   } catch {
     return <NotFound />;

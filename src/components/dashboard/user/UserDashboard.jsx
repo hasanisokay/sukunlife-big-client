@@ -7,12 +7,16 @@ import { useDispatch, useSelector } from "react-redux";
 import getUserOrders from '@/utils/getUserOrders.mjs';
 import logOut from "@/utils/logOut.mjs";
 import { setUserData } from "@/store/slices/authSlice";
+import Spinner2 from '@/components/loaders/Spinner2';
 const UserDashboard = () => {
+    const [isClient, setIsClient] = useState(false);
     const enrolledCourses = useSelector((state) => state.user.enrolledCourses);
     const [userOrderCount, setUserOrderCount] = useState(0);
     const [userAppointmentCount, setUserAppointmentCount] = useState(0);
     const dispatch = useDispatch();
-
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
     useEffect(() => {
         (async () => {
             const data = await getUserOrders(false, true)
@@ -31,6 +35,7 @@ const UserDashboard = () => {
         dispatch(setUserData(null));
         window.location.reload();
     };
+    if (!isClient) return <Spinner2 />
     return (
         <div className='w-full min-w-[200px]'>
             <div className="flex justify-between items-center mb-8">

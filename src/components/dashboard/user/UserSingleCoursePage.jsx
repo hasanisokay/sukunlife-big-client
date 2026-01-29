@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import Hls from "hls.js";
+import "plyr/dist/plyr.css";
 import {
   ClipboardSVG,
   DownArrowSVG,
@@ -16,6 +16,8 @@ import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
 import { setEnrolledCourses } from '@/store/slices/authSlice';
 import updateCourseProgress from '@/server-functions/updateCourseProgress.mjs';
+import Spinner2 from '@/components/loaders/Spinner2';
+import VideoHLS from './VideoHLS';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -23,42 +25,9 @@ const itemVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
-const VideoHLS = ({ videoRef, hlsRef, src }) => {
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
 
-    // cleanup old
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
 
-    // Safari (native HLS)
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      return;
-    }
 
-    // Chrome/Firefox
-    if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: true,
-      });
-
-      hls.loadSource(src);
-      hls.attachMedia(video);
-      hlsRef.current = hls;
-
-      return () => {
-        hls.destroy();
-      };
-    }
-  }, [src]);
-
-  return null;
-};
 
 
 const UserSingleCoursePage = ({ course }) => {
@@ -76,7 +45,6 @@ const UserSingleCoursePage = ({ course }) => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const dispatch = useDispatch();
-  console.log(course)
   useEffect(() => {
     const enrollment = enrolledCourses.find((c) => c.courseId === course._id);
     if (enrollment && enrollment?.lastSync) {
@@ -88,27 +56,54 @@ const UserSingleCoursePage = ({ course }) => {
       setExpandedModule(0)
     }
   }, [enrolledCourses, course._id]);
-
-  useEffect(() => {
-    if (!currentItem || currentItem.type !== "video") return;
-
-    const loadStreamUrl = async () => {
-      const res = await fetch(
-        `${SERVER}/api/user/course/stream-url/${course.courseId}/${currentItem.url.filename}`,
-        { credentials: "include" }
-      );
-
-      const data = await res.json();
-      setHlsUrl(data.url);
-    };
-
-    loadStreamUrl();
-  }, [currentItem?.url?.filename]);
-
   const currentModule = course.modules[activeModuleIndex];
   const currentItem = currentModule.items[activeItemIndex];
   const totalItems = course.modules.reduce((acc, module) => acc + module.items.length, 0);
 
+  // Add a key state to force re-mount
+  const [videoKey, setVideoKey] = useState(0);
+
+  useEffect(() => {
+    if (!currentItem || currentItem.type !== "video") {
+      setHlsUrl(null);
+      return;
+    }
+
+    // Force video component to remount
+    setVideoKey(prev => prev + 1);
+    setHlsUrl(null); // Clear URL immediately
+
+    let cancelled = false;
+
+    const loadStreamUrl = async () => {
+      try {
+        const res = await fetch(
+          `${SERVER}/api/user/course/stream-url/${course.courseId}/${currentItem.url.filename}`,
+          { credentials: "include" }
+        );
+
+        const data = await res.json();
+        console.log("Stream URL loaded:", data);
+
+        if (!cancelled && data.url) {
+          // Small delay to ensure cleanup happened
+          setTimeout(() => {
+            setHlsUrl(data.url);
+          }, 100);
+        }
+      } catch (err) {
+        console.error("Stream load failed", err);
+      }
+    };
+
+    loadStreamUrl();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentItem?.url?.filename, currentItem?.type, course.courseId]);
+
+  console.log(hlsUrl)
   // Group consecutive quizzes
   const groupConsecutiveQuizzes = (items) => {
     const groups = [];
@@ -249,69 +244,17 @@ const UserSingleCoursePage = ({ course }) => {
 
   const videoRef = useRef(null);
 
-  useEffect(() => {
-    const handleVisibility = () => {
-      const video = videoRef.current;
-      if (!video) return;
 
-      if (document.hidden) {
-        video.pause();
-        video.style.filter = "blur(20px)";
-      } else {
-        video.style.filter = "none";
-      }
-    };
 
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
-  }, []);
+  // useEffect(() => {
+  //   const ping = setInterval(() => {
+  //     fetch(`${SERVER}/api/user/ping-stream`, { credentials: "include" });
+  //   }, 30000);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const threshold = 160;
-      if (
-        window.outerWidth - window.innerWidth > threshold ||
-        window.outerHeight - window.innerHeight > threshold
-      ) {
-        videoRef.current?.pause();
-      }
-    }, 2000);
+  //   return () => clearInterval(ping);
+  // }, []);
 
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const blockKeys = (e) => {
-      if (
-        e.key === "F12" ||
-        (e.ctrlKey && ["s", "u", "i", "j"].includes(e.key.toLowerCase()))
-      ) {
-        e.preventDefault();
-      }
-    };
-
-    window.addEventListener("keydown", blockKeys);
-    return () => window.removeEventListener("keydown", blockKeys);
-  }, []);
-
-  useEffect(() => {
-    const ping = setInterval(() => {
-      fetch(`${SERVER}/api/user/ping-stream`, { credentials: "include" });
-    }, 30000);
-
-    return () => clearInterval(ping);
-  }, []);
-
-  useEffect(() => {
-    const onBlur = () => {
-      videoRef.current?.pause();
-    };
-
-    window.addEventListener("blur", onBlur);
-    return () => window.removeEventListener("blur", onBlur);
-  }, []);
-
-  if (!isClient) return null
+  if (!isClient) return <Spinner2 />
   return (
     <div className="dark:bg-gray-900 dark:text-gray-100 min-h-screen ">
       <div className="max-w-7xl mx-auto  py-4">
@@ -354,66 +297,13 @@ const UserSingleCoursePage = ({ course }) => {
                 {/* Video or Text Content */}
                 {currentItem.type !== 'quiz' && (
                   <>
-                    {currentItem.type === "video" && (
-                      <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
 
-                        <video
-                          ref={videoRef}
-                          className="w-full h-full"
-                          controls
-                          playsInline
-                          autoPlay
-                          preload="metadata"
-                          controlsList="nodownload"
-                          disablePictureInPicture
-                          onContextMenu={(e) => e.preventDefault()}
-                        />
-
-                        {/* HLS loader */}
-                        {hlsUrl && (
-                          <VideoHLS
-                            videoRef={videoRef}
-                            hlsRef={hlsRef}
-                            src={hlsUrl}
-                          />
-                        )}
-
-
+                    {currentItem.type === "video" && hlsUrl && (
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                        <VideoHLS key={videoKey} src={hlsUrl} />
                       </div>
                     )}
 
-                    {/* {currentItem.type === 'video' && (
-                      <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
-                        <video
-                          key={currentItem.url.filename}
-                          ref={videoRef}
-                          src={
-                            currentItem.status === "public"
-                              ? currentItem.url.filename
-                              : `${SERVER}/api/user/course/file/${course.courseId}/${currentItem.url.filename}`
-                          }
-                          className="w-full h-full"
-                          controls
-                          playsInline
-                          autoPlay
-                          preload="metadata"
-                          controlsList="nodownload"
-                          disablePictureInPicture
-                          onContextMenu={(e) => e.preventDefault()}
-                          onEnded={() => {
-                            if (activeItemIndex < currentModule.items.length - 1) {
-                              handleItemSelect(activeModuleIndex, activeItemIndex + 1);
-                            } else if (activeModuleIndex < course.modules.length - 1) {
-                              setExpandedModule(activeModuleIndex + 1);
-                              handleItemSelect(activeModuleIndex + 1, 0);
-                            }
-                          }}
-                        >
-                          Sorry, your browser does not support embedded videos.
-                        </video>
-
-                      </div>
-                    )} */}
                     {currentItem.type === 'image' && (
                       <div className="rounded-lg overflow-hidden">
                         <img

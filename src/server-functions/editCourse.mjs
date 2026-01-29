@@ -4,14 +4,8 @@ import { SERVER } from "@/constants/urls.mjs";
 import { cookies } from "next/headers";
 
 const editCourse = async (
-  data,
-  modules,
-  coverPhotoUrl,
-  learningItems,
+data,
   courseId,
-  instructorImage,
-  additionalMaterials,
-  courseIncludes
 ) => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN);
@@ -25,15 +19,7 @@ const editCourse = async (
         "X-Refresh-Token": refreshToken?.value || "",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        ...data,
-        modules,
-        coverPhotoUrl,
-        learningItems,
-        instructorImage,
-        additionalMaterials,
-        courseIncludes,
-      }),
+      body: JSON.stringify(data),
       credentials: "include",
     });
     const d = await res.json();

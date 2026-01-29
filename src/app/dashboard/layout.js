@@ -13,15 +13,17 @@ const dashboardLayout = async ({ children }) => {
       return (
         <div className="flex">
           <AdminSidebar />
-          {children}
+          <div className="flex-1 overflow-hidden">{children}</div>
         </div>
       );
     }
     if (user?.role === "user") {
-      return <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-        <UserSidebar />
-        <main className="flex-1 md:p-8 p-1 overflow-x-auto">{children}</main>
-      </div>;
+      return (
+        <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+          <UserSidebar />
+          <main className="flex-1 md:p-8 p-1 overflow-x-auto">{children}</main>
+        </div>
+      );
     }
     // return children;
   } catch {
@@ -57,6 +59,6 @@ export async function generateMetadata() {
     };
     return metadata;
   } catch (error) {
-    console.log("error occured")
+    console.log("error occured");
   }
 }

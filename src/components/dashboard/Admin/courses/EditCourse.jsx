@@ -1,847 +1,1629 @@
 'use client'
-// components/EditCourse.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import RichTextEditor from '@/components/editor/RichTextEditor';
-import generateUniqueIds from '@/utils/generateUniqueIds.mjs';
-import DatePicker from '@/components/ui/datepicker/Datepicker';
+import { v4 as uuidv4 } from 'uuid';
 import { Flip, toast, ToastContainer } from 'react-toastify';
+import DatePicker from '@/components/ui/datepicker/Datepicker';
+import { AddSVG, ClipboardSVG, QuizSVG, VideoSVG, FileSVG, ClockSVG, TrashSVG, UploadSVG } from '@/components/svg/SvgCollection';
 import getDateObjWithoutTime from '@/utils/getDateObjWithoutTime.mjs';
-import checkCourseId from '@/server-functions/checkCourseId.mjs';
 import editCourse from '@/server-functions/editCourse.mjs';
+import checkCourseId from '@/server-functions/checkCourseId.mjs';
+import formatUrlAdIds from '@/utils/formatUrlAdIds.mjs';
 import uploadFile from '@/utils/uploadFile.mjs';
 import CourseUploadBox from '@/components/shared/CourseUploadBox';
-import { ClipboardSVG, QuizSVG, VideoSVG } from '@/components/svg/SvgCollection';
-
 
 const EditCourse = ({ course }) => {
-    const { register, handleSubmit, control, formState: { errors }, reset, setValue } = useForm();
+    const { register, handleSubmit, control, formState: { errors }, reset, setValue, watch } = useForm();
+    const [checkingId, setCheckingId] = useState(false);
+    const [idCheckMessage, setIdCheckMessage] = useState('');
+    const [idAvailable, setIdAvailable] = useState(true);
     const [modules, setModules] = useState([]);
     const [coverPhotoUrl, setCoverPhotoUrl] = useState('');
     const [instructorImage, setInstructorImage] = useState('');
-    const [checkingId, setCheckingId] = useState(false);
-    const [idAvailable, setIdAvailable] = useState(true);
-    const [idCheckMessage, setIdCheckMessage] = useState('');
     const [learningItems, setLearningItems] = useState([{ text: '' }]);
     const [additionalMaterials, setAdditionalMaterials] = useState([{ text: '' }]);
     const [courseIncludes, setCourseIncludes] = useState([{ text: '' }]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formSubmitted, setFormSubmitted] = useState(false);
+
+    // Watch courseId for validation
+    const courseId = watch('courseId');
+
     useEffect(() => {
         if (course) {
-            reset(course);
-            setModules(course.modules || []);
-            setLearningItems(course?.learningItems)
-            setCourseIncludes(course?.courseIncludes || [{ text: '' }])
-            setAdditionalMaterials(course?.additionalMaterials || [{ text: '' }])
-            setCoverPhotoUrl(course?.coverPhotoUrl || '');
-            setInstructorImage(course?.instructorImage)
-            setValue('courseId', course.courseId || '');
-            setValue('price', course.price || '');
-            setValue('offerPrice', course.offerPrice || '');
-            setValue('description', course.description || '');
-            setValue('aboutInstructor', course.aboutInstructor || '');
-            setValue('addedOn', course.addedOn ? new Date(course?.addedOn) : new Date());
-            setValue('tags', course.tags || '');
-            setValue('seoDescription', course.seoDescription || '');
-            setValue('instructor', course.instructor || '');
-            setValue('duration', course.duration || '');
-            setValue('instructorDesignation', course.instructorDesignation || '');
-            setValue('shortDescription', course.shortDescription || '');
-        }
-    }, [course, reset, setValue]);
+            // First reset the form
+            reset({
+                title: course.title || '',
+                courseId: course.courseId || '',
+                shortDescription: course.shortDescription || '',
+                duration: course.duration || '',
+                description: course.description || '',
+                price: course.price || '',
+                offerPrice: course.offerPrice || '',
+                instructor: course.instructor || '',
+                instructorDesignation: course.instructorDesignation || '',
+                aboutInstructor: course.aboutInstructor || '',
+                seoDescription: course.seoDescription || '',
+                tags: course.tags || '',
+                addedOn: course.addedOn ? new Date(course.addedOn) : new Date()
+            });
 
+            // Set other states with a slight delay to ensure RichTextEditor is mounted
+            setTimeout(() => {
+                setModules(course.modules?.map((module, index) => ({
+                    ...module,
+                    moduleId: module.moduleId || `module_${uuidv4().split('-')[0]}`,
+                    order: module.order || index + 1,
+                    items: module.items?.map((item, itemIndex) => ({
+                        ...item,
+                        itemId: item.itemId || `item_${uuidv4().split('-')[0]}`,
+                        order: item.order || itemIndex + 1
+                    })) || []
+                })) || []);
+
+                setCoverPhotoUrl(course.coverPhotoUrl || '');
+                setInstructorImage(course.instructorImage || '');
+                setLearningItems(course.learningItems?.length > 0 ? course.learningItems : [{ text: '' }]);
+                setAdditionalMaterials(course.additionalMaterials?.length > 0 ? course.additionalMaterials : [{ text: '' }]);
+                setCourseIncludes(course.courseIncludes?.length > 0 ? course.courseIncludes : [{ text: '' }]);
+            }, 100);
+
+            setIdAvailable(true);
+            setIdCheckMessage('✓ Current course ID');
+        }
+    }, [course, reset]);
+
+    // Generate unique IDs
+    const generateModuleId = () => `module_${uuidv4().split('-')[0]}`;
+    const generateItemId = () => `item_${uuidv4().split('-')[0]}`;
+
+    // Calculate durations
+    const calculateModuleDuration = (items) => {
+        let totalMinutes = 0;
+
+        items.forEach(item => {
+            if (item.type === 'video' && item.duration) {
+                totalMinutes += parseInt(item.duration) || 0;
+            } else if (item.type === 'textInstruction' && item.content) {
+                const wordCount = item.content.replace(/<[^>]*>/g, '').split(/\s+/).length;
+                totalMinutes += Math.max(1, Math.ceil(wordCount / 200));
+            } else if (item.type === 'quiz') {
+                totalMinutes += 5;
+            } else if (item.type === 'file' && item.duration) {
+                totalMinutes += parseInt(item.duration) || 0;
+            }
+        });
+
+        if (totalMinutes >= 60) {
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}`;
+        } else {
+            return `${totalMinutes}m`;
+        }
+    };
+
+    const calculateTotalDuration = () => {
+        let totalMinutes = 0;
+
+        modules.forEach(module => {
+            if (module.items && module.items.length > 0) {
+                totalMinutes += module.items.reduce((sum, item) => {
+                    if (item.type === 'video' && item.duration) {
+                        return sum + (parseInt(item.duration) || 0);
+                    } else if (item.type === 'textInstruction' && item.content) {
+                        const wordCount = item.content.replace(/<[^>]*>/g, '').split(/\s+/).length;
+                        return sum + Math.max(1, Math.ceil(wordCount / 200));
+                    } else if (item.type === 'quiz') {
+                        return sum + 5;
+                    } else if (item.type === 'file' && item.duration) {
+                        return sum + (parseInt(item.duration) || 0);
+                    }
+                    return sum;
+                }, 0);
+            }
+        });
+
+        if (totalMinutes >= 60) {
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}`;
+        } else {
+            return `${totalMinutes}m`;
+        }
+    };
+
+    // Form submission
     const onSubmit = async (data) => {
-        if (!idAvailable && data.courseId !== course.courseId) return toast.error("Id is not available");
-        const dateObj = data.addedOn;
-        const now = new Date();
-        const date = getDateObjWithoutTime(dateObj);
-        data.addedOn = date;
-        data.updatedOn = getDateObjWithoutTime(now);
-        const d = await editCourse(data, modules, coverPhotoUrl, learningItems, course._id, instructorImage, additionalMaterials, courseIncludes);
-        if (d?.status === 200) {
-            toast.success(d.message);
-            window.location.href = "/dashboard/courses"
+        if (!idAvailable && data.courseId !== course.courseId) {
+            toast.error("Course ID is not available.");
+            return;
+        }
+
+        if (modules.length === 0) {
+            toast.error("Please add at least one module.");
+            return;
+        }
+
+        if (!coverPhotoUrl) {
+            toast.error("Cover photo is required.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setFormSubmitted(true);
+
+        try {
+            const totalDuration = calculateTotalDuration();
+            const dateObj = data.addedOn || new Date();
+            const date = getDateObjWithoutTime(dateObj);
+            const now = new Date();
+
+            const courseData = {
+                ...data,
+                _id: course._id,
+                addedOn: date,
+                updatedOn: getDateObjWithoutTime(now),
+                totalDuration,
+                modules: modules.map((module, index) => ({
+                    ...module,
+                    order: index + 1,
+                    items: module.items.map((item, itemIndex) => ({
+                        ...item,
+                        order: itemIndex + 1
+                    }))
+                })),
+                coverPhotoUrl,
+                learningItems: learningItems.filter(item => item.text.trim()),
+                instructorImage,
+                additionalMaterials: additionalMaterials.filter(item => item.text.trim()),
+                courseIncludes: courseIncludes.filter(item => item.text.trim())
+            };
+
+            const result = await editCourse(courseData, course?._id);
+console.log(result)
+            if (result?.status === 200) {
+                toast.success(result?.message || "Course updated successfully!");
+                // Remove beforeunload listener after successful submission
+                window.removeEventListener("beforeunload", handleBeforeUnload);
+                // Redirect to courses page after a short delay
+                setTimeout(() => {
+                    window.location.href = "/dashboard/courses";
+                }, 1500);
+            } else {
+                toast.error(result?.message || "Failed to update course.");
+                setFormSubmitted(false);
+            }
+        } catch (error) {
+            console.error("Error updating course:", error);
+            toast.error("An error occurred while updating the course.");
+            setFormSubmitted(false);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const handleAddModule = () => {
-        setModules([...modules, { title: '', items: [] }]);
-    };
-
-    const handleRemoveModule = (moduleId) => {
-        const updatedModules = modules.filter((_, index) => index !== moduleId);
-        setModules(updatedModules);
-    };
-
-    const handleLearningInputChange = (e, index) => {
-        const updatedItems = learningItems.map((item, idx) =>
-            idx === index ? { ...item, text: e.target.value } : item
-        );
-        setLearningItems(updatedItems);
-    };
-    const handleAdditionalMaterialsInputChange = (e, index) => {
-        const updatedItems = additionalMaterials?.map((item, idx) =>
-            idx === index ? { ...item, text: e.target.value } : item
-        );
-        setAdditionalMaterials(updatedItems);
-    };
-    const handleCourseIncludesInputChange = (e, index) => {
-        const updatedItems = courseIncludes?.map((item, idx) =>
-            idx === index ? { ...item, text: e.target.value } : item
-        );
-        setCourseIncludes(updatedItems);
-    };
-    const handleModuleTitleChange = (moduleId, title) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return { ...module, title };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleQuizQuestionChange = (moduleId, itemIndex, question) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'quiz') {
-                            return { ...item, question };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleQuizOptionChange = (moduleId, itemIndex, optionIndex, option) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'quiz') {
-                            const newOptions = [...item.options];
-                            newOptions[optionIndex] = option;
-                            return { ...item, options: newOptions };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-    const handleQuizAnswerChange = (moduleId, itemIndex, answer) => {
-        const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === 'quiz') {
-                            return { ...item, answer };
-                        }
-                        return item;
-                    }),
-                };
-            }
-            return module;
-        });
-        setModules(updatedModules);
-    };
-
-
-
-    const handleUploadImage = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const imageUrl = await uploadFile(file);
-            setCoverPhotoUrl(imageUrl);
-        }
-    };
-
-    const handleUploadInstructorImage = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const imageUrl = await uploadFile(file);
-            setInstructorImage(imageUrl);
-        }
-    };
+    // Check ID availability
     const checkIdAvailability = async (id) => {
+        if (!id || id.trim() === '') {
+            setIdCheckMessage('');
+            setIdAvailable(false);
+            return;
+        }
+
+        // If ID hasn't changed, it's available
+        if (id === course.courseId) {
+            setIdCheckMessage('✓ Current course ID');
+            setIdAvailable(true);
+            return;
+        }
+
+        if (id.includes("/")) {
+            setIdCheckMessage("ID cannot contain slashes.");
+            setIdAvailable(false);
+            return;
+        }
+
         setCheckingId(true);
         try {
-            if (id?.includes("/")) {
-                setIdCheckMessage("ID cannot contain slashes.");
-                setIdAvailable(false);
-                return;
-            }
             const data = await checkCourseId(id);
-            setIdCheckMessage(data?.isAvailable ? "Id is available!" : "Id is already taken.");
-            setIdAvailable(data?.isAvailable);
+            setIdCheckMessage(data?.isAvailable ? "✓ ID is available!" : "✗ ID is already taken.");
+            setIdAvailable(data?.isAvailable || false);
         } catch (error) {
-            setIdCheckMessage("Failed to check Id availability. Please try again.");
+            setIdCheckMessage("Failed to check ID availability.");
+            setIdAvailable(false);
         } finally {
             setCheckingId(false);
         }
     };
 
+    // Module handlers
+    const handleAddModule = () => {
+        const newModule = {
+            moduleId: generateModuleId(),
+            title: '',
+            description: '',
+            items: [],
+            order: modules.length + 1
+        };
+        setModules([...modules, newModule]);
+    };
 
-    // new functions
+    const handleRemoveModule = (moduleIndex) => {
+        const updatedModules = modules.filter((_, index) => index !== moduleIndex);
+        const reorderedModules = updatedModules.map((module, index) => ({
+            ...module,
+            order: index + 1
+        }));
+        setModules(reorderedModules);
+        toast.info("Module removed.");
+    };
 
-    const handleClearFields = (moduleId, itemIndex, type) => {
+    const handleModuleFieldChange = (moduleIndex, field, value) => {
         const updatedModules = modules.map((module, index) => {
-            if (index === moduleId) {
-                return {
-                    ...module,
-                    items: module.items.map((item, idx) => {
-                        if (idx === itemIndex && item.type === type) {
-                            return {
-                                ...item,
-                                title: '',
-                                description: '',
-                                url: '',
-                                status: 'private',
-                            };
-                        }
-                        return item;
-                    }),
-                };
+            if (index === moduleIndex) {
+                const updatedModule = { ...module, [field]: value };
+
+                if (field === 'items') {
+                    updatedModule.duration = calculateModuleDuration(value);
+                }
+
+                return updatedModule;
             }
             return module;
         });
-
         setModules(updatedModules);
     };
-    const handleItemFieldChange = (moduleId, itemIndex, type, field, value) => {
-        setModules(prev =>
-            prev.map((module, index) => {
-                if (index === moduleId) {
-                    return {
-                        ...module,
-                        items: module.items.map((item, idx) => {
-                            if (idx === itemIndex && item.type === type) {
-                                return { ...item, [field]: value };
-                            }
-                            return item;
-                        }),
-                    };
+
+    // Item handlers
+    const handleAddItem = (moduleIndex, type) => {
+        const baseItem = {
+            itemId: generateItemId(),
+            type,
+            title: '',
+            status: 'private',
+            order: modules[moduleIndex].items.length + 1
+        };
+
+        let newItem;
+        switch (type) {
+            case 'video':
+                newItem = {
+                    ...baseItem,
+                    description: '',
+                    duration: '',
+                    url: null
+                };
+                break;
+            case 'textInstruction':
+                newItem = {
+                    ...baseItem,
+                    content: ''
+                };
+                break;
+            case 'quiz':
+                newItem = {
+                    ...baseItem,
+                    question: '',
+                    options: ['', '', '', ''],
+                    answer: 0
+                };
+                break;
+            case 'file':
+                newItem = {
+                    ...baseItem,
+                    description: '',
+                    duration: '',
+                    url: null
+                };
+                break;
+            default:
+                newItem = baseItem;
+        }
+
+        const updatedItems = [...modules[moduleIndex].items, newItem];
+        handleModuleFieldChange(moduleIndex, 'items', updatedItems);
+    };
+
+    const handleRemoveItem = (moduleIndex, itemIndex) => {
+        const updatedItems = modules[moduleIndex].items.filter((_, idx) => idx !== itemIndex);
+        const reorderedItems = updatedItems.map((item, idx) => ({
+            ...item,
+            order: idx + 1
+        }));
+        handleModuleFieldChange(moduleIndex, 'items', reorderedItems);
+    };
+
+    const handleItemFieldChange = (moduleIndex, itemIndex, field, value) => {
+        setModules(prevModules => {
+            return prevModules.map((module, modIdx) => {
+                if (modIdx === moduleIndex) {
+                    const updatedItems = module.items.map((item, itmIdx) => {
+                        if (itmIdx === itemIndex) {
+                            return { ...item, [field]: value };
+                        }
+                        return item;
+                    });
+
+                    // Recalculate module duration
+                    setTimeout(() => {
+                        const newModuleDuration = calculateModuleDuration(updatedItems);
+                        if (newModuleDuration !== module.duration) {
+                            handleModuleFieldChange(moduleIndex, 'duration', newModuleDuration);
+                        }
+                    }, 300);
+
+                    return { ...module, items: updatedItems };
                 }
                 return module;
-            })
+            });
+        });
+    };
+
+    // Clear item fields
+    const handleClearItemFields = (moduleIndex, itemIndex, type) => {
+        const currentItem = modules[moduleIndex]?.items[itemIndex];
+        if (!currentItem) return;
+
+        let clearedItem;
+        switch (type) {
+            case 'video':
+                clearedItem = {
+                    ...currentItem,
+                    title: '',
+                    description: '',
+                    duration: '',
+                    url: null
+                };
+                break;
+            case 'textInstruction':
+                clearedItem = {
+                    ...currentItem,
+                    title: '',
+                    content: ''
+                };
+                break;
+            case 'quiz':
+                clearedItem = {
+                    ...currentItem,
+                    question: '',
+                    options: ['', '', '', ''],
+                    answer: 0
+                };
+                break;
+            case 'file':
+                clearedItem = {
+                    ...currentItem,
+                    title: '',
+                    description: '',
+                    duration: '',
+                    url: null
+                };
+                break;
+            default:
+                clearedItem = { ...currentItem };
+        }
+
+        const updatedItems = modules[moduleIndex].items.map((item, idx) =>
+            idx === itemIndex ? clearedItem : item
+        );
+
+        handleModuleFieldChange(moduleIndex, 'items', updatedItems);
+        toast.info(`Cleared ${type} fields`);
+    };
+
+    const handleVideoUploadComplete = (moduleIndex, itemIndex, fileData) => {
+        const currentModule = modules[moduleIndex];
+        if (!currentModule) return;
+
+        const currentItem = currentModule.items[itemIndex];
+        if (!currentItem) return;
+
+        const updatedItem = {
+            ...currentItem,
+            url: fileData,
+            duration: fileData.duration && fileData.duration > 0 ? fileData.duration : currentItem.duration || ''
+        };
+
+        const updatedItems = currentModule.items.map((item, idx) =>
+            idx === itemIndex ? updatedItem : item
+        );
+
+        const updatedModule = {
+            ...currentModule,
+            items: updatedItems,
+            duration: calculateModuleDuration(updatedItems)
+        };
+
+        const updatedModules = modules.map((module, idx) =>
+            idx === moduleIndex ? updatedModule : module
+        );
+
+        setModules(updatedModules);
+        toast.success(`Video "${currentItem.title || 'Untitled'}" updated successfully!`);
+    };
+
+    const handleFileUploadComplete = (moduleIndex, itemIndex, fileData) => {
+        const currentModule = modules[moduleIndex];
+        if (!currentModule) return;
+
+        const currentItem = currentModule.items[itemIndex];
+        if (!currentItem) return;
+
+        const updatedItem = {
+            ...currentItem,
+            url: fileData
+        };
+
+        const updatedItems = currentModule.items.map((item, idx) =>
+            idx === itemIndex ? updatedItem : item
+        );
+
+        const updatedModule = {
+            ...currentModule,
+            items: updatedItems
+        };
+
+        const updatedModules = modules.map((module, idx) =>
+            idx === moduleIndex ? updatedModule : module
+        );
+
+        setModules(updatedModules);
+        toast.success(`File "${currentItem.title || 'Untitled'}" updated successfully!`);
+    };
+
+    // Quiz handlers
+    const handleQuizOptionChange = (moduleIndex, itemIndex, optionIndex, value) => {
+        const updatedItems = modules[moduleIndex].items.map((item, idx) => {
+            if (idx === itemIndex && item.type === 'quiz') {
+                const newOptions = [...item.options];
+                newOptions[optionIndex] = value;
+                return { ...item, options: newOptions };
+            }
+            return item;
+        });
+        handleModuleFieldChange(moduleIndex, 'items', updatedItems);
+    };
+
+    const handleQuizAnswerChange = (moduleIndex, itemIndex, answerIndex) => {
+        handleItemFieldChange(moduleIndex, itemIndex, 'answer', answerIndex);
+    };
+
+    // List handlers
+    const handleListTextChange = (setter, list, index, value) => {
+        const updatedList = list.map((item, idx) =>
+            idx === index ? { ...item, text: value } : item
+        );
+        setter(updatedList);
+    };
+
+    const handleAddListItem = (setter, list) => {
+        setter([...list, { text: '' }]);
+    };
+
+    const handleRemoveListItem = (setter, list, index) => {
+        setter(list.filter((_, idx) => idx !== index));
+    };
+
+    // Image upload handlers
+    const handleUploadImage = async (event, setter) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            toast.info("Uploading image...");
+            const imageUrl = await uploadFile(file);
+            setter(imageUrl);
+            toast.success("Image uploaded successfully!");
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            toast.error("Failed to upload image.");
+        }
+    };
+
+
+    // Prevent accidental navigation
+    const handleBeforeUnload = (e) => {
+        if (!formSubmitted) {
+            e.preventDefault();
+            e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [formSubmitted]);
+
+    // Render helper components
+    const renderModuleDuration = (module) => {
+        if (!module.duration) return null;
+        return (
+            <div className="flex items-center gap-1 text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                <ClockSVG className="w-4 h-4" />
+                <span>{module.duration}</span>
+            </div>
         );
     };
 
-    const handleAddItem = (moduleId, newItem) => {
-        setModules(prev =>
-            prev.map((module, index) =>
-                index === moduleId
-                    ? { ...module, items: [...module.items, newItem] }
-                    : module
-            )
+    const renderQuizItem = (moduleIndex, itemIndex, item) => (
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-3">
+                <div className="flex-1">
+                    <input
+                        type="text"
+                        value={item.question || ''}
+                        onChange={(e) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'question', e.target.value)
+                        }
+                        placeholder="Quiz Question"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'quiz')}
+                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
+                        title="Clear Fields"
+                    >
+                        Clear
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                        title="Remove Quiz"
+                    >
+                        <TrashSVG className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                {item.options.map((option, optionIndex) => (
+                    <div key={optionIndex} className="flex items-center gap-2">
+                        <input
+                            type="radio"
+                            name={`quiz-${moduleIndex}-${itemIndex}`}
+                            checked={item.answer === optionIndex}
+                            onChange={() => handleQuizAnswerChange(moduleIndex, itemIndex, optionIndex)}
+                            className="h-4 w-4 text-blue-600"
+                        />
+                        <input
+                            type="text"
+                            value={option || ''}
+                            onChange={(e) =>
+                                handleQuizOptionChange(moduleIndex, itemIndex, optionIndex, e.target.value)
+                            }
+                            placeholder={`Option ${optionIndex + 1}`}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderTextInstructionItem = (moduleIndex, itemIndex, item) => (
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-3">
+                <input
+                    type="text"
+                    value={item.title || ''}
+                    onChange={(e) =>
+                        handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
+                    }
+                    placeholder="Instruction Title"
+                    className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                <select
+                    value={item.status || 'private'}
+                    onChange={(e) =>
+                        handleItemFieldChange(moduleIndex, itemIndex, 'status', e.target.value)
+                    }
+                    className="mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                    <option value="private">Private</option>
+                    <option value="public">Public</option>
+                </select>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'textInstruction')}
+                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
+                        title="Clear Fields"
+                    >
+                        Clear
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                        title="Remove Instruction"
+                    >
+                        <TrashSVG className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <div className="mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Content
+                </label>
+                <RichTextEditor
+                    onContentChange={(content) =>
+                        handleItemFieldChange(moduleIndex, itemIndex, 'content', content)
+                    }
+                    initialContent={item.content}
+                    uniqueKey={`text-instruction-${moduleIndex}-${itemIndex}`}
+                />
+            </div>
+
+            {item.content && (
+                <div className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded">
+                    <strong>Estimated reading time:</strong> {
+                        Math.max(1, Math.ceil(
+                            item.content.replace(/<[^>]*>/g, '').split(/\s+/).length / 200
+                        ))
+                    } minutes
+                </div>
+            )}
+        </div>
+    );
+
+    const renderVideoItem = (moduleIndex, itemIndex, item) => {
+        const handleUpload = (fileData) => {
+            handleVideoUploadComplete(moduleIndex, itemIndex, fileData);
+        };
+
+        return (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                    <input
+                        type="text"
+                        value={item.title || ''}
+                        onChange={(e) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
+                        }
+                        placeholder="Video Title"
+                        className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                    <select
+                        value={item.status || 'private'}
+                        onChange={(e) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'status', e.target.value)
+                        }
+                        disabled={item.url}
+                        className="mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                        <option value="private">Private</option>
+                        <option value="public">Public</option>
+                    </select>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'video')}
+                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
+                            title="Clear Fields"
+                        >
+                            Clear
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                            title="Remove Video"
+                        >
+                            <TrashSVG className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+                <input
+                    type="text"
+                    value={item.description || ''}
+                    onChange={(e) =>
+                        handleItemFieldChange(moduleIndex, itemIndex, 'description', e.target.value)
+                    }
+                    placeholder="Video Description (optional)"
+                    className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+
+                <div className="mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <div className="flex items-center gap-2">
+                            <ClockSVG className="w-4 h-4" />
+                            Duration (minutes)
+                        </div>
+                    </label>
+                    <input
+                        type="number"
+                        min="1"
+                        value={item.duration || ''}
+                        onChange={(e) => {
+                            handleItemFieldChange(moduleIndex, itemIndex, 'duration', e.target.value);
+                        }}
+                        placeholder="Estimated duration in minutes"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <CourseUploadBox
+                        key={`upload-${moduleIndex}-${itemIndex}-${item.itemId}`}
+                        label="Upload Video"
+                        accept="video/*"
+                        status={item.status || 'private'}
+                        type="video"
+                        estimatedDuration={item.duration || ''}
+                        onDurationChange={(duration) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'duration', duration)
+                        }
+                        onUpload={handleUpload}
+                        itemId={item.itemId}
+                        disableStatusChange={!!item.url}
+                    />
+                    {item.url && (
+                        <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <VideoSVG className="w-4 h-4 text-green-600" />
+                                        <span className="font-medium text-green-800 truncate">
+                                            {item.url.originalName || item.url.filename}
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 text-sm text-green-700 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">Size:</span>
+                                            <span>{item.url.size ? `${(item.url.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A'}</span>
+                                        </div>
+                                        {item.duration && item.duration > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">Duration:</span>
+                                                <span>{item.duration} minutes</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    ✓ Ready
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
         );
     };
 
-    const handleRemoveItem = (moduleId, itemIndex) => {
-        setModules(prev =>
-            prev.map((module, index) =>
-                index === moduleId
-                    ? { ...module, items: module.items.filter((_, i) => i !== itemIndex) }
-                    : module
-            )
+    const renderFileItem = (moduleIndex, itemIndex, item) => {
+        const handleUpload = (fileData) => {
+            handleFileUploadComplete(moduleIndex, itemIndex, fileData);
+        };
+
+        return (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-3">
+                    <input
+                        type="text"
+                        value={item.title || ''}
+                        onChange={(e) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'title', e.target.value)
+                        }
+                        placeholder="File Title"
+                        className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                    <select
+                        value={item.status || 'private'}
+                        onChange={(e) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'status', e.target.value)
+                        }
+                        disabled={item.url}
+                        className="mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                        <option value="private">Private</option>
+                        <option value="public">Public</option>
+                    </select>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handleClearItemFields(moduleIndex, itemIndex, 'file')}
+                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-full"
+                            title="Clear Fields"
+                        >
+                            Clear
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleRemoveItem(moduleIndex, itemIndex)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                            title="Remove File"
+                        >
+                            <TrashSVG className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+                <input
+                    type="text"
+                    value={item.description || ''}
+                    onChange={(e) =>
+                        handleItemFieldChange(moduleIndex, itemIndex, 'description', e.target.value)
+                    }
+                    placeholder="File Description (optional)"
+                    className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+
+                <div className="mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Estimated Time (minutes, optional)
+                    </label>
+                    <input
+                        type="number"
+                        min="1"
+                        value={item.duration || ''}
+                        onChange={(e) =>
+                            handleItemFieldChange(moduleIndex, itemIndex, 'duration', e.target.value)
+                        }
+                        placeholder="Estimated time to complete"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <CourseUploadBox
+                        key={`upload-file-${moduleIndex}-${itemIndex}-${item.itemId}`}
+                        label="Upload File"
+                        accept="application/pdf,image/*,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+                        status={item.status || 'private'}
+                        type="file"
+                        onUpload={handleUpload}
+                        itemId={item.itemId}
+                        disableStatusChange={!!item.url}
+                    />
+                    {item.url && (
+                        <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <FileSVG className="w-4 h-4 text-green-600" />
+                                        <span className="font-medium text-green-800 truncate">
+                                            {item.url.originalName || item.url.filename}
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 text-sm text-green-700">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">Size:</span>
+                                            <span>{item.url.size ? `${(item.url.size / (1024 * 1024)).toFixed(2)} MB` : 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    ✓ Ready
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
         );
     };
 
-
+    // Calculate statistics
+    const totalItems = modules.reduce((sum, module) => sum + module.items.length, 0);
+    const videoCount = modules.reduce((sum, module) =>
+        sum + module.items.filter(item => item.type === 'video').length, 0
+    );
+    const quizCount = modules.reduce((sum, module) =>
+        sum + module.items.filter(item => item.type === 'quiz').length, 0
+    );
+    const textCount = modules.reduce((sum, module) =>
+        sum + module.items.filter(item => item.type === 'textInstruction').length, 0
+    );
+    const fileCount = modules.reduce((sum, module) =>
+        sum + module.items.filter(item => item.type === 'file').length, 0
+    );
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-full mx-auto p-4 bg-white shadow-md rounded-lg">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">Edit Course</h2>
-
-            {/* Course Title */}
-            <div className="mb-4">
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700">Course Title</label>
-                <input
-                    type="text"
-                    id="title"
-                    {...register('title', { required: 'Title is required' })}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
-            </div>
-            <div className="mb-4">
-                <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700">Short Description</label>
-                <input
-                    type="text"
-                    id="shortDescription"
-                    {...register('shortDescription', { required: 'Short Description is required' })}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {errors.shortDescription && <p className="text-red-500 text-sm mt-1">{errors.shortDescription.message}</p>}
-            </div>
-            <div className="mb-4">
-                <label htmlFor="duration" className="block text-sm font-medium text-gray-700">Duration (ex: 4 weeks)</label>
-                <input
-                    type="text"
-                    id="duration"
-                    {...register('duration', { required: 'Duration is required' })}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration.message}</p>}
-            </div>
-            {/* Course Description */}
-            <div className="mb-4">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">Course Description</label>
-                <Controller
-                    name="description"
-                    id='description'
-                    control={control}
-                    rules={{ required: 'Description is required' }}
-                    render={({ field }) => {
-                        if (field.value === undefined) return;
-                        return <RichTextEditor
-                            onContentChange={field.onChange}
-                            key={`Description Rich Text Key course`}
-                            uniqueKey={generateUniqueIds(1)}
-                            initialContent={field.value}
-                        />
-                    }}
-                />
-                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-4 bg-white shadow-lg rounded-xl">
+            <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Edit Course: {course?.title || 'Untitled'}</h2>
+                <p className="text-gray-600">Update the course details below</p>
             </div>
 
-            {/* SEO Description */}
-            <div className="mb-4">
-                <label htmlFor="seoDescription" className="block text-sm font-medium text-gray-700">SEO Description</label>
-                <input
-                    type="text"
-                    id="seoDescription"
-                    {...register('seoDescription')}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                    placeholder="SEO description (optional)"
-                />
+            {/* Course Summary Stats */}
+            <div className="mb-6 grid grid-cols-2 md:grid-cols-6 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-700">{modules.length}</div>
+                    <div className="text-sm text-blue-600">Modules</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-700">{totalItems}</div>
+                    <div className="text-sm text-green-600">Total Items</div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-700">{videoCount}</div>
+                    <div className="text-sm text-purple-600">Videos</div>
+                </div>
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-700">{quizCount}</div>
+                    <div className="text-sm text-yellow-600">Quizzes</div>
+                </div>
+                <div className="bg-pink-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-pink-700">{textCount}</div>
+                    <div className="text-sm text-pink-600">Texts</div>
+                </div>
+                <div className="bg-indigo-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-indigo-700">{calculateTotalDuration()}</div>
+                    <div className="text-sm text-indigo-600">Duration</div>
+                </div>
             </div>
 
-            {/* SEO Tags */}
-            <div className="mb-4">
-                <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags</label>
-                <input
-                    type="text"
-                    id="tags"
-                    {...register('tags')}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                    placeholder="Enter SEO tags, separated by commas (optional)"
-                />
-            </div>
+            {/* Basic Information Section */}
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b">Basic Information</h3>
 
-            {/* Date Picker */}
-            <div className="mb-4">
-                <Controller
-                    name="addedOn"
-                    control={control}
-                    rules={{ required: 'Date is required' }}
-                    render={({ field }) => {
-                        if (field.value === undefined) return;
-                        return <DatePicker
-                            defaultDate={field.value}
-                            onChangeHanlder={field.onChange}
-                        />
-                    }}
-                />
-                {errors.addedOn && <p className="text-red-500 text-sm mt-1">{errors.addedOn.message}</p>}
-            </div>
-
-            {/* Instructor */}
-            <div className="mb-4">
-                <label htmlFor="instructor" className="block text-sm font-medium text-gray-700">Instructor</label>
-                <input
-                    type="text"
-                    id="instructor"
-                    {...register('instructor', { required: 'Instructor is required' })}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {errors.instructor && <p className="text-red-500 text-sm mt-1">{errors.instructor.message}</p>}
-            </div>
-            <div className="mb-4">
-                <label htmlFor="instructorImage" className="block text-sm font-medium text-gray-700">Instructor Image</label>
-                <input
-                    type="file"
-                    id="instructorImage"
-                    accept="image/*"
-                    onChange={handleUploadInstructorImage}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {instructorImage?.length > 1 && (
-                    <img src={instructorImage} alt="Instructor" className="mt-2 w- h-48 object-cover rounded-lg" />
-                )}
-            </div>
-            <div className="mb-4">
-                <label htmlFor="instructorDesignation" className="block text-sm font-medium text-gray-700">Instructor Designations</label>
-                <input
-                    type="text"
-                    id="instructorDesignation"
-                    {...register('instructorDesignation',)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                    placeholder="Separated by commas (ex:Teacher, Dawi)"
-                />
-            </div>
-
-            <div className="mb-4">
-                <label htmlFor="aboutInstructor" className="block text-sm font-medium text-gray-700">About Instructor</label>
-                <Controller
-                    name="aboutInstructor"
-                    control={control}
-                    render={({ field }) => {
-                        if (field.value === undefined) return;
-                        return <RichTextEditor
-                            value={field.value}
-                            onContentChange={field.onChange}
-                            key={`Editing About Instructor Rich Text Key course`}
-                            uniqueKey={generateUniqueIds(1)}
-                            initialContent={field.value}
-                        />
-                    }
-                    }
-                />
-                {errors.aboutInstructor && <p className="text-red-500 text-sm mt-1">{errors.aboutInstructor.message}</p>}
-            </div>
-
-            <div className="mb-4">
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
-                <input
-                    type="number"
-                    id="price"
-                    {...register('price', { required: 'Price is required' })}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
-            </div>
-                        <div className="mb-4">
-                <label htmlFor="offerPrice" className="block text-sm font-medium text-gray-700">Offer Price</label>
-                <input
-                    type="number"
-                    id="offerPrice"
-                    {...register('offerPrice')}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-            </div>
-            <div className='mb-4'>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">Course Includes</h3>
-                {courseIncludes?.map((item, index) => (
-                    <div key={index} className="mb-4 flex items-center space-x-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                            Course Title *
+                        </label>
                         <input
                             type="text"
-                            value={item.text}
-                            onChange={(e) => handleCourseIncludesInputChange(e, index)}
-                            placeholder={`Enter text ${index + 1}`}
-                            className="p-2 border rounded-md w-full"
+                            id="title"
+                            {...register('title', { required: 'Course title is required' })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter course title"
                         />
-                        <button
-                            onClick={() => setCourseIncludes(courseIncludes?.filter((_, idx) => idx !== index))}
-                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
-                        >
-                            Remove
-                        </button>
+                        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
                     </div>
-                ))}
-                <button
-                    type='button'
-                    onClick={() => setCourseIncludes([...courseIncludes, { text: '' }])}
-                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
-                >
-                    Add Another
-                </button>
-            </div>
-            <div className='mb-4'>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">Additional Materials</h3>
-                {additionalMaterials?.map((item, index) => (
-                    <div key={index} className="mb-4 flex items-center space-x-2">
+
+                    <div>
+                        <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 mb-1">
+                            Course ID *
+                        </label>
                         <input
                             type="text"
-                            value={item.text}
-                            onChange={(e) => handleAdditionalMaterialsInputChange(e, index)}
-                            placeholder={`Enter text ${index + 1}`}
-                            className="p-2 border rounded-md w-full"
+                            id="courseId"
+                            {...register('courseId', {
+                                required: 'Course ID is required',
+                                pattern: {
+                                    value: /^[a-zA-Z0-9_-]+$/,
+                                    message: 'Only letters, numbers, hyphens and underscores allowed'
+                                }
+                            })}
+                            onChange={(e) => {
+                                const formatted = formatUrlAdIds(e.target.value);
+                                setValue("courseId", formatted, { shouldValidate: true });
+                            }}
+                            onBlur={(e) => checkIdAvailability(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="e.g., python-basics"
                         />
-                        <button
-                            onClick={() => setAdditionalMaterials(additionalMaterials?.filter((_, idx) => idx !== index))}
-                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
-                        >
-                            Remove
-                        </button>
-                    </div>
-                ))}
-                <button
-                    type='button'
-                    onClick={() => setAdditionalMaterials([...additionalMaterials, { text: '' }])}
-                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
-                >
-                    Add Another
-                </button>
-            </div>
-            <div className='mb-4'>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">Who This Course is For</h3>
-                {learningItems?.map((item, index) => (
-                    <div key={index} className="mb-4 flex items-center space-x-2">
-                        <input
-                            type="text"
-                            value={item.text}
-                            onChange={(e) => handleLearningInputChange(e, index)}
-                            placeholder={`Enter text ${index + 1}`}
-                            className="p-2 border rounded-md w-full"
-                        />
-                        <button
-                            onClick={() => setLearningItems(learningItems.filter((_, idx) => idx !== index))}
-                            className="bg-red-500 text-white p-2 rounded-md hover:bg-red-700"
-                        >
-                            Remove
-                        </button>
-                    </div>
-                ))}
-                <button
-                    type='button'
-                    onClick={() => setLearningItems([...learningItems, { text: '' }])}
-                    className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-700"
-                >
-                    Add Another
-                </button>
-            </div>
-            {/* Course ID */}
-            <div className="mb-4">
-                <label htmlFor="courseId" className="block text-sm font-medium text-gray-700">Course ID</label>
-                <input
-                    type="text"
-                    id="courseId"
-                    {...register('courseId')}
-                    onBlur={(e) => checkIdAvailability(e.target.value)}
-                    onChange={(e) => {
-                        setValue('courseId', e.target.value);
-                    }}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {checkingId ? (
-                    <p className="text-blue-500 text-sm mt-1">Checking ID availability...</p>
-                ) : (
-                    <p className={`text-gray-500 text-sm mt-1 ${!idAvailable && 'text-red-500'}`}>{idCheckMessage}</p>
-                )}
-                {errors.courseId && <p className="text-red-500 text-sm mt-1">{errors.courseId.message}</p>}
-            </div>
-
-            {/* Cover Photo */}
-            <div className="mb-4">
-                <label htmlFor="coverPhoto" className="block text-sm font-medium text-gray-700">Cover Photo</label>
-                <input
-                    type="file"
-                    id="coverPhoto"
-                    accept="image/*"
-                    onChange={handleUploadImage}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                />
-                {coverPhotoUrl && (
-                    <img src={coverPhotoUrl} alt="Cover" className="mt-2 w-full h-48 object-cover rounded-lg" />
-                )}
-            </div>
-
-            {/* Modules */}
-            <div className="mb-4">
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">Modules</h3>
-                <button
-                    type="button"
-                    onClick={handleAddModule}
-                    className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                    Add Module
-                </button>
-                {modules.map((module, moduleId) => (
-                    <div key={moduleId} className="border border-gray-300 rounded-md p-4 mb-4 mt-4 bg-gray-50">
-                        <div className="flex justify-between items-center mb-4">
-                            <input
-                                type="text"
-                                value={module.title}
-                                onChange={(e) => handleModuleTitleChange(moduleId, e.target.value)}
-                                placeholder="Module Title"
-                                className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveModule(moduleId)}
-                                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                            >
-                                Remove Module
-                            </button>
+                        <div className="mt-1">
+                            {checkingId ? (
+                                <p className="text-sm text-blue-600">Checking availability...</p>
+                            ) : (
+                                <p className={`text-sm ${idAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                                    {idCheckMessage}
+                                </p>
+                            )}
                         </div>
+                        {errors.courseId && <p className="mt-1 text-sm text-red-600">{errors.courseId.message}</p>}
+                    </div>
 
-                        {/* Items (Videos, Quizzes, Text Instructions) */}
-                        {module.items.map((item, itemIndex) => (
-                            <div key={itemIndex} className="mb-4">
-                                {item.type === 'video' && (
-                                    <div className="bg-gray-100 p-2 mb-2 rounded-md">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <input
-                                                type="text"
-                                                value={item.title}
-                                                onChange={(e) =>
-                                                    handleItemFieldChange(moduleId, itemIndex, 'video', 'title', e.target.value)
-                                                }
+                    <div>
+                        <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+                            Estimated Duration (auto-calculated)
+                        </label>
+                        <input
+                            type="text"
+                            id="duration"
+                            value={calculateTotalDuration()}
+                            readOnly
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-700"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                            Based on video durations and content length
+                        </p>
+                    </div>
 
-                                                placeholder="Video Title"
-                                                className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                                            />
-                                            <select
-                                                id={`visibility[${moduleId}].items[${itemIndex}].content`}
-                                                name={`visibility[${moduleId}].items[${itemIndex}].content`}
-                                                value={item.status}
-                                                disabled={item.url}
-                                                onChange={(e) =>
-                                                    handleItemFieldChange(moduleId, itemIndex, 'video', 'status', e.target.value)
-                                                }
+                    <div>
+                        <label htmlFor="shortDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                            Short Description *
+                        </label>
+                        <input
+                            type="text"
+                            id="shortDescription"
+                            {...register('shortDescription', { required: 'Short description is required' })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Brief description of the course"
+                        />
+                        {errors.shortDescription && <p className="mt-1 text-sm text-red-600">{errors.shortDescription.message}</p>}
+                    </div>
+                </div>
 
-                                                className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="private">Private</option>
-                                                <option value="public">Public</option>
-                                            </select>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
-                                                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            >
-                                                Remove Video
-                                            </button>
+                <div className="mt-6">
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                        Full Description *
+                    </label>
+                    <Controller
+                        name="description"
+                        control={control}
+                        rules={{ required: 'Course description is required' }}
+                        render={({ field }) => (
+                            <RichTextEditor
+                                key={`description-editor-${field.value?.substring(0, 20) || 'empty'}`} // Force re-render when content changes
+                                onContentChange={field.onChange}
+                                initialContent={field.value || ''}
+                                uniqueKey="course-description"
+                                height="300px"
+                            />
+                        )}
+                    />
+                    {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
+                </div>
+            </div>
 
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={item.description}
-                                            onChange={(e) =>
-                                                handleItemFieldChange(moduleId, itemIndex, 'video', 'description', e.target.value)
-                                            }
+            {/* Pricing Section */}
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b">Pricing</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                            Price (৳) *
+                        </label>
+                        <input
+                            type="number"
+                            id="price"
+                            {...register('price', {
+                                required: 'Price is required',
+                                min: { value: 0, message: 'Price cannot be negative' }
+                            })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter price in BDT"
+                        />
+                        {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
+                    </div>
 
-                                            placeholder="Video Description"
-                                            className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                                        />
-                                        {item.title && <button
-                                            type="button"
-                                            onClick={() => handleClearFields(moduleId, itemIndex, 'video')}
-                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                        >
-                                            Clear Fields
-                                        </button>}
-                                        <CourseUploadBox
-                                            key={`${generateUniqueIds(1)}+${item.status}`}
-                                            label="Upload Video"
-                                            accept="video/*,audio/*,application/pdf,image/*"
-                                            isPrivate={item.status === 'private'}
-                                            onUpload={(fileData) =>
-                                                handleItemFieldChange(moduleId, itemIndex, 'video', 'url', fileData)
-                                            }
-                                        />
+                    <div>
+                        <label htmlFor="offerPrice" className="block text-sm font-medium text-gray-700 mb-1">
+                            Offer Price (৳) - Optional
+                        </label>
+                        <input
+                            type="number"
+                            id="offerPrice"
+                            {...register('offerPrice', {
+                                min: { value: 0, message: 'Offer price cannot be negative' }
+                            })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter offer price"
+                        />
+                        {errors.offerPrice && <p className="mt-1 text-sm text-red-600">{errors.offerPrice.message}</p>}
+                    </div>
+                </div>
+            </div>
 
-                                        {item.url && (
-                                            <div className="text-xs text-green-600 mt-1">
-                                                {item.url.originalName || item.url.filename}
-                                            </div>
-                                        )}
+            {/* Instructor Section */}
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b">Instructor Information</h3>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="instructor" className="block text-sm font-medium text-gray-700 mb-1">
+                            Instructor Name *
+                        </label>
+                        <input
+                            type="text"
+                            id="instructor"
+                            {...register('instructor', { required: 'Instructor name is required' })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter instructor name"
+                        />
+                        {errors.instructor && <p className="mt-1 text-sm text-red-600">{errors.instructor.message}</p>}
+                    </div>
 
-                                    </div>
-                                )}
-                                {item.type === 'file' && (
-                                    <div className="bg-gray-100 p-2 mb-2 rounded-md">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <input
-                                                type="text"
-                                                value={item.title}
-                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'title', e.target.value)}
-                                                placeholder="File Title"
-                                                className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                                            />
-                                            <select
-                                                value={item.status}
-                                                disabled={item.url}
-                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'status', e.target.value)}
-                                                className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md"
-                                            >
-                                                <option value="private">Private</option>
-                                                <option value="public">Public</option>
-                                            </select>
+                    <div>
+                        <label htmlFor="instructorDesignation" className="block text-sm font-medium text-gray-700 mb-1">
+                            Designation
+                        </label>
+                        <input
+                            type="text"
+                            id="instructorDesignation"
+                            {...register('instructorDesignation')}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="e.g., Teacher, Developer, Expert"
+                        />
+                    </div>
+                </div>
 
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
-                                                className="px-4 py-2 bg-red-500 text-white rounded-md"
-                                            >
-                                                Remove File
-                                            </button>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={item.description}
-                                            onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'file', 'description', e.target.value)}
-                                            placeholder="File Description"
-                                            className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                                        />
-                                        {item.title && <button
-                                            type="button"
-                                            onClick={() => handleClearFields(moduleId, itemIndex, 'file')}
-                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                        >
-                                            Clear Fields
-                                        </button>}
-                                        <CourseUploadBox
-                                            key={`${generateUniqueIds(1)}+${item.status}`}
-                                            label="Upload File / PDF"
-                                            accept="application/pdf,image/*,audio/*,video/*"
-                                            isPrivate={item.status === 'private'}
-                                            onUpload={(fileData) => handleItemFieldChange(moduleId, itemIndex, 'file', 'url', fileData)}
-                                        />
+                <div className="mt-6">
+                    <label htmlFor="aboutInstructor" className="block text-sm font-medium text-gray-700 mb-1">
+                        About Instructor
+                    </label>
+                    <Controller
+                        name="aboutInstructor"
+                        control={control}
+                        render={({ field }) => (
+                            <RichTextEditor
+                                onContentChange={field.onChange}
+                                initialContent={field.value}
+                                uniqueKey="about-instructor"
+                                height="200px"
+                            />
+                        )}
+                    />
+                </div>
 
-                                        {item.url && (
-                                            <div className="text-xs text-green-600 mt-1">
-                                                {item.url.originalName || item.url.filename}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                <div className="mt-6">
+                    <label htmlFor="instructorImage" className="block text-sm font-medium text-gray-700 mb-1">
+                        Instructor Photo
+                    </label>
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="file"
+                            id="instructorImage"
+                            accept="image/*"
+                            onChange={(e) => handleUploadImage(e, setInstructorImage)}
+                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        {instructorImage && (
+                            <div className="relative">
+                                <img
+                                    src={instructorImage}
+                                    alt="Instructor"
+                                    className="w-24 h-24 object-cover rounded-lg border"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setInstructorImage('')}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                >
+                                    <TrashSVG className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
 
-                                {item.type === 'textInstruction' && (
-                                    <div className="bg-gray-100 p-2 mb-2 rounded-md">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <input
-                                                type="text"
-                                                value={item.title}
-                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'title', e.target.value)}
-                                                placeholder="Text Instruction Title"
-                                                className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                                            />
-                                            <select
-                                                id={`visibility[${moduleId}].items[${itemIndex}].content`}
-                                                name={`visibility[${moduleId}].items[${itemIndex}].content`}
-                                                value={item.status}
-                                                onChange={(e) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'status', e.target.value)}
-                                                className="mr-2 block w-[100px] px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="private">Private</option>
-                                                <option value="public">Public</option>
-                                            </select>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
-                                                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            >
-                                                Remove Text Instruction
-                                            </button>
-                                        </div>
-                                        <Controller
-                                            name={`modules[${moduleId}].items[${itemIndex}].content`}
-                                            control={control}
-                                            defaultValue=""
-                                            render={({ field }) => (
-                                                <RichTextEditor
-                                                    onContentChange={(content) => handleItemFieldChange(moduleId, itemIndex, 'textInstruction', 'content', content)}
-                                                    key={`Text Instruction key`}
-                                                    uniqueKey={generateUniqueIds(1)}
-                                                />
-                                            )}
-                                        />
-                                        {item.title && <button
-                                            type="button"
-                                            onClick={() => handleClearFields(moduleId, itemIndex, 'textInstruction')}
-                                            className="px-2 py-1 text-xs my-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                        >
-                                            Clear Fields
-                                        </button>}
-                                    </div>
-                                )}
+            {/* Media Section */}
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b">Media</h3>
 
-                                {item.type === 'quiz' && (
-                                    <div className="bg-gray-100 p-2 mb-2 rounded-md">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <input
-                                                type="text"
-                                                value={item.question}
-                                                onChange={(e) => handleQuizQuestionChange(moduleId, itemIndex, e.target.value)}
-                                                placeholder="Quiz Question"
-                                                className="flex-1 mr-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveItem(moduleId, itemIndex)}
-                                                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            >
-                                                Remove Quiz
-                                            </button>
-                                        </div>
-                                        {item.options.map((option, optionIndex) => (
-                                            <div key={optionIndex} className="mb-2 flex items-center">
+                <div>
+                    <label htmlFor="coverPhoto" className="block text-sm font-medium text-gray-700 mb-1">
+                        Course Cover Photo *
+                    </label>
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="file"
+                            id="coverPhoto"
+                            accept="image/*"
+                            onChange={(e) => handleUploadImage(e, setCoverPhotoUrl)}
+                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        {coverPhotoUrl && (
+                            <div className="relative">
+                                <img
+                                    src={coverPhotoUrl}
+                                    alt="Cover"
+                                    className="w-32 h-24 object-cover rounded-lg border"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setCoverPhotoUrl('')}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                >
+                                    <TrashSVG className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    {!coverPhotoUrl && (
+                        <p className="mt-1 text-sm text-red-600">Cover photo is required</p>
+                    )}
+                </div>
+            </div>
+
+            {/* SEO & Metadata */}
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b">SEO & Metadata</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="seoDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                            SEO Description
+                        </label>
+                        <textarea
+                            id="seoDescription"
+                            {...register('seoDescription')}
+                            rows="3"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Meta description for search engines"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+                            Tags
+                        </label>
+                        <input
+                            type="text"
+                            id="tags"
+                            {...register('tags')}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Comma-separated tags"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">e.g., python, programming, web-development</p>
+                    </div>
+                </div>
+
+                <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Publication Date
+                    </label>
+                    <Controller
+                        name="addedOn"
+                        control={control}
+                        render={({ field }) => (
+                            <DatePicker
+                                noLabel={true}
+                                defaultDate={field.value}
+                                onChangeHanlder={field.onChange}
+                            />
+                        )}
+                    />
+                </div>
+            </div>
+
+            {/* Course Details Lists */}
+            <div className="mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Who This Course is For */}
+                    <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3">Who This Course is For</h4>
+                        {learningItems.map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 mb-2">
+                                <div className="flex-1">
+                                    <input
+                                        type="text"
+                                        value={item.text}
+                                        onChange={(e) => handleListTextChange(setLearningItems, learningItems, index, e.target.value)}
+                                        placeholder={`Point ${index + 1}`}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveListItem(setLearningItems, learningItems, index)}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                                    disabled={learningItems.length === 1}
+                                >
+                                    <TrashSVG className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleAddListItem(setLearningItems, learningItems)}
+                            className="mt-2 w-full px-4 py-2 border border-dashed border-gray-300 rounded-md text-gray-600 hover:border-gray-400 hover:text-gray-800"
+                        >
+                            + Add Another Point
+                        </button>
+                    </div>
+
+                    {/* Additional Materials */}
+                    <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3">Additional Materials</h4>
+                        {additionalMaterials.map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 mb-2">
+                                <div className="flex-1">
+                                    <input
+                                        type="text"
+                                        value={item.text}
+                                        onChange={(e) => handleListTextChange(setAdditionalMaterials, additionalMaterials, index, e.target.value)}
+                                        placeholder={`Material ${index + 1}`}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveListItem(setAdditionalMaterials, additionalMaterials, index)}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                                    disabled={additionalMaterials.length === 1}
+                                >
+                                    <TrashSVG className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleAddListItem(setAdditionalMaterials, additionalMaterials)}
+                            className="mt-2 w-full px-4 py-2 border border-dashed border-gray-300 rounded-md text-gray-600 hover:border-gray-400 hover:text-gray-800"
+                        >
+                            + Add Another Material
+                        </button>
+                    </div>
+
+                    {/* Course Includes */}
+                    <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3">Course Includes</h4>
+                        {courseIncludes.map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 mb-2">
+                                <div className="flex-1">
+                                    <input
+                                        type="text"
+                                        value={item.text}
+                                        onChange={(e) => handleListTextChange(setCourseIncludes, courseIncludes, index, e.target.value)}
+                                        placeholder={`Feature ${index + 1}`}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveListItem(setCourseIncludes, courseIncludes, index)}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                                    disabled={courseIncludes.length === 1}
+                                >
+                                    <TrashSVG className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleAddListItem(setCourseIncludes, courseIncludes)}
+                            className="mt-2 w-full px-4 py-2 border border-dashed border-gray-300 rounded-md text-gray-600 hover:border-gray-400 hover:text-gray-800"
+                        >
+                            + Add Another Feature
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Modules Section */}
+            <div className="mb-12">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Course Modules</h3>
+
+                {modules.length === 0 ? (
+                    <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
+                        <div className="text-gray-400 mb-4">
+                            <AddSVG className="w-16 h-16 mx-auto" color="#9CA3AF" />
+                        </div>
+                        <h4 className="text-lg font-medium text-gray-700 mb-2">No modules yet</h4>
+                        <p className="text-gray-500 mb-4">Add your first module to start building your course</p>
+                        <button
+                            type="button"
+                            onClick={handleAddModule}
+                            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Create First Module
+                        </button>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {modules.map((module, moduleIndex) => (
+                            <div key={module.moduleId} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-medium">
+                                                {module.order}
+                                            </span>
+                                            <div>
                                                 <input
-                                                    type="radio"
-                                                    checked={item.answer === optionIndex}
-                                                    onChange={() => handleQuizAnswerChange(moduleId, itemIndex, optionIndex)}
-                                                    className="mr-2"
+                                                    type="text"
+                                                    value={module.title}
+                                                    onChange={(e) => handleModuleFieldChange(moduleIndex, 'title', e.target.value)}
+                                                    placeholder="Module Title"
+                                                    className="text-lg font-semibold bg-transparent border-none focus:outline-none focus:ring-0 w-full"
                                                 />
                                                 <input
                                                     type="text"
-                                                    value={option}
-                                                    onChange={(e) => handleQuizOptionChange(moduleId, itemIndex, optionIndex, e.target.value)}
-                                                    placeholder={`Option ${optionIndex + 1}`}
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-gray-50 text-gray-900"
+                                                    value={module.description}
+                                                    onChange={(e) => handleModuleFieldChange(moduleIndex, 'description', e.target.value)}
+                                                    placeholder="Module Description (optional)"
+                                                    className="text-sm text-gray-600 bg-transparent border-none focus:outline-none focus:ring-0 w-full mt-1"
                                                 />
                                             </div>
-                                        ))}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {renderModuleDuration(module)}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveModule(moduleIndex)}
+                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                                title="Remove Module"
+                                            >
+                                                <TrashSVG className="w-5 h-5" />
+                                            </button>
+                                        </div>
                                     </div>
-                                )}
+                                </div>
+
+                                <div className="p-6">
+                                    {/* Module Items */}
+                                    {module.items.length === 0 ? (
+                                        <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+                                            <p className="text-gray-500 mb-4">No items in this module yet</p>
+                                            <div className="flex flex-wrap gap-2 justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'video')}
+                                                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center gap-2"
+                                                >
+                                                    <VideoSVG className="w-4 h-4" />
+                                                    Add Video
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'textInstruction')}
+                                                    className="px-4 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center gap-2"
+                                                >
+                                                    <ClipboardSVG className="w-4 h-4" />
+                                                    Add Text
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'quiz')}
+                                                    className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 flex items-center gap-2"
+                                                >
+                                                    <QuizSVG className="w-4 h-4" />
+                                                    Add Quiz
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'file')}
+                                                    className="px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 flex items-center gap-2"
+                                                >
+                                                    <FileSVG className="w-4 h-4" />
+                                                    Add File
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {module.items.map((item, itemIndex) => (
+                                                <div key={item.itemId} className="relative">
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-200 rounded-full"></div>
+                                                    <div className="ml-4">
+                                                        {item.type === 'video' && renderVideoItem(moduleIndex, itemIndex, item)}
+                                                        {item.type === 'textInstruction' && renderTextInstructionItem(moduleIndex, itemIndex, item)}
+                                                        {item.type === 'quiz' && renderQuizItem(moduleIndex, itemIndex, item)}
+                                                        {item.type === 'file' && renderFileItem(moduleIndex, itemIndex, item)}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Add Item Buttons */}
+                                    {module.items.length > 0 && (
+                                        <div className="mt-6 pt-6 border-t border-gray-200">
+                                            <div className="flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'video')}
+                                                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 flex items-center gap-2"
+                                                >
+                                                    <VideoSVG className="w-4 h-4" />
+                                                    Add Video
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'textInstruction')}
+                                                    className="px-4 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center gap-2"
+                                                >
+                                                    <ClipboardSVG className="w-4 h-4" />
+                                                    Add Text
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'quiz')}
+                                                    className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 flex items-center gap-2"
+                                                >
+                                                    <QuizSVG className="w-4 h-4" />
+                                                    Add Quiz
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddItem(moduleIndex, 'file')}
+                                                    className="px-4 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 flex items-center gap-2"
+                                                >
+                                                    <FileSVG className="w-4 h-4" />
+                                                    Add File
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         ))}
-
-                        {/* Add Item Buttons */}
-                        <div className="flex space-x-2">
-                            <button
-                                type="button"
-                                onClick={() => handleAddItem(moduleId, { type: 'video', title: '', description: '', url: '', status: 'private' })}
-                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
-                            >
-                                Add Video <VideoSVG />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleAddItem(moduleId, { type: 'textInstruction', title: '', content: '', status: 'private' })}
-                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
-                            >
-                                Add Text Instruction <ClipboardSVG />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleAddItem(moduleId, { type: 'quiz', question: '', options: ['', '', '', ''], answer: 0, status: 'private' })}
-                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
-                            >
-                                Add Quiz <QuizSVG />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleAddItem(moduleId, { type: 'file', title: '', url: '', description: '', status: 'private' })}
-                                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex gap-2 items-center"
-                            >
-                                Add File
-                            </button>
-                        </div>
                     </div>
-                ))}
+                )}
+
+                {/* Add Module Button at the bottom */}
+                <div className="mt-8 text-center">
+                    <button
+                        type="button"
+                        onClick={handleAddModule}
+                        className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 mx-auto"
+                    >
+                        <AddSVG className="w-6 h-6" color="#ffffff" />
+                        Add Another Module
+                    </button>
+                </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-                Save Course
-            </button>
-            <ToastContainer transition={Flip} />
+            {/* Action Buttons */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 py-4 -mx-4 px-4">
+                <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                        <p>Draft auto-saved locally</p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                // localStorage.removeItem('edit_course_draft');
+                                // Reload original course data
+                                if (course) {
+                                    reset(course);
+                                    setModules(course.modules || []);
+                                    setCoverPhotoUrl(course.coverPhotoUrl || '');
+                                    setInstructorImage(course.instructorImage || '');
+                                    setLearningItems(course.learningItems || [{ text: '' }]);
+                                    setAdditionalMaterials(course.additionalMaterials || [{ text: '' }]);
+                                    setCourseIncludes(course.courseIncludes || [{ text: '' }]);
+                                }
+                                toast.success("Changes reverted to original course data.");
+                            }}
+                            className="text-red-600 hover:text-red-800 mt-1"
+                        >
+                            Discard all changes
+                        </button>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={() => window.history.back()}
+                            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={!idAvailable || modules.length === 0 || isSubmitting || !coverPhotoUrl}
+                            className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Saving...
+                                </>
+                            ) : (
+                                'Update Course'
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Flip}
+            />
         </form>
     );
 };
