@@ -10,7 +10,7 @@ const Page = async ({ params }) => {
     if (!data?.success || !data?.progress?.course) {
       console.error('No course data found');
     }
-    
+    console.log(data)
     const { progress } = data;
     const course = progress.course; 
     

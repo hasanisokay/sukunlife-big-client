@@ -5,7 +5,6 @@ import { cookies } from "next/headers";
 
 export const updateCourseProgress = async (courseId, data) => {
   const cookieStore = await cookies();
-  console.log({courseId,data})
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   const refreshToken = cookieStore.get(REFRESH_TOKEN);
   try {
@@ -28,8 +27,9 @@ export const updateCourseProgress = async (courseId, data) => {
     if (!response.ok) {
       throw new Error("Failed to update progress");
     }
-
-    return await response.json();
+    const d = await response.json();
+    console.log(d);
+    return d;
   } catch (error) {
     console.error("Error updating course progress:", error);
     throw error;
@@ -63,6 +63,14 @@ export const submitQuizResult = async (courseId, itemId, quizData) => {
 export const setCurrentItem = async (courseId, itemId) => {
   return await updateCourseProgress(courseId, {
     action: "set-current-item",
+    itemId,
+  });
+};
+
+// NEW: Mark item as viewed (unlocks next item on click)
+export const markItemViewed = async (courseId, itemId) => {
+  return await updateCourseProgress(courseId, {
+    action: "mark-viewed",
     itemId,
   });
 };

@@ -5,12 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import "plyr/dist/plyr.css";
 import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
-import { 
-  markItemComplete, 
-  updateVideoTime, 
-  submitQuizResult, 
-  setCurrentItem 
-} from '@/server-functions/course-related/updateCourseProgress.mjs';
 import VideoHLS from '../dashboard/user/VideoHLS';
 import { 
   ClipboardSVG,
@@ -50,7 +44,7 @@ const LockModal = ({ isOpen, onClose, onGoToPrevious }) => {
             Content Locked
           </h3>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Complete the previous lesson to unlock this content.
+            Please view the previous lesson to unlock this content.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
@@ -132,6 +126,9 @@ const CoursePlayer = ({
   const progressIntervalRef = useRef(null);
   // Store video element reference
   const videoElementRef = useRef(null);
+  // Track if we're currently saving to prevent race conditions
+  const saveQueueRef = useRef([]);
+  const isSavingRef = useRef(false);
 
   // Extract course data from progress response
   const courseData = course || userProgress?.course || { modules: [] };
@@ -145,33 +142,58 @@ const CoursePlayer = ({
   const completedCount = userProgress?.completedItems?.length || 0;
   const overallProgress = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
-  // Check if item is unlocked
+  // Precompute unlocked items based on VIEWED items (not completed)
+  const [unlockedItems, setUnlockedItems] = useState(new Set());
+
+  useEffect(() => {
+    if (!courseData.modules) return;
+    
+    const unlocked = new Set();
+    const viewedItems = userProgress?.viewedItems || [];
+    const completedItems = userProgress?.completedItems || [];
+    
+    courseData.modules.forEach((module, moduleIdx) => {
+      module.items.forEach((item, itemIdx) => {
+        const itemId = item.itemId;
+        
+        // First item is always unlocked
+        if (moduleIdx === 0 && itemIdx === 0) {
+          unlocked.add(itemId);
+          return;
+        }
+        
+        // If completed or viewed, it's unlocked
+        if (completedItems.includes(itemId) || viewedItems.includes(itemId)) {
+          unlocked.add(itemId);
+          return;
+        }
+        
+        // Find previous item
+        let prevItemId = null;
+        if (itemIdx === 0) {
+          // First item of module - check last item of previous module
+          if (moduleIdx > 0) {
+            const prevModule = courseData.modules[moduleIdx - 1];
+            prevItemId = prevModule.items[prevModule.items.length - 1]?.itemId;
+          }
+        } else {
+          // Previous item in same module
+          prevItemId = module.items[itemIdx - 1]?.itemId;
+        }
+        
+        // KEY CHANGE: Unlock if previous item is VIEWED (not necessarily completed)
+        if (prevItemId && viewedItems.includes(prevItemId)) {
+          unlocked.add(itemId);
+        }
+      });
+    });
+    
+    setUnlockedItems(unlocked);
+  }, [courseData.modules, userProgress?.viewedItems, userProgress?.completedItems]);
+
   const isItemUnlocked = useCallback((itemId) => {
-    // First item is always unlocked
-    if (courseData.modules?.[0]?.items?.[0]?.itemId === itemId) return true;
-    
-    // Check if completed
-    if (userProgress?.completedItems?.includes(itemId)) return true;
-    
-    // Check if previous item is completed
-    const itemPosition = getItemPosition(itemId);
-    if (!itemPosition) return false;
-    
-    const { moduleIdx, itemIdx } = itemPosition;
-    
-    if (itemIdx === 0) {
-      // First item of a module - check last item of previous module
-      if (moduleIdx === 0) return true;
-      
-      const prevModule = courseData.modules[moduleIdx - 1];
-      const prevItem = prevModule?.items?.[prevModule.items.length - 1];
-      return userProgress?.completedItems?.includes(prevItem?.itemId) || false;
-    } else {
-      // Check previous item in same module
-      const prevItem = courseData.modules[moduleIdx]?.items[itemIdx - 1];
-      return userProgress?.completedItems?.includes(prevItem?.itemId) || false;
-    }
-  }, [courseData.modules, userProgress?.completedItems]);
+    return unlockedItems.has(itemId);
+  }, [unlockedItems]);
 
   // Get item position
   const getItemPosition = useCallback((itemId) => {
@@ -197,7 +219,7 @@ const CoursePlayer = ({
       // If there's a current item in progress, use it
       if (userProgress?.currentItem) {
         const position = getItemPosition(userProgress.currentItem);
-        if (position && isItemUnlocked(userProgress.currentItem)) {
+        if (position) {
           targetModuleIndex = position.moduleIdx;
           targetItemIndex = position.itemIdx;
         }
@@ -206,15 +228,10 @@ const CoursePlayer = ({
       setActiveModuleIndex(targetModuleIndex);
       setActiveItemIndex(targetItemIndex);
       setExpandedModule(targetModuleIndex);
-      
-      // Save current item to ensure it's tracked
-      if (currentItem) {
-        saveCurrentItem(currentItem.itemId);
-      }
     };
 
     initializeFromProgress();
-  }, [courseData.modules, userProgress?.currentItem, isItemUnlocked, initialModuleIndex, initialItemIndex, currentItem]);
+  }, [courseData.modules, userProgress?.currentItem, initialModuleIndex, initialItemIndex, getItemPosition]);
 
   // Update URL when item changes
   useEffect(() => {
@@ -228,91 +245,22 @@ const CoursePlayer = ({
     }
   }, [currentModule, currentItem, userProgress?.courseId, pathname, router]);
 
-  // Save current item
-  const saveCurrentItem = useCallback(async (itemId) => {
-    if (!itemId || !userProgress?.courseId || isSavingProgress) return;
-    
-    setIsSavingProgress(true);
-    try {
-      await setCurrentItem(userProgress.courseId, itemId);
-      
-      // Update local state
-      setUserProgress(prev => ({
-        ...prev,
-        currentItem: itemId
-      }));
-      
-      console.log('Current item saved:', itemId);
-    } catch (error) {
-      console.error('Failed to save current item:', error);
-    } finally {
-      setIsSavingProgress(false);
-    }
-  }, [userProgress?.courseId, isSavingProgress]);
-
-  // Load video stream URL
-  useEffect(() => {
-    if (!currentItem || currentItem.type !== "video") {
-      setHlsUrl(null);
-      return;
-    }
-
- const loadVideoStream = async () => {
-  try {
-    // Get the original course to access the video filename
-    const courseRes = await fetch(
-      `${SERVER}/api/public/course/${userProgress.courseId}`,
-      { credentials: "include" }
-    );
-    const courseDetails = await courseRes.json();
-    
-    if (courseDetails.status === 200) {
-      let videoFilename = null;
-      
-      // Find the video filename from original course data
-      courseDetails?.course?.modules?.forEach(module => {
-        module.items.forEach(item => {
-          if (item.itemId === currentItem.itemId && item.url?.filename) {
-            videoFilename = item.url.filename;
-          }
-        });
-      });
-      
-      if (videoFilename) {
-        const streamRes = await fetch(
-          `${SERVER}/api/user/course/stream-url/${userProgress.courseId}/${videoFilename}`,
-          { credentials: "include" }
-        );
-        const streamData = await streamRes.json();
-        if (streamData.url) {
-          setHlsUrl(streamData.url);
-        }
-      } else {
-        console.error('Video filename not found for item:', currentItem.itemId);
-      }
-    }
-  } catch (err) {
-    console.error("Stream load failed", err);
-  }
-};
-
-    loadVideoStream();
-  }, [currentItem, userProgress?.courseId]);
-
-  // Cleanup progress tracking on unmount
-  useEffect(() => {
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
-    };
+  // Queue-based progress save to prevent race conditions
+  const queueProgressSave = useCallback(async (action, data) => {
+    return new Promise((resolve, reject) => {
+      saveQueueRef.current.push({ action, data, resolve, reject });
+      processQueue();
+    });
   }, []);
 
-  // Save progress function
-  const saveProgress = useCallback(async (action, data) => {
-    if (isSavingProgress) return;
+  const processQueue = useCallback(async () => {
+    if (isSavingRef.current || saveQueueRef.current.length === 0) return;
     
+    isSavingRef.current = true;
     setIsSavingProgress(true);
+    
+    const { action, data, resolve, reject } = saveQueueRef.current.shift();
+    
     try {
       const response = await fetch(
         `${SERVER}/api/user/update-progress/${userProgress.courseId}`,
@@ -333,15 +281,96 @@ const CoursePlayer = ({
           ...result.progress
         }));
         
-        return result;
+        resolve(result);
+      } else {
+        reject(new Error('Failed to save progress'));
       }
     } catch (error) {
       console.error("Failed to save progress:", error);
-      throw error;
+      reject(error);
     } finally {
+      isSavingRef.current = false;
       setIsSavingProgress(false);
+      
+      // Process next item in queue
+      if (saveQueueRef.current.length > 0) {
+        setTimeout(processQueue, 100);
+      }
     }
-  }, [userProgress?.courseId, isSavingProgress]);
+  }, [userProgress?.courseId]);
+
+  // Mark item as viewed when user opens/clicks it
+  useEffect(() => {
+    if (!currentItem?.itemId || !userProgress?.courseId) return;
+    
+    const viewedItems = userProgress?.viewedItems || [];
+    
+    // Only mark as viewed if not already viewed
+    if (!viewedItems.includes(currentItem.itemId)) {
+      console.log('Marking item as viewed:', currentItem.itemId);
+      queueProgressSave("mark-viewed", {
+        itemId: currentItem.itemId
+      }).catch(console.error);
+    }
+  }, [currentItem?.itemId, userProgress?.courseId, userProgress?.viewedItems, queueProgressSave]);
+
+  // Load video stream URL
+  useEffect(() => {
+    if (!currentItem || currentItem.type !== "video") {
+      setHlsUrl(null);
+      return;
+    }
+
+    const loadVideoStream = async () => {
+      try {
+        // Get the original course to access the video filename
+        const courseRes = await fetch(
+          `${SERVER}/api/public/course/${userProgress.courseId}`,
+          { credentials: "include" }
+        );
+        const courseDetails = await courseRes.json();
+        
+        if (courseDetails.status === 200) {
+          let videoFilename = null;
+          
+          // Find the video filename from original course data
+          courseDetails?.course?.modules?.forEach(module => {
+            module.items.forEach(item => {
+              if (item.itemId === currentItem.itemId && item.url?.filename) {
+                videoFilename = item.url.filename;
+              }
+            });
+          });
+          
+          if (videoFilename) {
+            const streamRes = await fetch(
+              `${SERVER}/api/user/course/stream-url/${userProgress.courseId}/${videoFilename}`,
+              { credentials: "include" }
+            );
+            const streamData = await streamRes.json();
+            if (streamData.url) {
+              setHlsUrl(streamData.url);
+            }
+          } else {
+            console.error('Video filename not found for item:', currentItem.itemId);
+          }
+        }
+      } catch (err) {
+        console.error("Stream load failed", err);
+      }
+    };
+
+    loadVideoStream();
+  }, [currentItem, userProgress?.courseId]);
+
+  // Cleanup progress tracking on unmount
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Get next item in sequence
   const getNextItem = useCallback(() => {
@@ -416,14 +445,14 @@ const CoursePlayer = ({
         const percentage = Math.round((currentTime / duration) * 100);
         
         // Save progress
-        await saveProgress("update-video-time", {
+        await queueProgressSave("update-video-time", {
           itemId: currentItem.itemId,
           data: { currentTime, duration, percentage }
         });
         
         // Auto-mark as complete if watched 90%+
         if (percentage >= 90 && !userProgress.completedItems?.includes(currentItem.itemId)) {
-          await saveProgress("mark-complete", {
+          await queueProgressSave("mark-complete", {
             itemId: currentItem.itemId,
             moduleId: currentModule.moduleId
           });
@@ -455,7 +484,7 @@ const CoursePlayer = ({
         video.removeEventListener('timeupdate', trackVideoProgress);
       }
     };
-  }, [currentItem, currentModule, userProgress.completedItems, saveProgress]);
+  }, [currentItem, currentModule, userProgress.completedItems, queueProgressSave]);
 
   // Setup video tracking when video is ready
   useEffect(() => {
@@ -481,7 +510,7 @@ const CoursePlayer = ({
     const targetItem = targetModule.items[itemIdx];
     
     // Check if item is unlocked
-    if (!isItemUnlocked(targetItem.itemId)) {
+    if (!isItemUnlocked(targetItem?.itemId)) {
       setLockedItem({ moduleIdx, itemIdx });
       setShowLockModal(true);
       return;
@@ -496,21 +525,32 @@ const CoursePlayer = ({
     setSelectedAnswers({});
     setShowMobileMenu(false);
     
-    // Save current item
-    await saveCurrentItem(targetItem.itemId);
-    
     // Clear existing progress tracking
     if (progressIntervalRef.current) {
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
     }
-  }, [courseData.modules, isItemUnlocked, saveCurrentItem]);
+  }, [courseData.modules, isItemUnlocked]);
 
   // Handle video play for progress tracking
   const handleVideoPlay = useCallback(() => {
     console.log('Video play detected, starting progress tracking');
     startVideoProgressTracking();
   }, [startVideoProgressTracking]);
+
+  // Handle manual completion for files and text
+  const handleMarkComplete = useCallback(async () => {
+    if (!currentItem || !currentModule) return;
+    
+    try {
+      await queueProgressSave("mark-complete", {
+        itemId: currentItem.itemId,
+        moduleId: currentModule.moduleId
+      });
+    } catch (error) {
+      console.error('Failed to mark as complete:', error);
+    }
+  }, [currentItem, currentModule, queueProgressSave]);
 
   // Handle quiz submission
   const handleQuizSubmit = useCallback(async (selectedOption) => {
@@ -519,21 +559,15 @@ const CoursePlayer = ({
     const isCorrect = selectedOption === currentItem.answer;
     
     try {
-      await saveProgress("quiz-result", {
+      await queueProgressSave("quiz-result", {
         itemId: currentItem.itemId,
+        moduleId: currentModule.moduleId,
         data: {
           score: isCorrect ? 1 : 0,
           maxScore: 1,
           passed: isCorrect
         }
       });
-      
-      if (isCorrect) {
-        await saveProgress("mark-complete", {
-          itemId: currentItem.itemId,
-          moduleId: currentModule.moduleId
-        });
-      }
       
       setSelectedAnswers({ [currentQuizIndex]: selectedOption });
       setQuizCompleted(true);
@@ -543,7 +577,7 @@ const CoursePlayer = ({
       console.error('Failed to submit quiz:', error);
       return false;
     }
-  }, [currentItem, currentModule, currentQuizIndex, saveProgress]);
+  }, [currentItem, currentModule, currentQuizIndex, queueProgressSave]);
 
   // Render item content based on type
   const renderItemContent = () => {
@@ -618,12 +652,7 @@ const CoursePlayer = ({
             {!isCompleted && (
               <div className="flex justify-center">
                 <button
-                  onClick={async () => {
-                    await saveProgress("mark-complete", {
-                      itemId: currentItem.itemId,
-                      moduleId: currentModule.moduleId
-                    });
-                  }}
+                  onClick={handleMarkComplete}
                   disabled={isSavingProgress}
                   className="px-8 py-3 bg-gradient-to-r from-primary to-primary-dark text-white font-medium rounded-lg hover:opacity-90 transition-opacity shadow-md disabled:opacity-50"
                 >
@@ -686,12 +715,7 @@ const CoursePlayer = ({
             {!isCompleted && (
               <div className="flex justify-center">
                 <button
-                  onClick={async () => {
-                    await saveProgress("mark-complete", {
-                      itemId: currentItem.itemId,
-                      moduleId: currentModule.moduleId
-                    });
-                  }}
+                  onClick={handleMarkComplete}
                   disabled={isSavingProgress}
                   className="px-8 py-3 bg-gradient-to-r from-primary to-primary-dark text-white font-medium rounded-lg hover:opacity-90 transition-opacity shadow-md disabled:opacity-50"
                 >
@@ -1005,7 +1029,7 @@ const CoursePlayer = ({
                   </div>
                   
                   <div className="overflow-y-auto max-h-[calc(100vh-300px)]">
-                    {courseData.modules.map((module, moduleIdx) => (
+                    {courseData?.modules?.map((module, moduleIdx) => (
                       <div key={module.moduleId} className="border-b dark:border-gray-700 last:border-b-0">
                         <button
                           onClick={() => setExpandedModule(expandedModule === moduleIdx ? null : moduleIdx)}

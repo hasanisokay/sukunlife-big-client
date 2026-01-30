@@ -48,16 +48,12 @@ export default function VideoHLS({ src, onPlay }) {
         video.src = "";
         video.load();
 
-        console.log("Loading HLS source:", src);
-
         // Define stall handler
         const handleStall = () => {
-          console.log("Video stalled, checking buffer...");
           
           // Check if we're actually stalled or just buffering
           setTimeout(() => {
             if (video && video.paused === false && video.readyState < 3) {
-              console.log("Attempting to recover from stall...");
               
               // Try to skip small gaps in buffer
               const currentTime = video.currentTime;
@@ -67,7 +63,6 @@ export default function VideoHLS({ src, onPlay }) {
                 let foundNextBuffer = false;
                 for (let i = 0; i < buffered.length; i++) {
                   if (buffered.start(i) > currentTime + 0.5) {
-                    console.log(`Skipping to buffered segment at ${buffered.start(i)}`);
                     video.currentTime = buffered.start(i);
                     foundNextBuffer = true;
                     break;
@@ -76,7 +71,6 @@ export default function VideoHLS({ src, onPlay }) {
                 
                 // If no buffer ahead, try restarting
                 if (!foundNextBuffer && hlsRef.current) {
-                  console.log("No buffer ahead, restarting HLS stream...");
                   hlsRef.current.startLoad();
                 }
               }
@@ -131,7 +125,6 @@ export default function VideoHLS({ src, onPlay }) {
           hls.attachMedia(video);
 
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            console.log("✅ HLS Manifest parsed successfully");
             
             // Get quality levels
             const levels = hls.levels.map((level, index) => ({
@@ -190,10 +183,6 @@ export default function VideoHLS({ src, onPlay }) {
             setIsLoading(false);
           });
 
-          hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
-            console.log(`Level loaded: ${data.details}`);
-          });
-
           hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
             // Reset retry count on successful fragment load
             setRetryCount(0);
@@ -201,12 +190,10 @@ export default function VideoHLS({ src, onPlay }) {
 
           hls.on(Hls.Events.ERROR, (event, data) => {
             // Only log fatal errors to avoid console spam
-            if (data.fatal) {
-              console.error("HLS Fatal Error:", data);
-            } else {
-              // Non-fatal errors like bufferSeekOverHole are handled automatically by HLS.js
-              console.log("HLS Non-fatal Error (auto-recovering):", data.details);
-            }
+            // if (data.fatal) {
+            //   console.error("HLS Fatal Error:", data);
+            // } else {
+            // }
 
             if (data.fatal) {
               switch (data.type) {
@@ -237,24 +224,9 @@ export default function VideoHLS({ src, onPlay }) {
             // No need to manually handle bufferSeekOverHole
           });
 
-          // Handle video events for better UX
-          video.addEventListener('loadeddata', () => {
-            console.log("✅ Video data loaded");
-          });
-
-          video.addEventListener('canplay', () => {
-            console.log("✅ Video can play");
-          });
-
-          video.addEventListener('playing', () => {
-            console.log("▶️ Video playing");
-          });
-
           // Auto-play with user interaction
           const tryAutoPlay = () => {
             video.play().catch(error => {
-              console.log("Auto-play prevented, showing controls instead", error);
-              // Show play button overlay
               if (plyrRef.current) {
                 plyrRef.current.toggleControls(true);
               }
@@ -267,12 +239,10 @@ export default function VideoHLS({ src, onPlay }) {
         } 
         // Fallback for native HLS support (Safari, iOS)
         else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-          console.log("Using native HLS (no quality control available)");
           video.src = src;
 
           // Handle native HLS events
           video.addEventListener('loadedmetadata', () => {
-            console.log("Video metadata loaded (Native HLS)");
             setIsLoading(false);
             
             // Initialize Plyr without quality control
