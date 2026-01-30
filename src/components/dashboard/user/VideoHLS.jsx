@@ -253,7 +253,7 @@ export default function VideoHLS({ src, onPlay }) {
           // Auto-play with user interaction
           const tryAutoPlay = () => {
             video.play().catch(error => {
-              console.log("Auto-play prevented, showing controls instead");
+              console.log("Auto-play prevented, showing controls instead", error);
               // Show play button overlay
               if (plyrRef.current) {
                 plyrRef.current.toggleControls(true);

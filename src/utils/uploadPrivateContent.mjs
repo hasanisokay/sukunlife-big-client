@@ -102,6 +102,7 @@ const uploadPrivateContent = async (file, status, estimatedDuration = null, onPr
           return resolve({
             success: true,
             videoId: data.filename || data.videoId,
+            path: data.path || '',
             filename: data.filename || data.videoId,
             originalName: data.originalName || file.name,
             mime: data.mime || file.type,

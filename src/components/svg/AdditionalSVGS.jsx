@@ -411,3 +411,88 @@ export const LockSVG = ({ className = "w-5 h-5", ...props }) => (
     />
   </svg>
 );
+
+
+export const LockClosedSVG = ({ className = "w-5 h-5", ...props }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 20 20" 
+    fill="currentColor" 
+    className={className}
+    {...props}
+  >
+    <path 
+      fillRule="evenodd" 
+      d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" 
+      clipRule="evenodd" 
+    />
+  </svg>
+);
+
+// If you need a different style, here's an alternative:
+export const LockClosedSVGAlt = ({ className = "w-5 h-5", ...props }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+    {...props}
+  >
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0110 0v4" />
+  </svg>
+);
+
+// For a more minimal/outline style:
+export const LockClosedOutlineSVG = ({ className = "w-5 h-5", ...props }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    stroke="currentColor" 
+    className={className}
+    {...props}
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      strokeWidth="2" 
+      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
+    />
+  </svg>
+);
+
+// Color-coded lock (uses your primary color by default)
+export const ColoredLockClosedSVG = ({ 
+  className = "w-5 h-5", 
+  lockedColor = "#63953a", 
+  unlockedColor = "#22c55e",
+  isLocked = true,
+  ...props 
+}) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill={isLocked ? lockedColor : unlockedColor}
+    className={className}
+    {...props}
+  >
+    {isLocked ? (
+      <path 
+        fillRule="evenodd" 
+        d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" 
+        clipRule="evenodd" 
+      />
+    ) : (
+      <path 
+        fillRule="evenodd" 
+        d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" 
+        clipRule="evenodd" 
+      />
+    )}
+  </svg>
+);

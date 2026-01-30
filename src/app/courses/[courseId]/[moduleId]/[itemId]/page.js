@@ -1,16 +1,13 @@
 import CoursePlayer from '@/components/courses/CoursePlayer';
 import getCourseWithProgress from '@/server-functions/course-related/getCourseWithProgress.mjs';
 
-
 const Page = async ({ params }) => {
   try {
     const { courseId, moduleId, itemId } = await params;
     
     // Get course with progress
     const data = await getCourseWithProgress(courseId);
-    console.log('API Response:', data);
-    
-    if (!data.success || !data.progress?.course) {
+    if (!data?.success || !data?.progress?.course) {
       console.error('No course data found');
     }
     
@@ -55,14 +52,6 @@ const Page = async ({ params }) => {
         targetItemIndex = 0;
       }
     }
-    
-    // console.log('Target position:', {
-    //   targetModuleIndex,
-    //   targetItemIndex,
-    //   moduleId: course?.modules[targetModuleIndex]?.moduleId,
-    //   itemId: course?.modules[targetModuleIndex]?.items[targetItemIndex]?.itemId,
-    //   itemTitle: course?.modules[targetModuleIndex]?.items[targetItemIndex]?.title
-    // });
     
     return (
       <CoursePlayer 

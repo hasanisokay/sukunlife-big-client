@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 
 export const updateCourseProgress = async (courseId, data) => {
   const cookieStore = await cookies();
+  console.log({courseId,data})
   const accessToken = cookieStore.get(ACCESS_TOKEN);
   const refreshToken = cookieStore.get(REFRESH_TOKEN);
   try {
