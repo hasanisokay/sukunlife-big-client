@@ -117,6 +117,7 @@ const CourseUploadBox = ({
         mime: result.mime || file.type,
         size: result.size || file.size,
         type: status,
+        path:result.path,
         duration: type === 'video' ? (result.duration || finalDuration || 0) : 0,
         uploadTime: result.uploadTime,
         processingStatus: result.processingStatus || 'completed',
