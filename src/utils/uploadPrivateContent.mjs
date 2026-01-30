@@ -74,7 +74,7 @@ const uploadPrivateContent = async (file, status, estimatedDuration = null, onPr
       try {
         const data = JSON.parse(xhr.responseText);
         const uploadTime = Date.now() - uploadStartTime;
-
+console.log(data)
         if (xhr.status < 200 || xhr.status >= 300) {
           toast.update(uploadToast, {
             render: `❌ Upload failed (${xhr.status}): ${data?.error || 'Server error'}`,
