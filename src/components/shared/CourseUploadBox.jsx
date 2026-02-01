@@ -1,442 +1,323 @@
 'use client'
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import uploadPrivateContent from "@/utils/uploadPrivateContent.mjs";
-import { VideoSVG, FileSVG, PdfSVG, ImageSVG, ClockSVG, UploadSVG } from "@/components/svg/SvgCollection";
+import { toast } from "react-toastify";
+import { VideoSVG, UploadSVG } from "@/components/svg/SvgCollection"; // Ensure you have these
 
 const CourseUploadBox = ({
   onUpload,
   status = 'private',
   accept = "*",
   label = "Upload file",
-  type = "file", // 'video', 'file', 'pdf', 'image'
-  estimatedDuration, // Optional: Pre-filled duration for editing
-  onDurationChange, // Callback when duration is entered/changed
-  itemId, // Unique ID for this upload box
-  disableStatusChange = false, // Disable status dropdown when file is uploaded
+  type = "file", 
+  estimatedDuration,
+  itemId,
 }) => {
+  // --- File & Upload State ---
   const [loading, setLoading] = useState(false);
   const [fileInfo, setFileInfo] = useState(null);
-  const [duration, setDuration] = useState(estimatedDuration || '');
-  const [fileType, setFileType] = useState('');
+  const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [processingStatus, setProcessingStatus] = useState(null); // 'processing', 'queued', 'completed', 'failed'
+  
+  // --- Processing / Queue State ---
+  // Possible values: 'idle', 'uploading', 'queued', 'processing', 'completed', 'failed'
+  const [processingStatus, setProcessingStatus] = useState('idle'); 
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [videoId, setVideoId] = useState(null);
+  
+  // Specific state for Queue Data
+  const [queueData, setQueueData] = useState({
+    position: 0,
+    total: 0,
+    waitTime: 0
+  });
 
-  // Set icon based on accept type
-  const getIcon = () => {
-    if (type === 'video' || accept.includes('video')) {
-      return <VideoSVG className="w-8 h-8 text-blue-500" />;
-    } else if (accept.includes('pdf') || type === 'pdf') {
-      return <PdfSVG className="w-8 h-8 text-red-500" />;
-    } else if (accept.includes('image') || type === 'image') {
-      return <ImageSVG className="w-8 h-8 text-green-500" />;
-    } else {
-      return <FileSVG className="w-8 h-8 text-gray-500" />;
-    }
-  };
+  const toastId = useRef(null);
 
-  // Detect file type from accept prop
+  // --- BACKGROUND POLLING LOGIC ---
   useEffect(() => {
-    if (accept.includes('video')) setFileType('video');
-    else if (accept.includes('pdf')) setFileType('pdf');
-    else if (accept.includes('image')) setFileType('image');
-    else setFileType('file');
-  }, [accept]);
+    let pollInterval;
+    
+    // Only poll if we are waiting for the server (queued or actively processing)
+    if ((processingStatus === 'queued' || processingStatus === 'processing') && videoId) {
+      
+      // Ensure toast exists
+      if (!toastId.current) {
+        toastId.current = toast.loading("Checking video status...");
+      }
 
-  // Update duration when estimatedDuration changes
-  useEffect(() => {
-    if (estimatedDuration !== undefined) {
-      setDuration(estimatedDuration);
+      pollInterval = setInterval(async () => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+          const res = await fetch(
+            `https://upload.sukunlife.com/api/admin/course/video-status/${videoId}`,
+            {
+              credentials: "include",
+              signal: controller.signal,
+            }
+          ).finally(() => clearTimeout(timeoutId));
+
+          if (!res.ok) return; // Fail silently, retry next tick
+
+          const statusData = await res.json();
+
+          // --- HANDLE QUEUED STATUS ---
+          if (statusData.status === "queued") {
+            setProcessingStatus('queued');
+            
+            // Update Queue Data
+            setQueueData({
+              position: statusData.queuePosition,
+              total: statusData.totalInQueue,
+              waitTime: statusData.waitTime
+            });
+
+            // Sync Toast with Queue Status
+            toast.update(toastId.current, {
+              render: `Queued: Position ${statusData.queuePosition} of ${statusData.totalInQueue}`,
+              type: "warning", // Yellow for waiting
+              isLoading: true,
+            });
+          }
+
+          // --- HANDLE PROCESSING STATUS ---
+          else if (statusData.status === "processing") {
+            setProcessingStatus('processing');
+            
+            if (statusData.percent) {
+              setProcessingProgress(statusData.percent);
+
+              // Sync Toast with Processing Status
+              toast.update(toastId.current, {
+                render: `Processing video: ${statusData.percent}%`,
+                type: "info", // Blue for active work
+                isLoading: true,
+                progress: statusData.percent / 100,
+              });
+            }
+          }
+
+          // --- HANDLE COMPLETED STATUS ---
+          if (statusData.status === "completed" || statusData.status === "ready") {
+            clearInterval(pollInterval);
+            setProcessingStatus('completed');
+            
+            toast.update(toastId.current, {
+              render: `🎉 Video processing completed!`,
+              type: "success",
+              isLoading: false,
+              autoClose: 5000,
+            });
+
+            setFileInfo((prev) => ({
+              ...prev,
+              duration: statusData.duration || prev.duration,
+              resolutions: statusData.resolutions || [],
+              status: "ready"
+            }));
+          }
+
+          // --- HANDLE FAILED STATUS ---
+          if (statusData.status === "failed") {
+            clearInterval(pollInterval);
+            setProcessingStatus('failed');
+            
+            toast.update(toastId.current, {
+              render: `❌ Video processing failed: ${statusData.error}`,
+              type: "error",
+              isLoading: false,
+              autoClose: 5000,
+            });
+          }
+
+        } catch (error) {
+          console.warn("Polling error:", error.message);
+          // Don't stop polling on network hiccups
+        }
+      }, 3000); // Poll every 3 seconds
     }
-  }, [estimatedDuration]);
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [processingStatus, videoId]);
+
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
 
-    // Validate file type
-    if (accept !== "*" && !accept.split(',').some(type => {
-      const pattern = type.trim().toLowerCase();
-      if (pattern.includes('*')) return true;
-      if (pattern.startsWith('.')) {
-        return file.name.toLowerCase().endsWith(pattern);
-      }
-      return file.type.includes(pattern.replace('/*', ''));
-    })) {
-      alert(`Please select a valid file type. Allowed: ${accept}`);
-      return;
-    }
-
-    // Validate file size (1GB max for all files)
-    const maxSize = 1 * 1024 * 1024 * 1024; // 1GB
-    if (file.size > maxSize) {
-      alert(`File size too large. Maximum size: 1GB`);
-      return;
-    }
-
-    setLoading(true);
-    setIsUploading(true);
-    setUploadProgress(0);
+    // Reset States
+    setFile(selectedFile);
     setFileInfo(null);
+    setLoading(true);
     setProcessingStatus('uploading');
-
+    setUploadProgress(0);
+    setProcessingProgress(0);
+    
     try {
-      // Use the duration state if it exists
-      const finalDuration = duration || estimatedDuration;
-      
+      // 1. Upload File
       const result = await uploadPrivateContent(
-        file, 
+        selectedFile, 
         status, 
-        finalDuration,
-        (progress) => {
-          setUploadProgress(progress);
+        estimatedDuration,
+        (percent) => {
+            setUploadProgress(percent);
         }
       );
-      
-      if (!result) {
-        throw new Error("Upload returned no result");
-      }
-      
-      // Set processing status based on result
-      if (type === 'video') {
-        if (result.processingStatus === 'processing_timeout') {
-          setProcessingStatus('processing_timeout');
-        } else if (result.processingStatus === 'completed') {
-          setProcessingStatus('completed');
-        } else {
-          setProcessingStatus('processing');
-        }
+
+      // 2. Upload Finished. Determine Next State.
+      // Note: We assume 'processing' initially. The polling logic immediately checks
+      // if it's 'queued' or 'processing'.
+      if (result.processingStatus === 'processing') {
+        // We start polling, which will correctly detect "queued" or "processing"
+        setProcessingStatus('queued'); // Start with queued assumption, updates immediately
+        setVideoId(result.videoId);
+        
+        setFileInfo({
+            ...result,
+            status: "processing"
+        });
+
       } else {
         setProcessingStatus('completed');
+        setFileInfo({ ...result, status: "ready" });
+        onUpload(result);
       }
-      
-      // Normalize backend response
-      const normalized = {
-        filename: result.filename || result.videoId,
-        originalName: result.originalName || file.name,
-        mime: result.mime || file.type,
-        size: result.size || file.size,
-        type: status,
-        path:result.path,
-        duration: type === 'video' ? (result.duration || finalDuration || 0) : 0,
-        uploadTime: result.uploadTime,
-        processingStatus: result.processingStatus || 'completed',
-        processingTime: result.processingTime
-      };
 
-      setFileInfo({ ...normalized, status: "ready" });
-      setIsUploading(false);
-      
-      // Pass only the upload data to parent
-      onUpload(normalized);
-      
     } catch (err) {
       console.error("Upload failed:", err);
       setProcessingStatus('failed');
-      setFileInfo({ 
-        originalName: file.name,
-        size: file.size,
-        status: "error",
-        error: err.message || "Upload failed"
-      });
+      toast.error(err.message || "Upload failed");
     } finally {
       setLoading(false);
     }
   };
 
   const formatFileSize = (bytes) => {
-    if (!bytes || bytes === 0) return '0 Bytes';
+    if (!bytes) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const formatTime = (seconds) => {
-    if (!seconds) return '';
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hrs > 0) return `${hrs}h ${mins}m ${secs}s`;
-    if (mins > 0) return `${mins}m ${secs}s`;
-    return `${secs}s`;
-  };
-
-  const getStatusColor = () => {
-    if (loading || processingStatus === 'processing') return 'text-yellow-600';
-    if (processingStatus === 'failed' || fileInfo?.status === 'error') return 'text-red-600';
-    if (processingStatus === 'completed' || fileInfo?.status === 'ready') return 'text-green-600';
-    if (processingStatus === 'uploading') return 'text-blue-600';
-    return 'text-gray-600';
-  };
-
-  const getStatusText = () => {
-    if (isUploading) return `Uploading... ${uploadProgress}%`;
-    if (processingStatus === 'processing') return 'Processing video...';
-    if (processingStatus === 'queued') return 'Queued for processing';
-    if (processingStatus === 'processing_timeout') return 'Processing taking longer than expected';
-    if (processingStatus === 'completed') return 'Processing completed';
-    if (processingStatus === 'failed') return 'Processing failed';
-    if (fileInfo?.status === 'ready') return 'Ready';
-    if (fileInfo?.status === 'error') return 'Upload failed';
-    return label;
-  };
-
-  const handleDurationChange = (value) => {
-    const numValue = parseInt(value) || 0;
-    setDuration(value);
-    if (onDurationChange) {
-      onDurationChange(numValue);
-    }
-  };
-
   return (
-    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-white hover:bg-gray-50 transition-colors">
+    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-white hover:bg-gray-50 transition-colors relative">
       <label className="cursor-pointer block">
         <input
           type="file"
           hidden
           accept={accept}
           onChange={handleFileChange}
-          disabled={loading || (disableStatusChange && fileInfo)}
+          disabled={loading || processingStatus === 'processing' || processingStatus === 'queued'}
         />
 
         <div className="flex flex-col items-center justify-center">
-          <div className="mb-4">
-            {getIcon()}
-          </div>
           
-          <div className={`text-lg font-medium mb-2 ${getStatusColor()}`}>
-            {(loading || isUploading) ? (
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                  {getStatusText()}
-                </div>
-              </div>
-            ) : fileInfo ? (
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-2">
-                  {processingStatus === 'completed' || fileInfo.status === 'ready' ? (
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  ) : processingStatus === 'failed' || fileInfo.status === 'error' ? (
-                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                  ) : (
-                    <div className="animate-pulse w-2 h-2 rounded-full bg-yellow-500"></div>
-                  )}
-                  {getStatusText()}
-                </div>
-              </div>
+          {/* Header Icon */}
+          <div className="mb-4 text-gray-400">
+            {loading ? (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            ) : processingStatus === 'queued' ? (
+              <div className="text-yellow-500">⏳</div>
             ) : (
-              <div className="flex items-center gap-2">
-                <UploadSVG className="w-5 h-5" />
-                {label}
-              </div>
+              <UploadSVG className="w-8 h-8"/>
             )}
           </div>
 
-          <p className="text-sm text-gray-500 mb-4 text-center">
-            {accept === "*" 
-              ? "Click to upload" 
-              : `Supported: ${accept}`}
-          </p>
+          {/* Status Text */}
+          <div className={`text-lg font-medium mb-2 text-center`}>
+            {processingStatus === 'queued' ? (
+              <span className="text-yellow-600">Queued for Processing</span>
+            ) : processingStatus === 'processing' ? (
+              <span className="text-blue-600">Processing Video... {processingProgress}%</span>
+            ) : loading ? (
+              <span className="text-blue-600">Uploading... {uploadProgress}%</span>
+            ) : fileInfo?.status === 'ready' ? (
+              <span className="text-green-600">Ready</span>
+            ) : (
+              <span>{label}</span>
+            )}
+          </div>
 
-          {/* Upload Progress Bar */}
-          {isUploading && (
-            <div className="w-full mt-4">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Uploading file...</span>
-                <span>{uploadProgress}%</span>
-              </div>
+          {/* 1. Uploading Progress Bar */}
+          {loading && (
+            <div className="w-full max-w-xs mt-4">
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-100" 
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
-              <div className="text-xs text-gray-500 mt-1">
-                Please don't close this window
-              </div>
+              <p className="text-xs text-gray-500 mt-1 text-center">Uploading to server...</p>
             </div>
           )}
 
-          {/* Processing Status */}
-          {(processingStatus === 'processing' || processingStatus === 'queued') && (
-            <div className="w-full mt-4 p-3 bg-blue-50 rounded-lg">
+          {/* 2. Queued Display (New) */}
+          {processingStatus === 'queued' && (
+            <div className="w-full max-w-xs mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-blue-700">Processing video</span>
-                <span className="text-xs text-blue-600">This may take several minutes</span>
+                <span className="text-sm font-medium text-yellow-800">Position in Queue</span>
+                <span className="text-xs font-bold text-yellow-700">
+                  #{queueData.position} of {queueData.total}
+                </span>
+              </div>
+              <div className="w-full bg-yellow-100 rounded-full h-1.5 mb-2">
+                 {/* Static or striped bar for waiting */}
+                <div className="bg-yellow-400 h-1.5 rounded-full w-full opacity-50"></div>
+              </div>
+              <p className="text-xs text-yellow-600 text-center">
+                Waiting {Math.floor(queueData.waitTime / 60)}m {queueData.waitTime % 60}s so far...
+              </p>
+            </div>
+          )}
+
+          {/* 3. Processing Progress Bar */}
+          {processingStatus === 'processing' && (
+            <div className="w-full max-w-xs mt-4">
+              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <span>Server Transcoding</span>
+                <span>{processingProgress}%</span>
               </div>
               <div className="w-full bg-blue-100 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full animate-pulse"></div>
+                <div 
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${processingProgress}%` }}
+                ></div>
               </div>
-              <div className="text-xs text-blue-600 mt-1 flex justify-between">
-                <span>Generating multiple resolutions...</span>
-                <span>⏳</span>
+              <p className="text-xs text-blue-400 mt-2 text-center">
+                This runs in the background.
+              </p>
+            </div>
+          )}
+
+          {/* 4. File Info Display (Ready) */}
+          {fileInfo && processingStatus === 'completed' && (
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded w-full text-left">
+              <div className="flex items-center gap-2">
+                <span className="text-green-500 text-lg">✓</span>
+                <span className="text-sm font-medium truncate">{fileInfo.originalName}</span>
+              </div>
+              <div className="text-xs text-green-700 mt-1 grid grid-cols-2 gap-2">
+                <div>Size: {formatFileSize(fileInfo.size)}</div>
+                {fileInfo.duration && <div>Duration: {fileInfo.duration}s</div>}
               </div>
             </div>
           )}
 
-          {/* Processing Timeout Warning */}
-          {processingStatus === 'processing_timeout' && (
-            <div className="w-full mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-              <div className="flex items-start gap-2">
-                <div className="text-yellow-600">⚠️</div>
-                <div>
-                  <div className="text-sm font-medium text-yellow-800">Processing is taking longer than expected</div>
-                  <div className="text-xs text-yellow-600 mt-1">
-                    Your video is still being processed in the background. It will be available soon.
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* 5. Error Display */}
+          {processingStatus === 'failed' && (
+             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded w-full text-center">
+                <p className="text-sm text-red-600 font-medium">Processing Failed</p>
+                <p className="text-xs text-red-500 mt-1">Check console or toast for details.</p>
+             </div>
           )}
 
-          {/* File info display */}
-          {fileInfo && (
-            <div className={`w-full mt-4 p-4 rounded-lg ${
-              fileInfo.status === 'error' || processingStatus === 'failed' ? 'bg-red-50' : 
-              processingStatus === 'processing_timeout' ? 'bg-yellow-50' : 'bg-green-50'
-            }`}>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900 truncate">
-                    {fileInfo.originalName}
-                  </h4>
-                  <div className="text-sm text-gray-600 space-y-1 mt-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Size:</span>
-                      <span>{formatFileSize(fileInfo.size)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Type:</span>
-                      <span className="px-2 py-1 bg-gray-100 rounded text-xs">
-                        {fileInfo.mime}
-                      </span>
-                    </div>
-                    {type === 'video' && fileInfo.duration && fileInfo.duration > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Duration:</span>
-                        <span>{fileInfo.duration} minutes</span>
-                      </div>
-                    )}
-                    {fileInfo.uploadTime && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Upload time:</span>
-                        <span>{formatTime(fileInfo.uploadTime / 1000)}</span>
-                      </div>
-                    )}
-                    {fileInfo.processingTime && processingStatus === 'completed' && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Processing time:</span>
-                        <span>{formatTime(fileInfo.processingTime / 1000)}</span>
-                      </div>
-                    )}
-                    {(fileInfo.status === 'error' || processingStatus === 'failed') && (
-                      <div className="text-red-600">
-                        Error: {fileInfo.error || 'Upload failed'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {fileInfo.status === 'ready' && processingStatus === 'completed' && (
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    ✓ Ready
-                  </span>
-                )}
-                {processingStatus === 'processing_timeout' && (
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    ⏳ Processing
-                  </span>
-                )}
-              </div>
-              
-              {/* Action buttons */}
-              <div className="mt-3 flex gap-2">
-                {(fileInfo.status === 'error' || processingStatus === 'failed') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFileInfo(null);
-                      setProcessingStatus(null);
-                      setIsUploading(false);
-                      setUploadProgress(0);
-                      // This won't reset the file input directly, but the user can click again
-                    }}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                  >
-                    Try Again
-                  </button>
-                )}
-                
-                {processingStatus === 'processing_timeout' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Option to refresh status or continue waiting
-                      // You could implement a manual status check here
-                    }}
-                    className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
-                  >
-                    Check Status
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </label>
-
-      {/* Info tips */}
-      {!fileInfo && !loading && (
-        <div className="mt-4 text-xs text-gray-500 space-y-1">
-          {type === 'video' && (
-            <>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Supported: MP4, MOV, AVI, MKV</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Maximum size: 1GB</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Recommended: 720p or 1080p</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Processing may take several minutes</span>
-              </div>
-            </>
-          )}
-          {type === 'file' && (
-            <>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Supported: PDF, DOC, PPT, XLS</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Maximum size: 1GB</span>
-              </div>
-            </>
-          )}
-          {type === 'image' && (
-            <>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Supported: JPG, PNG, GIF, SVG</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>•</span>
-                <span>Maximum size: 1GB</span>
-              </div>
-            </>
-          )}
-        </div>
-      )}
     </div>
   );
 };

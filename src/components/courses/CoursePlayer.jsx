@@ -1,12 +1,17 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import "plyr/dist/plyr.css";
 import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
-import VideoHLS from '../dashboard/user/VideoHLS';
+// import VideoHLS from '../dashboard/user/VideoHLS';
+import dynamic from 'next/dynamic';
+const  VideoHLS = dynamic(() => import('../dashboard/user/VideoHLS'), {
+  ssr: false,
+});
+
 import {
   ClipboardSVG,
   DownArrowSVG,
@@ -84,7 +89,15 @@ const CoursePlayer = ({
   const [videoProgressTime, setVideoProgressTime] = useState(0);
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+console.log(videoProgressTime)
+  // Refs for cleanup and optimization
+  const navigationTimeoutRef = useRef(null);
+  const progressInitializedRef = useRef(new Set());
+  const fileSavedRef = useRef(new Set());
+  const lastProgressSaveRef = useRef(0);
+  const saveInProgressRef = useRef(false);
+  const hasNavigatedToNextRef = useRef(false);
 
   // Extract data
   const courseData = course;
@@ -94,156 +107,125 @@ const CoursePlayer = ({
   const currentModule = courseData?.modules?.find(m => m?.moduleId === currentModuleId);
   const currentItem = currentModule?.items?.find(i => i.itemId === currentItemId);
 
-  // Calculate progress for UI
-  const totalItems = courseData.modules?.reduce((acc, module) => acc + (module.items?.length || 0), 0) || 0;
-  const completedCount = userProgress?.viewed?.reduce((acc, module) => 
-    acc + module.items.filter(item => item.progress === 100).length, 0) || 0;
-  const overallProgress = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+  // Memoized progress calculation
+  const { totalItems, completedCount, overallProgress } = useMemo(() => {
+    const total = courseData.modules?.reduce((acc, module) => 
+      acc + (module.items?.length || 0), 0) || 0;
+    
+    const completed = userProgress?.viewed?.reduce((acc, module) => 
+      acc + module.items.filter(item => item.progress === 100).length, 0) || 0;
+    
+    const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    return { 
+      totalItems: total, 
+      completedCount: completed, 
+      overallProgress: progressPercent 
+    };
+  }, [courseData.modules, userProgress?.viewed]);
 
-  // Check if current item is unlocked on first load
-  useEffect(() => {
-    if (!currentItemId || !currentModuleId || !courseData.modules || isInitialized) {
+  // Centralized accessibility checker
+  const getItemAccessibility = useCallback((itemId, moduleId) => {
+    if (!itemId || !moduleId) {
+      return { accessible: false, reason: 'invalid-params' };
+    }
+    
+    // If already viewed, it's accessible
+    if (isItemViewed(userProgress, moduleId, itemId)) {
+      return { accessible: true, reason: 'viewed' };
+    }
+    
+    const moduleIndex = courseData.modules.findIndex(m => m.moduleId === moduleId);
+    if (moduleIndex === -1) {
+      return { accessible: false, reason: 'module-not-found' };
+    }
+    
+    const module = courseData.modules[moduleIndex];
+    const itemIndex = module.items.findIndex(i => i.itemId === itemId);
+    if (itemIndex === -1) {
+      return { accessible: false, reason: 'item-not-found' };
+    }
+    
+    // First item of first module - always accessible
+    if (moduleIndex === 0 && itemIndex === 0) {
+      return { accessible: true, reason: 'first-item' };
+    }
+    
+    // Check previous item in same module
+    if (itemIndex > 0) {
+      const previousItem = module.items[itemIndex - 1];
+      const accessible = isItemViewed(userProgress, moduleId, previousItem.itemId);
+      return { 
+        accessible, 
+        reason: accessible ? 'previous-complete' : 'previous-incomplete',
+        previousItem: accessible ? null : previousItem
+      };
+    }
+    
+    // Check last item of previous module
+    if (moduleIndex > 0) {
+      const previousModule = courseData.modules[moduleIndex - 1];
+      if (previousModule.items.length > 0) {
+        const lastItem = previousModule.items[previousModule.items.length - 1];
+        const accessible = isItemViewed(userProgress, previousModule.moduleId, lastItem.itemId);
+        return { 
+          accessible, 
+          reason: accessible ? 'previous-module-complete' : 'previous-module-incomplete',
+          previousItem: accessible ? null : { ...lastItem, moduleId: previousModule.moduleId }
+        };
+      }
+    }
+    
+    return { accessible: false, reason: 'default-locked' };
+  }, [userProgress, courseData.modules]);
+
+  // Optimized save progress with debouncing and deduplication
+  const saveProgress = useCallback(async (action, payload = {}) => {
+    // Check if item is already at 100% progress
+    const currentProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
+    
+    // If already completed (100%), don't save again unless it's a new action type that makes sense
+    if (currentProgress === 100) {
+      console.log('Item already completed (100%), skipping save');
+      return;
+    }
+    
+    // Prevent duplicate saves within 1 second
+    const now = Date.now();
+    const timeSinceLastSave = now - lastProgressSaveRef.current;
+    
+    if (saveInProgressRef.current || timeSinceLastSave < 1000) {
       return;
     }
 
-    const checkUnlockStatus = () => {
-      // Case 1: Item is already in viewed array - always unlocked
-      if (isItemViewed(userProgress, currentModuleId, currentItemId)) {
-        setIsUnlocked(true);
-        setIsInitialized(true);
-        return;
-      }
-
-      // Find current module and item index
-      const currentModuleIndex = courseData.modules.findIndex(m => m.moduleId === currentModuleId);
-      if (currentModuleIndex === -1) {
-        setIsUnlocked(false);
-        setIsInitialized(true);
-        return;
-      }
-
-      const currentModule = courseData.modules[currentModuleIndex];
-      const currentItemIndex = currentModule.items.findIndex(i => i.itemId === currentItemId);
-      
-      if (currentItemIndex === -1) {
-        setIsUnlocked(false);
-        setIsInitialized(true);
-        return;
-      }
-
-      // Case 2: Check previous item in same module
-      if (currentItemIndex > 0) {
-        const previousItem = currentModule.items[currentItemIndex - 1];
-        if (isItemViewed(userProgress, currentModuleId, previousItem.itemId)) {
-          setIsUnlocked(true);
-          setIsInitialized(true);
-          // Save progress for this item since it's newly accessed
-          setTimeout(() => {
-            if (["textInstruction", "file"].includes(currentItem?.type)) {
-              saveProgress("MARK_COMPLETE");
-            } else if (currentItem?.type === "video") {
-              saveProgress("VIDEO_PROGRESS", { progress: 0 });
-            }
-          }, 100);
-          return;
-        } else {
-          setIsUnlocked(false);
-          setIsInitialized(true);
-          return;
-        }
-      }
-
-      // Case 3: First item in module, check previous module's last item
-      if (currentItemIndex === 0 && currentModuleIndex > 0) {
-        const previousModule = courseData.modules[currentModuleIndex - 1];
-        if (previousModule.items.length > 0) {
-          const lastItem = previousModule.items[previousModule.items.length - 1];
-          if (isItemViewed(userProgress, previousModule.moduleId, lastItem.itemId)) {
-            setIsUnlocked(true);
-            setIsInitialized(true);
-            // Save progress for this item since it's newly accessed
-            setTimeout(() => {
-              if (["textInstruction", "file"].includes(currentItem?.type)) {
-                saveProgress("MARK_COMPLETE");
-              } else if (currentItem?.type === "video") {
-                saveProgress("VIDEO_PROGRESS", { progress: 0 });
-              }
-            }, 100);
-            return;
-          } else {
-            setIsUnlocked(false);
-            setIsInitialized(true);
-            return;
-          }
-        }
-      }
-
-      // Case 4: First item of first module - always unlocked
-      if (currentItemIndex === 0 && currentModuleIndex === 0) {
-        setIsUnlocked(true);
-        setIsInitialized(true);
-        // Save progress for this item since it's newly accessed
-        setTimeout(() => {
-          if (["textInstruction", "file"].includes(currentItem?.type)) {
-            saveProgress("MARK_COMPLETE");
-          } else if (currentItem?.type === "video") {
-            saveProgress("VIDEO_PROGRESS", { progress: 0 });
-          }
-        }, 100);
-        return;
-      }
-
-      // Default case: locked
-      setIsUnlocked(false);
-      setIsInitialized(true);
-    };
-
-    checkUnlockStatus();
-  }, [currentItemId, currentModuleId, userProgress, courseData.modules, currentItem, isInitialized]);
-
-  const saveProgress = async (action, payload = {}) => {
     try {
-      const res = await updateCourseProgress(userProgress.courseId, currentModuleId, currentItemId, payload, action)
-      console.log(res)
+      saveInProgressRef.current = true;
+      lastProgressSaveRef.current = now;
+      
+      const res = await updateCourseProgress(
+        userProgress.courseId, 
+        currentModuleId, 
+        currentItemId, 
+        payload, 
+        action
+      );
+      
+      console.log('Progress saved:', res);
     } catch (err) {
-      console.error("Progress save failed", err);
+      console.error("Progress save failed:", err);
+    } finally {
+      saveInProgressRef.current = false;
     }
-  };
+  }, [userProgress, currentModuleId, currentItemId]);
 
-  // Handle video ended
-  const handleVideoEnded = async () => {
-    if (currentItem?.type !== 'video') return;
-    
-    setVideoEnded(true);
-    
-    // Save progress as 100% when video ends
-    await saveProgress("VIDEO_PROGRESS", { progress: 100 });
-    await saveProgress("MARK_COMPLETE");
-    
-    // Navigate to next item after a short delay
-    const { next: nextItem } = getNavigationItems();
-    if (nextItem) {
-      setTimeout(() => {
-        router.push(`/courses/${userProgress?.courseId}/${nextItem.moduleId}/${nextItem.itemId}`);
-      }, 1500); // 1.5 second delay to show completion
-    }
-  };
-
-  // Initialize expanded modules with current module
-  useEffect(() => {
-    if (currentModuleId) {
-      setExpandedModules(prev => new Set([...prev, currentModuleId]));
-    }
-  }, [currentModuleId]);
-
-  const getNavigationItems = () => {
+    // Memoized navigation items
+  const getNavigationItems = useCallback(() => {
     if (!currentItemId) return { previous: null, next: null };
 
     let found = false;
     let previousItem = null;
     let nextItem = null;
 
-    // Find current item and its neighbors
     for (let mIdx = 0; mIdx < courseData.modules.length; mIdx++) {
       const module = courseData.modules[mIdx];
       for (let iIdx = 0; iIdx < module.items.length; iIdx++) {
@@ -252,34 +234,30 @@ const CoursePlayer = ({
 
           // Previous item
           if (iIdx > 0) {
-            // Previous item in same module
             previousItem = {
               ...module.items[iIdx - 1],
-              moduleId: module.moduleId // Include moduleId
+              moduleId: module.moduleId
             };
           } else if (mIdx > 0) {
-            // Last item of previous module
             const prevModule = courseData.modules[mIdx - 1];
             previousItem = {
               ...prevModule.items[prevModule.items.length - 1],
-              moduleId: prevModule.moduleId // Include moduleId
+              moduleId: prevModule.moduleId
             };
           }
 
           // Next item
           if (iIdx < module.items.length - 1) {
-            // Next item in same module
             nextItem = {
               ...module.items[iIdx + 1],
-              moduleId: module.moduleId // Include moduleId
+              moduleId: module.moduleId
             };
           } else if (mIdx < courseData.modules.length - 1) {
-            // First item of next module
             const nextModule = courseData.modules[mIdx + 1];
             if (nextModule.items.length > 0) {
               nextItem = {
                 ...nextModule.items[0],
-                moduleId: nextModule.moduleId // Include moduleId
+                moduleId: nextModule.moduleId
               };
             }
           }
@@ -291,8 +269,101 @@ const CoursePlayer = ({
     }
 
     return { previous: previousItem, next: nextItem };
-  };
-  const { previous: previousItem, next: nextItem } = getNavigationItems();
+  }, [currentItemId, currentModuleId, courseData.modules]);
+
+
+  // Check if current item is unlocked on first load
+  useEffect(() => {
+    if (!currentItemId || !currentModuleId || !courseData.modules || isInitialized) {
+      return;
+    }
+
+    const checkUnlockStatus = () => {
+      const accessibility = getItemAccessibility(currentItemId, currentModuleId);
+      setIsUnlocked(accessibility.accessible);
+      setIsInitialized(true);
+
+      // Initialize progress for newly accessible items
+      if (accessibility.accessible && currentItem) {
+        const progressKey = `${currentModuleId}-${currentItemId}`;
+        
+        if (!progressInitializedRef.current.has(progressKey)) {
+          progressInitializedRef.current.add(progressKey);
+          
+          // Save initial progress immediately (no setTimeout to avoid race conditions)
+          if (["textInstruction", "file"].includes(currentItem.type)) {
+            // Don't auto-complete these, wait for user interaction
+            saveProgress("VIDEO_PROGRESS", { progress: 0 });
+          } else if (currentItem.type === "video") {
+            saveProgress("VIDEO_PROGRESS", { progress: 0 });
+          }
+        }
+      }
+    };
+
+    checkUnlockStatus();
+  }, [currentItemId, currentModuleId, userProgress, courseData.modules, isInitialized, getItemAccessibility, currentItem, saveProgress]);
+
+
+  // Handle video ended with proper cleanup
+  const handleVideoEnded = useCallback(async () => {
+    if (currentItem?.type !== 'video') return;
+    
+    // Check if this video was already completed before
+    const currentProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
+    const wasAlreadyCompleted = currentProgress === 100;
+    
+    // Only save progress if not already at 100%
+    if (!wasAlreadyCompleted) {
+      await saveProgress("VIDEO_PROGRESS", { progress: 100 });
+      await saveProgress("MARK_COMPLETE");
+    }
+    
+    // Only auto-navigate if this is the first time completing the video
+    // This allows users to replay completed videos without auto-navigation
+    if (!wasAlreadyCompleted && !hasNavigatedToNextRef.current) {
+      hasNavigatedToNextRef.current = true;
+      
+      const { next: nextItem } = getNavigationItems();
+      if (nextItem) {
+        // Clear any existing timeout
+        if (navigationTimeoutRef.current) {
+          clearTimeout(navigationTimeoutRef.current);
+        }
+        
+        navigationTimeoutRef.current = setTimeout(() => {
+          router.push(`/courses/${userProgress?.courseId}/${nextItem.moduleId}/${nextItem.itemId}`);
+        }, 1500);
+      }
+    }
+  }, [currentItem, saveProgress, userProgress, currentModuleId, currentItemId, getNavigationItems, router]);
+
+  // Reset navigation flag when item changes
+  useEffect(() => {
+    hasNavigatedToNextRef.current = false;
+  }, [currentItemId]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Initialize expanded modules with current module
+  useEffect(() => {
+    if (currentModuleId) {
+      setExpandedModules(prev => new Set([...prev, currentModuleId]));
+    }
+  }, [currentModuleId]);
+
+
+  const { previous: previousItem, next: nextItem } = useMemo(() => 
+    getNavigationItems(), 
+    [getNavigationItems]
+  );
 
   // Load video stream on first load
   useEffect(() => {
@@ -303,32 +374,20 @@ const CoursePlayer = ({
     }
 
     // Get video progress from userProgress
-    const getVideoProgress = () => {
-      if (userProgress && userProgress.viewed) {
-        const moduleProgress = userProgress.viewed.find(m => m.moduleId === currentModuleId);
-        if (moduleProgress) {
-          const itemProgress = moduleProgress.items.find(i => i.itemId === currentItemId);
-          if (itemProgress) {
-            // Store progress percentage for later use with video duration
-            setVideoProgressTime(itemProgress.progress);
-          }
-        }
-      }
-    };
-
-    getVideoProgress();
+    const savedProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
+    setVideoProgressTime(savedProgress===100 ? 0: savedProgress );
 
     const loadVideoStream = async () => {
       try {
         if (currentItem.url?.filename) {
           const streamData = await getStreamData(userProgress?.courseId, currentItem?.url?.filename);
-          console.log(streamData)
+          
           if (streamData?.url) {
             setHlsUrl(streamData?.url);
           }
         }
       } catch (err) {
-        console.error("Stream load failed", err);
+        console.error("Stream load failed:", err);
       } finally {
         setLoading(false);
       }
@@ -349,16 +408,16 @@ const CoursePlayer = ({
       try {
         if (currentItem.url?.filename) {
           let token = null;
-          // Get token only if file is not public
+          
           if (currentItem.status !== 'public') {
             token = await getFileToken(userProgress?.courseId, currentItem?.url?.filename);
           }
 
-          // Build file URL with token if needed
           let fileUrl = `${SERVER}/api/user/course/file/${userProgress?.courseId}/${currentItem?.url?.filename}`;
           if (token) {
             fileUrl += `?token=${token}`;
           }
+          
           setFileData({
             filename: currentItem?.url?.filename,
             mime: currentItem?.url?.mime,
@@ -367,7 +426,7 @@ const CoursePlayer = ({
           });
         }
       } catch (err) {
-        console.error("File load failed", err);
+        console.error("File load failed:", err);
       } finally {
         setLoading(false);
       }
@@ -383,21 +442,31 @@ const CoursePlayer = ({
     }
   }, [currentItem, isUnlocked]);
 
+  // Save file progress (with deduplication)
   useEffect(() => {
+    const fileKey = `${currentModuleId}-${currentItemId}`;
+    
     if (currentItem?.type === "file" && fileData?.url && isUnlocked) {
-      saveProgress("MARK_COMPLETE");
+      if (!fileSavedRef.current.has(fileKey)) {
+        fileSavedRef.current.add(fileKey);
+        saveProgress("MARK_COMPLETE");
+      }
     }
-  }, [fileData, isUnlocked]);
+  }, [fileData, isUnlocked, currentItem, currentModuleId, currentItemId, saveProgress]);
 
   // Reset quiz state when item changes
   useEffect(() => {
     if (currentItem?.type === 'quiz' && isUnlocked) {
-      setQuizCompleted(prev => ({ ...prev, [currentItemId]: false }));
+      const quizProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
+      setQuizCompleted(prev => ({ 
+        ...prev, 
+        [currentItemId]: quizProgress === 100 
+      }));
     }
-  }, [currentItemId, currentItem?.type, isUnlocked]);
+  }, [currentItemId, currentItem?.type, isUnlocked, userProgress, currentModuleId]);
 
   // Toggle module expansion
-  const toggleModule = (moduleId) => {
+  const toggleModule = useCallback((moduleId) => {
     setExpandedModules(prev => {
       const newSet = new Set(prev);
       if (newSet.has(moduleId)) {
@@ -407,49 +476,10 @@ const CoursePlayer = ({
       }
       return newSet;
     });
-  };
-
-  // Check if a specific item is accessible (for UI display only)
-  const checkItemAccessible = (itemId, moduleId) => {
-    if (!itemId || !moduleId) return false;
-    
-    // If item is already viewed, it's accessible
-    if (isItemViewed(userProgress, moduleId, itemId)) {
-      return true;
-    }
-    
-    // Find the module index
-    const moduleIndex = courseData.modules.findIndex(m => m.moduleId === moduleId);
-    if (moduleIndex === -1) return false;
-    
-    const module = courseData.modules[moduleIndex];
-    const itemIndex = module.items.findIndex(i => i.itemId === itemId);
-    
-    // If it's the first item of the first module, it's accessible
-    if (moduleIndex === 0 && itemIndex === 0) {
-      return true;
-    }
-    
-    // Check previous item in same module
-    if (itemIndex > 0) {
-      const previousItem = module.items[itemIndex - 1];
-      return isItemViewed(userProgress, moduleId, previousItem.itemId);
-    }
-    
-    // Check last item of previous module
-    if (moduleIndex > 0) {
-      const previousModule = courseData.modules[moduleIndex - 1];
-      if (previousModule.items.length > 0) {
-        const lastItem = previousModule.items[previousModule.items.length - 1];
-        return isItemViewed(userProgress, previousModule.moduleId, lastItem.itemId);
-      }
-    }
-    
-    return false;
-  };
+  }, []);
 
   // Get item icon
-  const getItemIcon = (item) => {
+  const getItemIcon = useCallback((item) => {
     const iconProps = { className: "w-5 h-5" };
 
     switch (item.type) {
@@ -464,9 +494,9 @@ const CoursePlayer = ({
       default:
         return <ClipboardSVG {...iconProps} />;
     }
-  };
+  }, []);
 
-  const handleQuizSubmit = async (selectedOption) => {
+  const handleQuizSubmit = useCallback(async (selectedOption) => {
     if (!currentItem || currentItem.type !== "quiz" || !isUnlocked) return;
 
     const isCorrect = selectedOption === currentItem.answer;
@@ -477,73 +507,43 @@ const CoursePlayer = ({
     });
     await saveProgress("MARK_COMPLETE");
 
-    // if (isCorrect) {
-    // }
-
     setQuizAnswers(prev => ({ ...prev, [currentItemId]: selectedOption }));
     setQuizCompleted(prev => ({ ...prev, [currentItemId]: true }));
-  };
+  }, [currentItem, isUnlocked, currentItemId, saveProgress]);
 
   // Render locked content
-  const renderLockedContent = () => (
-    <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm text-center">
-      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-        <LockClosedSVG className="w-10 h-10 text-gray-400" />
-      </div>
-      <h3 className="text-2xl font-bold mb-3 text-gray-800 dark:text-white">
-        Content Locked
-      </h3>
-      <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
-        Complete the previous lesson to unlock this content. Make sure you've finished all required items in the previous module.
-      </p>
-      {previousItem && (
-        <Link
-          href={`/courses/${userProgress?.courseId}/${previousItem.moduleId}/${previousItem.itemId}`}
-          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md"
-        >
-          <LeftArrowSVG className="w-4 h-4 mr-2" />
-          Go to Previous Lesson
-        </Link>
-      )}
-    </div>
-  );
-
-  // Render video ended overlay
-  const renderVideoEndedOverlay = () => (
-    <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-20 rounded-xl">
-      <div className="text-center">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
-          <CheckCircleSVG className="w-10 h-10 text-white" />
+  const renderLockedContent = useCallback(() => {
+    const accessibility = getItemAccessibility(currentItemId, currentModuleId);
+    
+    return (
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm text-center">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+          <LockClosedSVG className="w-10 h-10 text-gray-400" />
         </div>
-        <h3 className="text-2xl font-bold mb-3 text-white">
-          Video Completed!
+        <h3 className="text-2xl font-bold mb-3 text-gray-800 dark:text-white">
+          Content Locked
         </h3>
-        <p className="text-gray-300 mb-6">
-          Great job! You've completed this video lesson.
+        <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
+          Complete the previous lesson to unlock this content.
         </p>
-        {nextItem ? (
-          <p className="text-gray-400 text-sm">
-            Redirecting to next lesson in 1 second...
-          </p>
-        ) : (
+        {accessibility.previousItem && (
           <Link
-            href={`/courses/${userProgress?.courseId}`}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold mt-4"
+            href={`/courses/${userProgress?.courseId}/${accessibility.previousItem.moduleId}/${accessibility.previousItem.itemId}`}
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md"
           >
-            Finish Course
-            <RightArrowSVG className="w-4 h-4 ml-2" />
+            <LeftArrowSVG className="w-4 h-4 mr-2" />
+            Go to Previous Lesson
           </Link>
         )}
       </div>
-    </div>
-  );
+    );
+  }, [currentItemId, currentModuleId, getItemAccessibility, userProgress?.courseId]);
 
   // Render content based on type
-  const renderContent = () => {
+  const renderContent = useCallback(() => {
     if (loading || !isInitialized) return <CourseLoader />;
     if (!currentItem) return <div className="text-center py-12">Content not found</div>;
     
-    // Check if content is unlocked
     if (!isUnlocked) {
       return renderLockedContent();
     }
@@ -556,20 +556,18 @@ const CoursePlayer = ({
           <div className="space-y-6 relative">
             <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
               {hlsUrl ? (
-                <>
-                  <VideoHLS
-                    src={hlsUrl}
-                    initialProgress={videoProgressTime}
-                    onEnded={handleVideoEnded}
-                    onProgress={(percent) => {
-                      // Only save progress during playback, not at the end
-                      if (percent < 95 && percent % 30 === 0) {
-                        saveProgress("VIDEO_PROGRESS", { progress: percent });
-                      }
-                    }}
-                  />
-                  {videoEnded && renderVideoEndedOverlay()}
-                </>
+                <VideoHLS
+                  src={hlsUrl}
+                  initialProgress={videoProgressTime}
+                  onEnded={handleVideoEnded}
+                  onProgress={(percent) => {
+                    const now = Date.now();
+                    // Save at key milestones or every 10 seconds
+                    if ([25, 50, 75].includes(percent) || now - lastProgressSaveRef.current > 10000) {
+                      saveProgress("VIDEO_PROGRESS", { progress: percent });
+                    }
+                  }}
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-900">
                   <div className="text-center">
@@ -579,11 +577,13 @@ const CoursePlayer = ({
                 </div>
               )}
             </div>
-            {currentItem?.description && <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-              <p className="text-gray-600 dark:text-gray-300">
-                {currentItem.description}
-              </p>
-            </div>}
+            {currentItem?.description && (
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                <p className="text-gray-600 dark:text-gray-300">
+                  {currentItem.description}
+                </p>
+              </div>
+            )}
           </div>
         );
 
@@ -593,6 +593,17 @@ const CoursePlayer = ({
             <div className="prose max-h-screen overflow-y-auto dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
               <BlogContent content={currentItem.content || ''} />
             </div>
+            {!isCompleted && (
+              <div className="mt-6 pt-6 border-t dark:border-gray-700">
+                <button
+                  onClick={() => saveProgress("MARK_COMPLETE")}
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
+                >
+                  <CheckCircleSVG className="w-5 h-5 mr-2" />
+                  Mark as Complete
+                </button>
+              </div>
+            )}
           </div>
         );
 
@@ -625,6 +636,7 @@ const CoursePlayer = ({
                     href={fileData.url}
                     download
                     target='_blank'
+                    rel="noopener noreferrer"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md whitespace-nowrap"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -635,7 +647,6 @@ const CoursePlayer = ({
                 )}
               </div>
 
-              {/* Inline Preview for PDF and Images */}
               {fileData?.url && (isPDF || isImage) && (
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
                   {isPDF && (
@@ -755,7 +766,24 @@ const CoursePlayer = ({
           </div>
         );
     }
-  };
+  }, [
+    loading, 
+    isInitialized, 
+    currentItem, 
+    isUnlocked, 
+    renderLockedContent, 
+    userProgress, 
+    currentModuleId, 
+    currentItemId, 
+    hlsUrl, 
+    videoProgressTime, 
+    handleVideoEnded, 
+    saveProgress, 
+    fileData, 
+    quizAnswers, 
+    quizCompleted, 
+    handleQuizSubmit
+  ]);
 
   if (!currentItem || !isInitialized) return <CourseLoader />;
 
@@ -783,6 +811,7 @@ const CoursePlayer = ({
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Toggle menu"
           >
             <div className="space-y-1">
               <div className="w-6 h-0.5 bg-gray-600 rounded-full"></div>
@@ -798,10 +827,8 @@ const CoursePlayer = ({
           {/* Sidebar - LEFT SIDE */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-6 space-y-6">
-
               {/* Course Info */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-gray-700">
-
                 {/* Progress */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
@@ -834,6 +861,7 @@ const CoursePlayer = ({
                       <button
                         onClick={() => toggleModule(module.moduleId)}
                         className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                        aria-expanded={expandedModules.has(module.moduleId)}
                       >
                         <div className="flex items-center flex-1">
                           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 mr-3 flex items-center justify-center">
@@ -859,7 +887,7 @@ const CoursePlayer = ({
                             className="bg-gray-50/50 dark:bg-gray-900/50"
                           >
                             {module.items.map((item) => {
-                              const isAccessible = checkItemAccessible(item.itemId, module.moduleId);
+                              const accessibility = getItemAccessibility(item.itemId, module.moduleId);
                               const isActive = item.itemId === currentItemId;
                               const isCompleted = getItemProgress(userProgress, module.moduleId, item.itemId) === 100;
                               const isViewed = isItemViewed(userProgress, module.moduleId, item.itemId);
@@ -869,15 +897,19 @@ const CoursePlayer = ({
                                 <Link
                                   key={item.itemId}
                                   href={itemPath}
+                                  onClick={() => setIsTransitioning(true)}
                                   className={`flex items-center px-4 py-3 text-left transition-all border-l-4 ${isActive
                                     ? 'bg-primary/10 border-l-primary shadow-sm'
                                     : 'border-l-transparent hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-l-primary/30'
-                                    }`}
+                                    } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  aria-disabled={!accessibility.accessible}
                                 >
                                   <div className="flex items-center flex-1 min-w-0">
                                     <div className="mr-3">
                                       {isCompleted ? (
                                         <CheckCircleSVG className="w-5 h-5 text-green-500" />
+                                      ) : !accessibility.accessible ? (
+                                        <LockClosedSVG className="w-5 h-5 text-gray-400" />
                                       ) : (
                                         getItemIcon(item)
                                       )}
@@ -890,7 +922,7 @@ const CoursePlayer = ({
                                         </span>
                                         {isActive && (
                                           <span className="ml-2 text-xs bg-primary text-white px-2 py-0.5 rounded-full font-medium">
-                                            Playing
+                                            Current
                                           </span>
                                         )}
                                       </div>
@@ -960,6 +992,7 @@ const CoursePlayer = ({
                         {previousItem ? (
                           <Link
                             href={`/courses/${userProgress?.courseId}/${previousItem.moduleId}/${previousItem.itemId}`}
+                            onClick={() => setIsTransitioning(true)}
                             className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-black rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
                           >
                             <LeftArrowSVG className="w-4 h-4 mr-2" />
@@ -974,6 +1007,7 @@ const CoursePlayer = ({
                         {nextItem ? (
                           <Link
                             href={`/courses/${userProgress?.courseId}/${nextItem.moduleId}/${nextItem.itemId}`}
+                            onClick={() => setIsTransitioning(true)}
                             className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
                           >
                             Next Lesson
@@ -1023,6 +1057,7 @@ const CoursePlayer = ({
                   <button
                     onClick={() => setShowMobileMenu(false)}
                     className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    aria-label="Close menu"
                   >
                     <span className="text-2xl">×</span>
                   </button>
@@ -1034,6 +1069,7 @@ const CoursePlayer = ({
                       <button
                         onClick={() => toggleModule(module.moduleId)}
                         className="w-full flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-xl mb-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        aria-expanded={expandedModules.has(module.moduleId)}
                       >
                         <div className="flex items-center">
                           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 mr-3 flex items-center justify-center">
@@ -1052,7 +1088,7 @@ const CoursePlayer = ({
                       {expandedModules.has(module.moduleId) && (
                         <div className="space-y-1 ml-4">
                           {module.items.map((item) => {
-                            const isAccessible = checkItemAccessible(item.itemId, module.moduleId);
+                            const accessibility = getItemAccessibility(item.itemId, module.moduleId);
                             const isActive = item.itemId === currentItemId;
                             const isCompleted = getItemProgress(userProgress, module.moduleId, item.itemId) === 100;
                             const isViewed = isItemViewed(userProgress, module.moduleId, item.itemId);
@@ -1064,15 +1100,19 @@ const CoursePlayer = ({
                                 href={itemPath}
                                 onClick={() => {
                                   setShowMobileMenu(false);
+                                  setIsTransitioning(true);
                                 }}
                                 className={`flex items-center p-2.5 rounded-lg transition-all ${isActive
                                   ? 'bg-primary/10 text-primary'
                                   : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                                  }`}
+                                  } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                aria-disabled={!accessibility.accessible}
                               >
                                 <div className="mr-2">
                                   {isCompleted ? (
                                     <CheckCircleSVG className="w-4 h-4 text-green-500" />
+                                  ) : !accessibility.accessible ? (
+                                    <LockClosedSVG className="w-4 h-4 text-gray-400" />
                                   ) : (
                                     getItemIcon(item)
                                   )}
@@ -1101,6 +1141,15 @@ const CoursePlayer = ({
           </>
         )}
       </AnimatePresence>
+
+      {/* Transition Overlay */}
+      {isTransitioning && (
+        <div className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
