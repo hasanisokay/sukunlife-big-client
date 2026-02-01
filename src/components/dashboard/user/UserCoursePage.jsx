@@ -33,34 +33,34 @@ const UserCoursePage = ({ courses }) => {
           variants={containerVariants}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-       {courses?.map((course) => (
-  <motion.div
-    key={course._id}
-    variants={cardVariants}
-    whileHover={{ scale: 1.02 }}
-    className="relative overflow-hidden rounded-xl shadow-lg group"
-  >
-    <Link href={`/dashboard/c/${course.courseId}`} className="block h-full">
-      <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
-        {course.coverPhotoUrl && (
-          <Image
-            src={course.coverPhotoUrl}
-            alt={course.title}
-            fill
-            className="object-cover"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
-      </div>
+          {courses?.map((course) => (
+            <motion.div
+              key={course._id}
+              variants={cardVariants}
+              whileHover={{ scale: 1.02 }}
+              className="relative overflow-hidden rounded-xl shadow-lg group"
+            >
+              <Link href={`/courses/${course.courseId}`} className="block h-full">
+                <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
+                  {course.coverPhotoUrl && (
+                    <Image
+                      src={course.coverPhotoUrl}
+                      alt={course.title}
+                      fill
+                      className="object-cover"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent" />
+                </div>
 
-      <div className="p-4 bg-white dark:bg-gray-800">
-        <h3 className="text-xl font-bold">
-          {course.title}
-        </h3>
-      </div>
-    </Link>
-  </motion.div>
-))}
+                <div className="p-4 bg-white dark:bg-gray-800">
+                  <h3 className="text-xl font-bold">
+                    {course.title}
+                  </h3>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
 
         </motion.div>
       ) : (
