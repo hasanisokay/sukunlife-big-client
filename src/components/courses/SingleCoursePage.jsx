@@ -18,7 +18,7 @@ import TickSVG from '../svg/TickSVG';
 import BlogContent from '../blogs/BlogContnet';
 import { SERVER } from '@/constants/urls.mjs';
 
-const SingleCoursePage = ({ course }) => {
+const SingleCoursePage = ({ course, enrollData }) => {
     const [expandedModule, setExpandedModule] = useState(null);
     const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
     const [itemAddedToCart, setItemAddedToCart] = useState(false);
@@ -28,21 +28,17 @@ const SingleCoursePage = ({ course }) => {
     const theme = useSelector((state) => state.theme.mode);
     const cart = useSelector((state) => state.cart.cartData);
     const coursesEnrolled = useSelector((state) => state.user.enrolledCourses);
-    const [alreadyEnrolled, setAlreadyEnrolled] = useState(false);
+
+
     const [imageError, setImageError] = useState(false);
     const [typedVoucher, setTypedVoucher] = useState("");
     const [voucherMessage, setVoucherMessage] = useState('');
     const [voucherError, setVoucherError] = useState('');
-    useEffect(() => {
-        if (!coursesEnrolled) return;
-        coursesEnrolled?.filter((c) => {
-            return c.courseId === course._id
-        })
-        if (coursesEnrolled?.length > 0) {
-            setAlreadyEnrolled(true);
-        }
-    }, [coursesEnrolled]);
-    console.log(course)
+
+    let alreadyEnrolled = enrollData?.enrolled || false;
+    let lastModule = enrollData?.progress?.currentModule || course?.modules[0]?.moduleId;
+    let lastItem = enrollData?.progress?.currentItem || course?.modules[0]?.items[0].itemId;
+
     const groupItems = (items) => {
         return items.reduce((acc, item) => {
             if (item.type === 'quiz') {
@@ -94,7 +90,7 @@ const SingleCoursePage = ({ course }) => {
                 setVoucherError(data.message);
             }
         } catch (error) {
-            console.log("Error validating voucher:", error);
+            console.error("Error validating voucher:", error);
         }
     };
     const handleAddToCart = async (buyNow) => {
@@ -123,7 +119,7 @@ const SingleCoursePage = ({ course }) => {
         return text.split(",").join(" | ")
     }
 
-    console.log(course)
+
     return (
         <div className="bg-white  min-h-fit text-black rounded-xl min-w-full max-w-7xl mx-auto  montserrat-font">
             {/* Cover Photo with Instructor, Tags, and Enroll Button */}
@@ -202,25 +198,25 @@ const SingleCoursePage = ({ course }) => {
                             <StarRating ratingCount={course?.reviewsCount} totalRating={course?.ratingSum} />
                         </Link>
                         <p className="italic">Duration: {course?.duration || "Not available"}</p>
-                        <div className="flex justify-between items-center gap-2">
-                            <p className="text-xl text-black font-semibold flex items-center ">
+                        <div className={`${alreadyEnrolled ? 'mb-3 text-center w-full':'flex justify-between items-center gap-2'}`}>
+                        {!alreadyEnrolled &&    <p className="text-xl text-black font-semibold flex items-center ">
                                 <span>Price:</span> &nbsp; <TakaSVG
                                     className="w-5 h-5 mr-1"
                                     color={theme === "light" ? "#00000" : "#00000"}
                                 />
                                 {formatPrice(coursePrice || course.price)}
-                            </p>
+                            </p>}
                             <button
                                 // disabled={itemAddedToCart}
-                                className="bg-[#ffc267] md:h-[50px] h-[40px] md:w-[160px] w-[120px]  text-black rounded-full transition-colors"
+                                className={`rounded-full transition-colors font-semibold bg-[#ffc267] md:h-[50px]  ${alreadyEnrolled ?"w-full" :" h-[40px] md:w-[160px] w-[120px]  text-black "}`}
                                 onClick={() => {
                                     if (alreadyEnrolled) {
-                                        return window.location.href = `/courses/${course?.courseId}/${course?.modules[0]?.moduleId}/${course?.modules[0]?.items[0].itemId}`
+                                        return window.location.href = `/courses/${course?.courseId}/${lastModule}/${lastItem}`
                                     }
                                     return handleAddToCart(false)
                                 }}
                             >
-                                {alreadyEnrolled ? "Continue" : itemAddedToCart ? "View Cart" : "Add to cart"}
+                                {alreadyEnrolled ? "Continue Learning" : itemAddedToCart ? "View Cart" : "Add to cart"}
                             </button>
                         </div>
                         <svg

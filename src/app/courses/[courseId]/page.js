@@ -4,6 +4,7 @@ import getCoursePublic from "@/utils/getCoursePublic.mjs";
 import courseCover from "@/../public/images/course.jpg";
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
+import checkIfUserEnrolledCours from "@/server-functions/course-related/checkIfUserEnrolledCours.mjs";
 
 
 
@@ -12,8 +13,9 @@ const singleCoursePage = async ({ params }) => {
     const p = await params;
     const courseId = p.courseId;
     let course = await getCoursePublic(courseId);
+    let ifUserEnrolled = await checkIfUserEnrolledCours(courseId);
     if (course?.status === 200) {
-      return <SingleCoursePage course={course?.course} />;
+      return <SingleCoursePage course={course?.course} enrollData={ifUserEnrolled} />;
     } else return <NotFound />;
   } catch {
     return <NotFound />;

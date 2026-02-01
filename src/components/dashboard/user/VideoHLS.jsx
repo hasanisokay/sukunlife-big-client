@@ -2,19 +2,24 @@
 import { useEffect, useRef, useState } from "react";
 import "plyr/dist/plyr.css";
 
-export default function VideoHLS({ src, onPlay }) {
+export default function VideoHLS({ src, onPlay, onProgress, initialProgress = 0, onEnded }) {
   const videoRef = useRef(null);
   const plyrRef = useRef(null);
   const hlsRef = useRef(null);
+  const lastProgressEmitRef = useRef(0);
+  const progressHandlerRef = useRef(null);
+  const hasSetInitialTimeRef = useRef(false);
+
   const [isClient, setIsClient] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
-  
+
   // Store event handlers in refs so they persist through renders
   const stallHandlerRef = useRef(null);
   const playHandlerRef = useRef(null);
+  const endedHandlerRef = useRef(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -25,6 +30,7 @@ export default function VideoHLS({ src, onPlay }) {
 
     setIsLoading(true);
     setError(null);
+    hasSetInitialTimeRef.current = false;
 
     const initPlayer = async () => {
       try {
@@ -48,17 +54,31 @@ export default function VideoHLS({ src, onPlay }) {
         video.src = "";
         video.load();
 
+        // Function to set initial time
+        const setInitialTime = () => {
+          if (!hasSetInitialTimeRef.current && initialProgress > 0 && video.duration) {
+            const seekTime = (initialProgress / 100) * video.duration;
+            video.currentTime = seekTime;
+            hasSetInitialTimeRef.current = true;
+          }
+        };
+
+        // Define ended handler
+        const handleEnded = () => {
+          if (onEnded) {
+            onEnded();
+          }
+        };
+
         // Define stall handler
         const handleStall = () => {
-          
           // Check if we're actually stalled or just buffering
           setTimeout(() => {
             if (video && video.paused === false && video.readyState < 3) {
-              
               // Try to skip small gaps in buffer
               const currentTime = video.currentTime;
               const buffered = video.buffered;
-              
+
               if (buffered.length > 0) {
                 let foundNextBuffer = false;
                 for (let i = 0; i < buffered.length; i++) {
@@ -68,7 +88,7 @@ export default function VideoHLS({ src, onPlay }) {
                     break;
                   }
                 }
-                
+
                 // If no buffer ahead, try restarting
                 if (!foundNextBuffer && hlsRef.current) {
                   hlsRef.current.startLoad();
@@ -78,9 +98,10 @@ export default function VideoHLS({ src, onPlay }) {
           }, 1000); // Wait 1 second before attempting recovery
         };
 
-        // Store handler in ref for cleanup
+        // Store handlers in refs for cleanup
         stallHandlerRef.current = handleStall;
         playHandlerRef.current = onPlay;
+        endedHandlerRef.current = handleEnded;
 
         // Force HLS.js even on Safari for quality control
         if (Hls.isSupported()) {
@@ -125,7 +146,6 @@ export default function VideoHLS({ src, onPlay }) {
           hls.attachMedia(video);
 
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            
             // Get quality levels
             const levels = hls.levels.map((level, index) => ({
               height: level.height,
@@ -171,10 +191,39 @@ export default function VideoHLS({ src, onPlay }) {
               hideControls: true,
             });
 
+            // ---- PROGRESS TRACKING ----
+            const handleTimeUpdate = () => {
+              if (!video.duration || !onProgress) return;
+
+              const percent = Math.floor((video.currentTime / video.duration) * 100);
+
+              // Set initial time if needed
+              if (!hasSetInitialTimeRef.current && initialProgress > 0) {
+                setInitialTime();
+              }
+
+              const now = Date.now();
+              if (now - lastProgressEmitRef.current > 5000) { // every 5s
+                lastProgressEmitRef.current = now;
+                onProgress(percent);
+              }
+            };
+
+            progressHandlerRef.current = handleTimeUpdate;
+            video.addEventListener("timeupdate", handleTimeUpdate);
+
+            // Handle metadata loaded
+            video.addEventListener('loadedmetadata', () => {
+              setInitialTime();
+            });
+
             // Handle play event
             if (onPlay) {
               video.addEventListener('play', onPlay);
             }
+
+            // Handle ended event
+            video.addEventListener('ended', handleEnded);
 
             // Listen for buffer stalls
             video.addEventListener('waiting', handleStall);
@@ -189,12 +238,6 @@ export default function VideoHLS({ src, onPlay }) {
           });
 
           hls.on(Hls.Events.ERROR, (event, data) => {
-            // Only log fatal errors to avoid console spam
-            // if (data.fatal) {
-            //   console.error("HLS Fatal Error:", data);
-            // } else {
-            // }
-
             if (data.fatal) {
               switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
@@ -220,8 +263,6 @@ export default function VideoHLS({ src, onPlay }) {
                   break;
               }
             }
-            // Non-fatal errors are handled automatically by HLS.js
-            // No need to manually handle bufferSeekOverHole
           });
 
           // Auto-play with user interaction
@@ -235,8 +276,8 @@ export default function VideoHLS({ src, onPlay }) {
 
           // Try autoplay after a short delay
           setTimeout(tryAutoPlay, 500);
-          
-        } 
+
+        }
         // Fallback for native HLS support (Safari, iOS)
         else if (video.canPlayType("application/vnd.apple.mpegurl")) {
           video.src = src;
@@ -245,6 +286,12 @@ export default function VideoHLS({ src, onPlay }) {
           video.addEventListener('loadedmetadata', () => {
             setIsLoading(false);
             
+            // Set initial time
+            if (initialProgress > 0) {
+              const seekTime = (initialProgress / 100) * video.duration;
+              video.currentTime = seekTime;
+            }
+
             // Initialize Plyr without quality control
             plyrRef.current = new Plyr(video, {
               controls: [
@@ -260,15 +307,34 @@ export default function VideoHLS({ src, onPlay }) {
               fullscreen: { enabled: true, fallback: true, iosNative: true },
             });
 
+            // Add progress tracking for native HLS
+            const handleTimeUpdate = () => {
+              if (!video.duration || !onProgress) return;
+
+              const percent = Math.floor((video.currentTime / video.duration) * 100);
+              const now = Date.now();
+              if (now - lastProgressEmitRef.current > 5000) {
+                lastProgressEmitRef.current = now;
+                onProgress(percent);
+              }
+            };
+
+            progressHandlerRef.current = handleTimeUpdate;
+            video.addEventListener("timeupdate", handleTimeUpdate);
+
+            // Handle play event
             if (onPlay) {
               video.addEventListener('play', onPlay);
             }
-            
+
+            // Handle ended event for native HLS
+            video.addEventListener('ended', handleEnded);
+
             // Add stall handler for native HLS too
             video.addEventListener('waiting', handleStall);
             video.addEventListener('stalled', handleStall);
           });
-        } 
+        }
         else {
           const errorMsg = "HLS not supported in this browser";
           console.error(errorMsg);
@@ -287,7 +353,25 @@ export default function VideoHLS({ src, onPlay }) {
     return () => {
       // Cleanup
       const video = videoRef.current;
-      
+
+      if (video) {
+        if (progressHandlerRef.current) {
+          video.removeEventListener("timeupdate", progressHandlerRef.current);
+        }
+        if (stallHandlerRef.current) {
+          video.removeEventListener('waiting', stallHandlerRef.current);
+          video.removeEventListener('stalled', stallHandlerRef.current);
+        }
+        if (playHandlerRef.current) {
+          video.removeEventListener('play', playHandlerRef.current);
+        }
+        if (endedHandlerRef.current) {
+          video.removeEventListener('ended', endedHandlerRef.current);
+        }
+      }
+
+      progressHandlerRef.current = null;
+
       if (plyrRef.current) {
         try {
           plyrRef.current.destroy();
@@ -296,7 +380,7 @@ export default function VideoHLS({ src, onPlay }) {
         }
         plyrRef.current = null;
       }
-      
+
       if (hlsRef.current) {
         try {
           hlsRef.current.destroy();
@@ -305,23 +389,13 @@ export default function VideoHLS({ src, onPlay }) {
         }
         hlsRef.current = null;
       }
-      
-      // Remove event listeners
-      if (video) {
-        if (stallHandlerRef.current) {
-          video.removeEventListener('waiting', stallHandlerRef.current);
-          video.removeEventListener('stalled', stallHandlerRef.current);
-        }
-        if (playHandlerRef.current) {
-          video.removeEventListener('play', playHandlerRef.current);
-        }
-      }
-      
+
       // Clear refs
       stallHandlerRef.current = null;
       playHandlerRef.current = null;
+      endedHandlerRef.current = null;
     };
-  }, [src, isClient, retryCount, onPlay]);
+  }, [src, isClient, retryCount, onPlay, initialProgress, onEnded]);
 
   // Handle retry
   const handleRetry = () => {
@@ -346,7 +420,7 @@ export default function VideoHLS({ src, onPlay }) {
           </div>
         </div>
       )}
-      
+
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-10 p-4">
           <div className="text-center text-red-500 mb-4">
@@ -369,15 +443,15 @@ export default function VideoHLS({ src, onPlay }) {
           </div>
         </div>
       )}
-      
+
       {/* Fallback overlay for buffering */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-sm opacity-0 transition-opacity duration-300"
-           id="buffering-indicator">
+        id="buffering-indicator">
         Buffering...
       </div>
-      
-      <video 
-        ref={videoRef} 
+
+      <video
+        ref={videoRef}
         className="w-full h-full"
         playsInline
         preload="metadata"
