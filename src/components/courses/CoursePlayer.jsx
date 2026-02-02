@@ -3,7 +3,6 @@ import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import "plyr/dist/plyr.css";
 import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
 import dynamic from 'next/dynamic';
@@ -24,6 +23,7 @@ import {
   LockClosedSVG
 } from '../svg/AdditionalSVGS';
 import { getFileToken, getStreamData, updateCourseProgress } from '@/server-functions/course-related/updateCourseProgress.mjs';
+import VideoHLS2 from '../dashboard/user/VideoHLS2';
 
 const CourseLoader = () => (
   <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -548,9 +548,9 @@ const CoursePlayer = ({
       case 'video':
         return (
           <div className="space-y-6 relative">
-            <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
+            <div className="w-full md:h-[70vh] h-fit aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
               {hlsUrl ? (
-                <VideoHLS
+                <VideoHLS2
                   src={hlsUrl}
                   initialProgress={videoProgressTime}
                   onEnded={handleVideoEnded}
@@ -565,7 +565,7 @@ const CoursePlayer = ({
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-900">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#63953a] mx-auto mb-4"></div>
                     <p className="text-white">Loading video...</p>
                   </div>
                 </div>

@@ -679,8 +679,8 @@ export default function VideoHLS({
       {/* Center Play Button */}
       {!isPlaying && !isLoading && !error && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="bg-black/40 backdrop-blur-sm rounded-full md:p-6 p-2 animate-in zoom-in duration-300">
-            <svg className="lg:w-16 lg:h-16 md:w-8 md:h-8 h-6 w-6 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+          <div className="bg-black/40 backdrop-blur-sm rounded-full p-2 animate-in zoom-in duration-300">
+            <svg className="lg:w-12 lg:h-12 md:w-8 md:h-8 h-6 w-6 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
             </svg>
           </div>
