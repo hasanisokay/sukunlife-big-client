@@ -552,6 +552,7 @@ const CoursePlayer = ({
               {hlsUrl ? (
                 <VideoHLS2
                   src={hlsUrl}
+                  title={currentItem.title || `Lesson ${currentItem?.order || 1}`}
                   initialProgress={videoProgressTime}
                   onEnded={handleVideoEnded}
                   onProgress={(percent) => {
