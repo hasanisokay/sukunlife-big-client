@@ -208,7 +208,7 @@ const SingleCoursePage = ({ course, enrollData }) => {
                             </p>}
                             <button
                                 // disabled={itemAddedToCart}
-                                className={`rounded-full transition-colors font-semibold bg-[#ffc267] md:h-[50px]  ${alreadyEnrolled ?"w-full" :" h-[40px] md:w-[160px] w-[120px]  text-black "}`}
+                                className={`rounded-full transition-colors font-semibold bg-[#ffc267] h-[50px]  ${alreadyEnrolled ?"w-full" :"md:w-[160px] w-[120px]  text-black "}`}
                                 onClick={() => {
                                     if (alreadyEnrolled) {
                                         return window.location.href = `/courses/${course?.courseId}/${lastModule}/${lastItem}`

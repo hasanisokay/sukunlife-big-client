@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import "plyr/dist/plyr.css";
 import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
-// import VideoHLS from '../dashboard/user/VideoHLS';
 import dynamic from 'next/dynamic';
-const  VideoHLS = dynamic(() => import('../dashboard/user/VideoHLS'), {
+const VideoHLS = dynamic(() => import('../dashboard/user/VideoHLS'), {
   ssr: false,
 });
 
@@ -25,10 +24,6 @@ import {
   LockClosedSVG
 } from '../svg/AdditionalSVGS';
 import { getFileToken, getStreamData, updateCourseProgress } from '@/server-functions/course-related/updateCourseProgress.mjs';
-
-const PRIMARY_COLOR = '#63953a';
-const PRIMARY_LIGHT = '#8bc34a';
-const PRIMARY_DARK = '#4a7c2a';
 
 const CourseLoader = () => (
   <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -53,20 +48,20 @@ const itemVariants = {
 // Helper functions for progress checking
 const isItemViewed = (progress, moduleId, itemId) => {
   if (!progress || !progress.viewed) return false;
-  
+
   const moduleProgress = progress.viewed.find(m => m.moduleId === moduleId);
   if (!moduleProgress) return false;
-  
+
   const itemProgress = moduleProgress.items.find(i => i.itemId === itemId);
   return itemProgress !== undefined;
 };
 
 const getItemProgress = (progress, moduleId, itemId) => {
   if (!progress || !progress.viewed) return 0;
-  
+
   const moduleProgress = progress.viewed.find(m => m.moduleId === moduleId);
   if (!moduleProgress) return 0;
-  
+
   const itemProgress = moduleProgress.items.find(i => i.itemId === itemId);
   return itemProgress ? itemProgress.progress : 0;
 };
@@ -77,7 +72,6 @@ const CoursePlayer = ({
   currentModuleId,
   currentItemId
 }) => {
-  const pathname = usePathname();
   const router = useRouter();
   const [hlsUrl, setHlsUrl] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -90,7 +84,7 @@ const CoursePlayer = ({
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-console.log(videoProgressTime)
+
   // Refs for cleanup and optimization
   const navigationTimeoutRef = useRef(null);
   const progressInitializedRef = useRef(new Set());
@@ -109,18 +103,18 @@ console.log(videoProgressTime)
 
   // Memoized progress calculation
   const { totalItems, completedCount, overallProgress } = useMemo(() => {
-    const total = courseData.modules?.reduce((acc, module) => 
+    const total = courseData.modules?.reduce((acc, module) =>
       acc + (module.items?.length || 0), 0) || 0;
-    
-    const completed = userProgress?.viewed?.reduce((acc, module) => 
+
+    const completed = userProgress?.viewed?.reduce((acc, module) =>
       acc + module.items.filter(item => item.progress === 100).length, 0) || 0;
-    
+
     const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
-    
-    return { 
-      totalItems: total, 
-      completedCount: completed, 
-      overallProgress: progressPercent 
+
+    return {
+      totalItems: total,
+      completedCount: completed,
+      overallProgress: progressPercent
     };
   }, [courseData.modules, userProgress?.viewed]);
 
@@ -129,53 +123,53 @@ console.log(videoProgressTime)
     if (!itemId || !moduleId) {
       return { accessible: false, reason: 'invalid-params' };
     }
-    
+
     // If already viewed, it's accessible
     if (isItemViewed(userProgress, moduleId, itemId)) {
       return { accessible: true, reason: 'viewed' };
     }
-    
+
     const moduleIndex = courseData.modules.findIndex(m => m.moduleId === moduleId);
     if (moduleIndex === -1) {
       return { accessible: false, reason: 'module-not-found' };
     }
-    
+
     const module = courseData.modules[moduleIndex];
     const itemIndex = module.items.findIndex(i => i.itemId === itemId);
     if (itemIndex === -1) {
       return { accessible: false, reason: 'item-not-found' };
     }
-    
+
     // First item of first module - always accessible
     if (moduleIndex === 0 && itemIndex === 0) {
       return { accessible: true, reason: 'first-item' };
     }
-    
+
     // Check previous item in same module
     if (itemIndex > 0) {
       const previousItem = module.items[itemIndex - 1];
       const accessible = isItemViewed(userProgress, moduleId, previousItem.itemId);
-      return { 
-        accessible, 
+      return {
+        accessible,
         reason: accessible ? 'previous-complete' : 'previous-incomplete',
         previousItem: accessible ? null : previousItem
       };
     }
-    
+
     // Check last item of previous module
     if (moduleIndex > 0) {
       const previousModule = courseData.modules[moduleIndex - 1];
       if (previousModule.items.length > 0) {
         const lastItem = previousModule.items[previousModule.items.length - 1];
         const accessible = isItemViewed(userProgress, previousModule.moduleId, lastItem.itemId);
-        return { 
-          accessible, 
+        return {
+          accessible,
           reason: accessible ? 'previous-module-complete' : 'previous-module-incomplete',
           previousItem: accessible ? null : { ...lastItem, moduleId: previousModule.moduleId }
         };
       }
     }
-    
+
     return { accessible: false, reason: 'default-locked' };
   }, [userProgress, courseData.modules]);
 
@@ -183,17 +177,17 @@ console.log(videoProgressTime)
   const saveProgress = useCallback(async (action, payload = {}) => {
     // Check if item is already at 100% progress
     const currentProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-    
+
     // If already completed (100%), don't save again unless it's a new action type that makes sense
     if (currentProgress === 100) {
       console.log('Item already completed (100%), skipping save');
       return;
     }
-    
+
     // Prevent duplicate saves within 1 second
     const now = Date.now();
     const timeSinceLastSave = now - lastProgressSaveRef.current;
-    
+
     if (saveInProgressRef.current || timeSinceLastSave < 1000) {
       return;
     }
@@ -201,15 +195,15 @@ console.log(videoProgressTime)
     try {
       saveInProgressRef.current = true;
       lastProgressSaveRef.current = now;
-      
+
       const res = await updateCourseProgress(
-        userProgress.courseId, 
-        currentModuleId, 
-        currentItemId, 
-        payload, 
+        userProgress.courseId,
+        currentModuleId,
+        currentItemId,
+        payload,
         action
       );
-      
+
       console.log('Progress saved:', res);
     } catch (err) {
       console.error("Progress save failed:", err);
@@ -218,7 +212,7 @@ console.log(videoProgressTime)
     }
   }, [userProgress, currentModuleId, currentItemId]);
 
-    // Memoized navigation items
+  // Memoized navigation items
   const getNavigationItems = useCallback(() => {
     if (!currentItemId) return { previous: null, next: null };
 
@@ -286,10 +280,10 @@ console.log(videoProgressTime)
       // Initialize progress for newly accessible items
       if (accessibility.accessible && currentItem) {
         const progressKey = `${currentModuleId}-${currentItemId}`;
-        
+
         if (!progressInitializedRef.current.has(progressKey)) {
           progressInitializedRef.current.add(progressKey);
-          
+
           // Save initial progress immediately (no setTimeout to avoid race conditions)
           if (["textInstruction", "file"].includes(currentItem.type)) {
             // Don't auto-complete these, wait for user interaction
@@ -308,29 +302,29 @@ console.log(videoProgressTime)
   // Handle video ended with proper cleanup
   const handleVideoEnded = useCallback(async () => {
     if (currentItem?.type !== 'video') return;
-    
+
     // Check if this video was already completed before
     const currentProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
     const wasAlreadyCompleted = currentProgress === 100;
-    
+
     // Only save progress if not already at 100%
     if (!wasAlreadyCompleted) {
       await saveProgress("VIDEO_PROGRESS", { progress: 100 });
       await saveProgress("MARK_COMPLETE");
     }
-    
+
     // Only auto-navigate if this is the first time completing the video
     // This allows users to replay completed videos without auto-navigation
     if (!wasAlreadyCompleted && !hasNavigatedToNextRef.current) {
       hasNavigatedToNextRef.current = true;
-      
+
       const { next: nextItem } = getNavigationItems();
       if (nextItem) {
         // Clear any existing timeout
         if (navigationTimeoutRef.current) {
           clearTimeout(navigationTimeoutRef.current);
         }
-        
+
         navigationTimeoutRef.current = setTimeout(() => {
           router.push(`/courses/${userProgress?.courseId}/${nextItem.moduleId}/${nextItem.itemId}`);
         }, 1500);
@@ -360,8 +354,8 @@ console.log(videoProgressTime)
   }, [currentModuleId]);
 
 
-  const { previous: previousItem, next: nextItem } = useMemo(() => 
-    getNavigationItems(), 
+  const { previous: previousItem, next: nextItem } = useMemo(() =>
+    getNavigationItems(),
     [getNavigationItems]
   );
 
@@ -375,13 +369,13 @@ console.log(videoProgressTime)
 
     // Get video progress from userProgress
     const savedProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-    setVideoProgressTime(savedProgress===100 ? 0: savedProgress );
+    setVideoProgressTime(savedProgress === 100 ? 0 : savedProgress);
 
     const loadVideoStream = async () => {
       try {
         if (currentItem.url?.filename) {
           const streamData = await getStreamData(userProgress?.courseId, currentItem?.url?.filename);
-          
+
           if (streamData?.url) {
             setHlsUrl(streamData?.url);
           }
@@ -408,7 +402,7 @@ console.log(videoProgressTime)
       try {
         if (currentItem.url?.filename) {
           let token = null;
-          
+
           if (currentItem.status !== 'public') {
             token = await getFileToken(userProgress?.courseId, currentItem?.url?.filename);
           }
@@ -417,7 +411,7 @@ console.log(videoProgressTime)
           if (token) {
             fileUrl += `?token=${token}`;
           }
-          
+
           setFileData({
             filename: currentItem?.url?.filename,
             mime: currentItem?.url?.mime,
@@ -445,7 +439,7 @@ console.log(videoProgressTime)
   // Save file progress (with deduplication)
   useEffect(() => {
     const fileKey = `${currentModuleId}-${currentItemId}`;
-    
+
     if (currentItem?.type === "file" && fileData?.url && isUnlocked) {
       if (!fileSavedRef.current.has(fileKey)) {
         fileSavedRef.current.add(fileKey);
@@ -458,9 +452,9 @@ console.log(videoProgressTime)
   useEffect(() => {
     if (currentItem?.type === 'quiz' && isUnlocked) {
       const quizProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-      setQuizCompleted(prev => ({ 
-        ...prev, 
-        [currentItemId]: quizProgress === 100 
+      setQuizCompleted(prev => ({
+        ...prev,
+        [currentItemId]: quizProgress === 100
       }));
     }
   }, [currentItemId, currentItem?.type, isUnlocked, userProgress, currentModuleId]);
@@ -514,7 +508,7 @@ console.log(videoProgressTime)
   // Render locked content
   const renderLockedContent = useCallback(() => {
     const accessibility = getItemAccessibility(currentItemId, currentModuleId);
-    
+
     return (
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm text-center">
         <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
@@ -543,7 +537,7 @@ console.log(videoProgressTime)
   const renderContent = useCallback(() => {
     if (loading || !isInitialized) return <CourseLoader />;
     if (!currentItem) return <div className="text-center py-12">Content not found</div>;
-    
+
     if (!isUnlocked) {
       return renderLockedContent();
     }
@@ -767,21 +761,21 @@ console.log(videoProgressTime)
         );
     }
   }, [
-    loading, 
-    isInitialized, 
-    currentItem, 
-    isUnlocked, 
-    renderLockedContent, 
-    userProgress, 
-    currentModuleId, 
-    currentItemId, 
-    hlsUrl, 
-    videoProgressTime, 
-    handleVideoEnded, 
-    saveProgress, 
-    fileData, 
-    quizAnswers, 
-    quizCompleted, 
+    loading,
+    isInitialized,
+    currentItem,
+    isUnlocked,
+    renderLockedContent,
+    userProgress,
+    currentModuleId,
+    currentItemId,
+    hlsUrl,
+    videoProgressTime,
+    handleVideoEnded,
+    saveProgress,
+    fileData,
+    quizAnswers,
+    quizCompleted,
     handleQuizSubmit
   ]);
 
@@ -985,7 +979,7 @@ console.log(videoProgressTime)
 
                     {/* Content */}
                     {renderContent()}
-                    
+
                     {/* Navigation - Always enabled */}
                     <div className="flex justify-between items-center pt-6 border-t dark:border-gray-700 gap-4">
                       <div className="flex-1">
