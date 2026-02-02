@@ -20,6 +20,18 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const [cartItems, setCartItems] = useState(cart?.length || 0)
   const toggleMenu = () => setMenuOpen(!menuOpen);
+  const [isCoursePage, setIsCoursePage] = useState(false)
+
+  useEffect(() => {
+    if (currentPath.startsWith("/courses/")) {
+      const segments = currentPath.split("/").filter(Boolean);
+      // ["courses", ":courseId", ":moduleId", ":itemId"]
+      if (segments?.length > 2) {
+        setIsCoursePage(true)
+      } else setIsCoursePage(false)
+    }
+  }, [currentPath])
+
 
   const handleScroll = () => {
     if (window.scrollY > lastScrollY) {
@@ -91,7 +103,7 @@ const Navbar = () => {
       ? "text-white bg-gray-700 px-3 py-2 rounded-md text-sm font-medium"
       : "relative  px-3 py-2 rounded-md text-sm font-medium group transition-colors";
   };
-
+  if (isCoursePage) { return <></> }
 
   return (
     <div ref={navRef} className="h-[110px] montserrat-font ">
@@ -323,7 +335,7 @@ const Navbar = () => {
                       Book Appointment
                     </Link>
                   </button>
-                  {Object.entries(user ?? {}).length !== 0  ? (
+                  {Object.entries(user ?? {}).length !== 0 ? (
                     <button className="block w-[173px] h-[54px]">
                       <Link
                         href="/dashboard"

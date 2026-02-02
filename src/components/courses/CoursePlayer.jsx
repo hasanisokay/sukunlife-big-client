@@ -816,7 +816,7 @@ const CoursePlayer = ({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-4 lg:py-6">
+      <div className="max-w-7xl mx-auto md:px-4 md:py-4 lg:py-6">
         <div className="lg:grid lg:grid-cols-4 lg:gap-8">
           {/* Sidebar - LEFT SIDE */}
           <div className="hidden lg:block lg:col-span-1">
@@ -951,8 +951,8 @@ const CoursePlayer = ({
             </div>
 
             {/* Content Container */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm lg:shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
-              <div className="p-4 lg:p-6">
+            <div className="bg-white dark:bg-gray-800  shadow-sm lg:shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="py-6">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentItemId}
