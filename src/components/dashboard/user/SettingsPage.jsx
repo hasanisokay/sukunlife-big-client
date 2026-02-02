@@ -86,15 +86,6 @@ const SettingsPage = () => {
                 credentials: "include",
             });
             const data = await res.json()
-            const accessToken = data?.accessToken;
-            await fetch("/api/refresh", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: "include",
-                body: JSON.stringify({ accessToken })
-            })
             dispatch(setUserData(data?.user))
         } catch {
         }

@@ -25,15 +25,6 @@ const TokenRefresh = ({ children }) => {
             const data = await res.json()
             console.log(data)
             if (data?.status === 200) {
-                const accessToken = data?.accessToken;
-                await fetch("/api/refresh", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({ accessToken })
-                })
                 dispatch(setUserData(data?.user))
                 dispatch(setCartData(data?.user?.cart));
                 dispatch(setEnrolledCourses(data?.user?.enrolledCourses));
