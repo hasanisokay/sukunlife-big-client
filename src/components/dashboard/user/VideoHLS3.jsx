@@ -766,7 +766,7 @@ export default function VideoHLS3({
                 {/* Settings dropdown - Fixed z-index and positioning */}
                 {showSettings && (
                   <div
-                    className="absolute bottom-full right-0 mb-2 w-48 bg-black/95 backdrop-blur-md rounded-lg shadow-xl border border-white/10 overflow-hidden z-50"
+                    className="absolute bottom-full right-0 mb-2 w-60 bg-black/95 backdrop-blur-md rounded-lg shadow-xl  overflow-hidden z-50"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                   >
@@ -774,7 +774,7 @@ export default function VideoHLS3({
                       <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">
                         Quality
                       </div>
-                      <div className="flex flex-col gap-0.5 max-h-36 overflow-y-auto">
+                      <div className="flex gap-2 max-h-36 ">
                         {levels.map((l) => (
                           <button
                             key={l.index}
@@ -800,12 +800,12 @@ export default function VideoHLS3({
                       <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">
                         Speed
                       </div>
-                      <div className="grid grid-cols-3 gap-1">
+                      <div className="grid grid-cols-3 gap-3">
                         {[0.5, 0.75, 1, 1.25, 1.5, 2].map((r) => (
                           <button
                             key={r}
                             onClick={() => changePlaybackRate(r)}
-                            className={`text-xs py-1 rounded transition-colors ${
+                            className={`text-sm py-1 rounded transition-colors ${
                               playbackRate === r
                                 ? "text-[#63953a] bg-white/10 font-bold"
                                 : "text-white hover:bg-white/5"
