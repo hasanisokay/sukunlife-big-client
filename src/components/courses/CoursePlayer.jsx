@@ -6,9 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
 import dynamic from 'next/dynamic';
-const VideoHLS = dynamic(() => import('../dashboard/user/VideoHLS'), {
-  ssr: false,
-});
+// const VideoHLS = dynamic(() => import('../dashboard/user/VideoHLS'), {
+//   ssr: false,
+// });
 
 import {
   ClipboardSVG,
@@ -23,7 +23,8 @@ import {
   LockClosedSVG
 } from '../svg/AdditionalSVGS';
 import { getFileToken, getStreamData, updateCourseProgress } from '@/server-functions/course-related/updateCourseProgress.mjs';
-import VideoHLS2 from '../dashboard/user/VideoHLS2';
+import VideoHLS3 from '../dashboard/user/VideoHLS3';
+// import VideoHLS2 from '../dashboard/user/VideoHLS2';
 
 const CourseLoader = () => (
   <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -550,7 +551,7 @@ const CoursePlayer = ({
           <div className="space-y-6 relative">
             <div className="w-full md:h-[70vh] h-fit aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
               {hlsUrl ? (
-                <VideoHLS2
+                <VideoHLS3
                   src={hlsUrl}
                   title={currentItem.title || `Lesson ${currentItem?.order || 1}`}
                   initialProgress={videoProgressTime}

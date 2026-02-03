@@ -32,6 +32,9 @@ const Navbar = () => {
     }
   }, [currentPath])
 
+  useEffect(()=>{
+    setMenuOpen(false)
+  },[currentPath])
 
   const handleScroll = () => {
     if (window.scrollY > lastScrollY) {

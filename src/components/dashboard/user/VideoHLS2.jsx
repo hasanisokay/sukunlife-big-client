@@ -1,8 +1,7 @@
-
-import { useEffect, useRef, useState, } from "react";
+import { useEffect, useRef, useState } from "react";
+import { PlyrLayout, plyrLayoutIcons } from '@vidstack/react/player/layouts/plyr';
 
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
-import { PlyrLayout, plyrLayoutIcons } from '@vidstack/react/player/layouts/plyr';
 
 import '@vidstack/react/player/styles/base.css';
 import '@vidstack/react/player/styles/plyr/theme.css';
@@ -19,7 +18,6 @@ export default function VideoHLS2({
     const playerRef = useRef(null);
     const containerRef = useRef(null);
     const [isClient, setIsClient] = useState(false);
-
     const tapTimeoutRef = useRef(null);
 
     useEffect(() => {
@@ -28,6 +26,33 @@ export default function VideoHLS2({
             if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
         };
     }, []);
+
+    // Handle play event
+    const handlePlay = () => {
+        if (onPlay) onPlay();
+    };
+
+    // Handle time update for progress
+    const handleTimeUpdate = (event) => {
+        if (onProgress && playerRef.current) {
+            const currentTime = event.currentTime || 0;
+            const duration = playerRef.current.duration || 1;
+            onProgress(currentTime / duration);
+        }
+    };
+
+    // Handle video ended
+    const handleEnded = () => {
+        if (onEnded) onEnded();
+    };
+
+    // Set initial progress when component mounts and player is ready
+    const handleCanPlay = () => {
+        if (playerRef.current && initialProgress > 0) {
+            const duration = playerRef.current.duration || 0;
+            playerRef.current.currentTime = duration * initialProgress;
+        }
+    };
 
     if (!isClient) {
         return (
@@ -39,10 +64,21 @@ export default function VideoHLS2({
 
     return (
         <div className="relative w-full aspect-video group overflow-hidden bg-black text-white">
-            <MediaPlayer title={title} src={src} >
+            <MediaPlayer
+                title={title}
+                src={src}
+                ref={playerRef}
+                onPlay={handlePlay}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleEnded}
+                onCanPlay={handleCanPlay}
+                crossorigin
+                playsInline
+            >
                 <MediaProvider />
-
-                <PlyrLayout thumbnails="https://files.vidstack.io/sprite-fight/thumbnails.vtt" icons={plyrLayoutIcons} />
+                <PlyrLayout 
+                    icons={plyrLayoutIcons} 
+                />
             </MediaPlayer>
 
         </div>
