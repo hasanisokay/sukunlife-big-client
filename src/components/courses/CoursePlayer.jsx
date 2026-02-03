@@ -72,7 +72,6 @@ const CoursePlayer = ({
   const [hlsUrl, setHlsUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fileData, setFileData] = useState(null);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizCompleted, setQuizCompleted] = useState({});
   const [expandedModules, setExpandedModules] = useState(new Set());
@@ -80,6 +79,7 @@ const CoursePlayer = ({
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [retakeMode, setRetakeMode] = useState({});
 
   // Refs for cleanup and optimization
   const navigationTimeoutRef = useRef(null);
@@ -173,9 +173,12 @@ const CoursePlayer = ({
   const saveProgress = useCallback(async (action, payload = {}) => {
     // Check if item is already at 100% progress
     const currentProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-
-    // If already completed (100%), don't save again unless it's a new action type that makes sense
-    if (currentProgress === 100) {
+    
+    // Allow saving for quiz retakes
+    const isQuizRetake = action === "QUIZ_SUBMIT" && payload.isRetake === true;
+    
+    // Only block saves if already at 100% AND not a quiz retake
+    if (currentProgress === 100 && !isQuizRetake) {
       console.log('Item already completed (100%), skipping save');
       return;
     }
@@ -201,8 +204,10 @@ const CoursePlayer = ({
       );
 
       console.log('Progress saved:', res);
+      return res;
     } catch (err) {
       console.error("Progress save failed:", err);
+      throw err;
     } finally {
       saveInProgressRef.current = false;
     }
@@ -450,16 +455,50 @@ const CoursePlayer = ({
     }
   }, [fileData, isUnlocked, currentItem, currentModuleId, currentItemId, saveProgress]);
 
-  // Reset quiz state when item changes
+  // Load quiz data when item changes
   useEffect(() => {
     if (currentItem?.type === 'quiz' && isUnlocked) {
       const quizProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-      setQuizCompleted(prev => ({
-        ...prev,
-        [currentItemId]: quizProgress === 100
-      }));
+      
+      console.log('Quiz progress:', quizProgress);
+      
+      // Check if quiz is completed (100% progress)
+      if (quizProgress === 100) {
+        console.log('Quiz is completed, loading previous data');
+        // Load previous data from progress
+        const moduleProgress = userProgress?.viewed?.find(m => m.moduleId === currentModuleId);
+        if (moduleProgress) {
+          const itemProgress = moduleProgress.items.find(i => i.itemId === currentItemId);
+          if (itemProgress?.data?.selected !== undefined) {
+            console.log('Found previous quiz data:', itemProgress.data);
+            setQuizAnswers(prev => ({ 
+              ...prev, 
+              [currentItemId]: itemProgress.data.selected 
+            }));
+          }
+        }
+        setQuizCompleted(prev => ({ ...prev, [currentItemId]: true }));
+        
+        // Check if we're in retake mode
+        if (retakeMode[currentItemId]) {
+          console.log('In retake mode, resetting quiz');
+          setQuizCompleted(prev => ({ ...prev, [currentItemId]: false }));
+          setQuizAnswers(prev => ({ ...prev, [currentItemId]: undefined }));
+        }
+      } else {
+        console.log('Quiz not completed yet');
+        setQuizCompleted(prev => ({ ...prev, [currentItemId]: false }));
+      }
     }
-  }, [currentItemId, currentItem?.type, isUnlocked, userProgress, currentModuleId]);
+  }, [currentItemId, currentItem?.type, isUnlocked, userProgress, currentModuleId, retakeMode]);
+
+  // Reset retake mode when leaving quiz
+  useEffect(() => {
+    return () => {
+      // Clean up retake mode when component unmounts or item changes
+      setRetakeMode({});
+    };
+  }, [currentItemId]);
 
   // Toggle module expansion
   const toggleModule = useCallback((moduleId) => {
@@ -495,17 +534,74 @@ const CoursePlayer = ({
   const handleQuizSubmit = useCallback(async (selectedOption) => {
     if (!currentItem || currentItem.type !== "quiz" || !isUnlocked) return;
 
+    console.log('Submitting quiz answer:', selectedOption);
+    
     const isCorrect = selectedOption === currentItem.answer;
+    const isRetake = retakeMode[currentItemId] || false;
 
-    await saveProgress("QUIZ_SUBMIT", {
-      selected: selectedOption,
-      correct: isCorrect,
-    });
-    await saveProgress("MARK_COMPLETE");
+    console.log('Is retake mode?', isRetake);
 
-    setQuizAnswers(prev => ({ ...prev, [currentItemId]: selectedOption }));
-    setQuizCompleted(prev => ({ ...prev, [currentItemId]: true }));
-  }, [currentItem, isUnlocked, currentItemId, saveProgress]);
+    try {
+      // Save quiz submission data
+      await saveProgress("QUIZ_SUBMIT", {
+        selected: selectedOption,
+        correct: isCorrect,
+        isRetake: isRetake
+      });
+      
+      // Mark as complete
+      await saveProgress("MARK_COMPLETE");
+
+      console.log('Quiz submitted successfully');
+      
+      // Update local state
+      setQuizAnswers(prev => ({ ...prev, [currentItemId]: selectedOption }));
+      setQuizCompleted(prev => ({ ...prev, [currentItemId]: true }));
+      
+      // Exit retake mode if we were in it
+      if (isRetake) {
+        console.log('Exiting retake mode');
+        setRetakeMode(prev => ({ ...prev, [currentItemId]: false }));
+      }
+    } catch (err) {
+      console.error('Error submitting quiz:', err);
+    }
+  }, [currentItem, isUnlocked, currentItemId, saveProgress, retakeMode]);
+
+  // Handle retake quiz
+  const handleRetakeQuiz = useCallback(async () => {
+    if (!currentItem || currentItem.type !== "quiz") return;
+    
+    console.log('Starting quiz retake for:', currentItemId);
+    
+    try {
+      // Enter retake mode
+      setRetakeMode(prev => ({ ...prev, [currentItemId]: true }));
+      
+      // Reset local state immediately
+      setQuizAnswers(prev => ({ ...prev, [currentItemId]: undefined }));
+      setQuizCompleted(prev => ({ ...prev, [currentItemId]: false }));
+      
+      console.log('Retake mode activated, local state reset');
+      
+      // Reset progress to 0 to allow saving new attempt
+      try {
+        await updateCourseProgress(
+          userProgress.courseId,
+          currentModuleId,
+          currentItemId,
+          { progress: 0 },
+          "RESET_QUIZ"
+        );
+        console.log('Quiz progress reset in database');
+      } catch (err) {
+        console.error("Failed to reset quiz progress in database:", err);
+        // Continue anyway - local state is reset
+      }
+    } catch (err) {
+      console.error('Error in handleRetakeQuiz:', err);
+    }
+  }, [currentItem, currentItemId, userProgress, currentModuleId]);
 
   // Render locked content
   const renderLockedContent = useCallback(() => {
@@ -672,10 +768,146 @@ const CoursePlayer = ({
         );
 
       case 'quiz':
+        const quizProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
+        const isQuizCompleted = quizProgress === 100;
         const userAnswer = quizAnswers[currentItemId];
-        const isQuizCompleted = quizCompleted[currentItemId];
+        const isInRetakeMode = retakeMode[currentItemId];
+        
+        console.log('Quiz rendering state:', {
+          quizProgress,
+          isQuizCompleted,
+          userAnswer,
+          isInRetakeMode,
+          quizCompleted: quizCompleted[currentItemId]
+        });
 
-        if (isQuizCompleted && userAnswer !== undefined) {
+        // Get previous submission data
+        let previousData = null;
+        const moduleProgress = userProgress?.viewed?.find(m => m.moduleId === currentModuleId);
+        if (moduleProgress) {
+          const itemProgress = moduleProgress.items.find(i => i.itemId === currentItemId);
+          if (itemProgress?.data) {
+            previousData = itemProgress.data;
+          }
+        }
+        
+        const previousSelectedOption = previousData?.selected;
+        const previousWasCorrect = previousData?.correct;
+
+        // If quiz is completed and not in retake mode, show results
+        if (isQuizCompleted && !isInRetakeMode) {
+          console.log('Showing completed quiz results');
+          
+          return (
+            <div className="space-y-6">
+              <div className={`bg-gradient-to-r ${previousWasCorrect
+                ? 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30'
+                : 'from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30'
+                } p-8 rounded-xl shadow-sm`}>
+                <div className="text-center">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-primary/10 rounded-lg mr-3">
+                        <QuizSVG className="w-6 h-6 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold">Quiz</h3>
+                    </div>
+                  </div>
+                  
+                  <p className="text-lg mb-6 text-gray-700 dark:text-gray-300">
+                    {currentItem.question}
+                  </p>
+                  
+                  {/* Display all options with user's selection and correct answer */}
+                  <div className="space-y-3 max-w-lg mx-auto">
+                    {currentItem.options?.map((option, idx) => {
+                      const isUserChoice = idx === previousSelectedOption;
+                      const isCorrectAnswer = idx === currentItem.answer;
+                      
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-4 rounded-xl border-2 transition-all ${isUserChoice
+                            ? isCorrectAnswer
+                              ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
+                              : 'border-red-500 bg-red-50 dark:bg-red-900/30'
+                            : isCorrectAnswer
+                              ? 'border-green-300 bg-green-50/50 dark:bg-green-900/20'
+                              : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                            }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center ${isUserChoice
+                                ? isCorrectAnswer
+                                  ? 'border-green-500 bg-green-500'
+                                  : 'border-red-500 bg-red-500'
+                                : 'border-gray-300 dark:border-gray-600'
+                                }`}>
+                                {isUserChoice && (
+                                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                                )}
+                              </div>
+                              <span className="text-gray-800 dark:text-gray-200">{option}</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              {isUserChoice && (
+                                <span className={`px-3 py-1 text-xs font-medium rounded-full ${isCorrectAnswer
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                                  }`}>
+                                  Your answer
+                                </span>
+                              )}
+                              {isCorrectAnswer && !isUserChoice && (
+                                <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                  Correct
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Result Summary */}
+                  <div className="mt-8 pt-6 border-t dark:border-gray-700">
+                    <div className={`inline-flex items-center px-6 py-3 rounded-xl ${previousWasCorrect
+                      ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                      : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                      }`}>
+                      <span className="text-lg font-semibold">
+                        {previousWasCorrect ? '✓ Correct' : '✗ Incorrect'}
+                      </span>
+                      {!previousWasCorrect && (
+                        <span className="ml-4 text-sm">
+                          Correct answer: <strong>{currentItem.options[currentItem.answer]}</strong>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Retake Quiz Button */}
+                  <div className="mt-6">
+                    <button
+                      onClick={handleRetakeQuiz}
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
+                    >
+                      <QuizSVG className="w-5 h-5 mr-2" />
+                      Retake Quiz
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Show quiz after submission (before marking complete in database)
+        if (quizCompleted[currentItemId] && userAnswer !== undefined) {
+          console.log('Showing just submitted quiz results');
           const isCorrect = userAnswer === currentItem.answer;
 
           return (
@@ -718,6 +950,8 @@ const CoursePlayer = ({
           );
         }
 
+        // Show quiz form for new or retake
+        console.log('Showing quiz form');
         return (
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
             <div className="mb-6">
@@ -755,7 +989,6 @@ const CoursePlayer = ({
             </div>
           </div>
         );
-
       default:
         return (
           <div className="text-center py-12">
@@ -779,16 +1012,18 @@ const CoursePlayer = ({
     fileData,
     quizAnswers,
     quizCompleted,
-    handleQuizSubmit
+    handleQuizSubmit,
+    handleRetakeQuiz,
+    retakeMode
   ]);
 
   if (!currentItem || !isInitialized) return <CourseLoader />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Mobile Header */}
+      {/* Mobile Header - SIMPLIFIED - NO HAMBURGER MENU */}
       <div className="lg:hidden sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-sm">
-        <div className="px-4 py-3 flex items-center justify-between">
+        <div className="px-4 py-3 flex items-center">
           <Link
             href="/courses"
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -804,24 +1039,12 @@ const CoursePlayer = ({
               {currentModule?.title || 'Module'} • {currentItem.type}
             </div>
           </div>
-
-          <button
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Toggle menu"
-          >
-            <div className="space-y-1">
-              <div className="w-6 h-0.5 bg-gray-600 rounded-full"></div>
-              <div className="w-6 h-0.5 bg-gray-600 rounded-full"></div>
-              <div className="w-6 h-0.5 bg-gray-600 rounded-full"></div>
-            </div>
-          </button>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto md:px-4 md:py-4 lg:py-6">
         <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-          {/* Sidebar - LEFT SIDE */}
+          {/* Sidebar - LEFT SIDE (Desktop only) */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-6 space-y-6">
               {/* Course Info */}
@@ -954,7 +1177,7 @@ const CoursePlayer = ({
             </div>
 
             {/* Content Container */}
-            <div className="bg-white dark:bg-gray-800  shadow-sm lg:shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 shadow-sm lg:shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
               <div className="py-6">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -1025,119 +1248,104 @@ const CoursePlayer = ({
                 </AnimatePresence>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {showMobileMenu && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-              onClick={() => setShowMobileMenu(false)}
-            />
-
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
-              className="fixed inset-y-0 right-0 w-80 bg-white dark:bg-gray-900 shadow-2xl z-50 lg:hidden overflow-y-auto"
-            >
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold">Course Content</h3>
-                  <button
-                    onClick={() => setShowMobileMenu(false)}
-                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    aria-label="Close menu"
-                  >
-                    <span className="text-2xl">×</span>
-                  </button>
+            {/* MOBILE MODULE DETAILS - Below content on mobile */}
+            <div className="lg:hidden mt-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+                <div className="p-4 border-b dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
+                  <h3 className="font-bold text-lg">Course Modules</h3>
                 </div>
 
-                <div className="space-y-4">
+                <div className="max-h-[400px] overflow-y-auto">
                   {courseData.modules.map((module) => (
-                    <div key={module.moduleId}>
+                    <div key={module.moduleId} className="border-b dark:border-gray-700 last:border-b-0">
                       <button
                         onClick={() => toggleModule(module.moduleId)}
-                        className="w-full flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-xl mb-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="w-full px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
                         aria-expanded={expandedModules.has(module.moduleId)}
                       >
-                        <div className="flex items-center">
-                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 mr-3 flex items-center justify-center">
-                            <span className="text-xs font-semibold text-primary">
+                        <div className="flex items-center flex-1">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 mr-3 flex items-center justify-center">
+                            <span className="font-semibold text-xs text-primary">
                               {module.order}
                             </span>
                           </div>
-                          <span className="font-medium text-sm">{module.title || `Module ${module.order}`}</span>
+                          <div className="text-left">
+                            <span className="font-medium text-sm block">{module.title || `Module ${module.order}`}</span>
+                            <span className="text-xs text-gray-500">
+                              {module.items?.length || 0} lessons
+                            </span>
+                          </div>
                         </div>
                         <DownArrowSVG
-                          className={`w-4 h-4 transition-transform ${expandedModules.has(module.moduleId) ? 'rotate-180' : ''
+                          className={`w-4 h-4 transition-transform duration-200 ${expandedModules.has(module.moduleId) ? 'rotate-180' : ''
                             }`}
                         />
                       </button>
 
-                      {expandedModules.has(module.moduleId) && (
-                        <div className="space-y-1 ml-4">
-                          {module.items.map((item) => {
-                            const accessibility = getItemAccessibility(item.itemId, module.moduleId);
-                            const isActive = item.itemId === currentItemId;
-                            const isCompleted = getItemProgress(userProgress, module.moduleId, item.itemId) === 100;
-                            const isViewed = isItemViewed(userProgress, module.moduleId, item.itemId);
-                            const itemPath = `/courses/${userProgress?.courseId}/${module.moduleId}/${item.itemId}`;
+                      <AnimatePresence>
+                        {expandedModules.has(module.moduleId) && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-gray-50/50 dark:bg-gray-900/50"
+                          >
+                            {module.items.map((item) => {
+                              const accessibility = getItemAccessibility(item.itemId, module.moduleId);
+                              const isActive = item.itemId === currentItemId;
+                              const isCompleted = getItemProgress(userProgress, module.moduleId, item.itemId) === 100;
+                              const isViewed = isItemViewed(userProgress, module.moduleId, item.itemId);
+                              const itemPath = `/courses/${userProgress?.courseId}/${module.moduleId}/${item.itemId}`;
 
-                            return (
-                              <Link
-                                key={item.itemId}
-                                href={itemPath}
-                                onClick={() => {
-                                  setShowMobileMenu(false);
-                                  setIsTransitioning(true);
-                                }}
-                                className={`flex items-center p-2.5 rounded-lg transition-all ${isActive
-                                  ? 'bg-primary/10 text-primary'
-                                  : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                                  } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                aria-disabled={!accessibility.accessible}
-                              >
-                                <div className="mr-2">
-                                  {isCompleted ? (
-                                    <CheckCircleSVG className="w-4 h-4 text-green-500" />
-                                  ) : !accessibility.accessible ? (
-                                    <LockClosedSVG className="w-4 h-4 text-gray-400" />
-                                  ) : (
-                                    getItemIcon(item)
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium truncate text-sm">
-                                    {item.title || `${item.type} ${item.order}`}
+                              return (
+                                <Link
+                                  key={item.itemId}
+                                  href={itemPath}
+                                  onClick={() => setIsTransitioning(true)}
+                                  className={`flex items-center px-4 py-3 text-left transition-all border-l-4 ${isActive
+                                    ? 'bg-primary/10 border-l-primary shadow-sm'
+                                    : 'border-l-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                                    } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  aria-disabled={!accessibility.accessible}
+                                >
+                                  <div className="flex items-center flex-1 min-w-0">
+                                    <div className="mr-3">
+                                      {isCompleted ? (
+                                        <CheckCircleSVG className="w-4 h-4 text-green-500" />
+                                      ) : !accessibility.accessible ? (
+                                        <LockClosedSVG className="w-4 h-4 text-gray-400" />
+                                      ) : (
+                                        getItemIcon(item)
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-medium truncate text-sm">
+                                        {item.title || `${item.type} ${item.order}`}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        <span className="capitalize">{item.type}</span>
+                                        {isActive && (
+                                          <span className="ml-1 text-primary">• Current</span>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-gray-500">
-                                    <span className="capitalize">{item.type}</span>
-                                    {isViewed && !isCompleted && (
-                                      <span className="ml-1 text-primary">• In Progress</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
+                                </Link>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   ))}
                 </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Transition Overlay */}
       {isTransitioning && (
