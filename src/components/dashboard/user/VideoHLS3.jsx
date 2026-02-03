@@ -584,12 +584,16 @@ export default function VideoHLS3({
     <div
       ref={containerRef}
       className="relative group w-full h-full bg-black overflow-hidden select-none"
-      style={{ touchAction: "manipulation" }}
+     style={{ 
+    touchAction: "manipulation",
+    // Add these styles
+    aspectRatio: '16/9', // Optional: set a default aspect ratio
+  }}
       onPointerDown={handlePointerDown}
     >
       <video
         ref={videoRef}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain video-player"
         playsInline
         preload="metadata"
       />
@@ -747,7 +751,7 @@ export default function VideoHLS3({
           {/* Right cluster */}
           <div className="flex items-center gap-3">
             {/* Settings and Fullscreen buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6 mr-4">
               {/* Settings gear */}
               <div className="relative" data-settings>
                 <button
@@ -766,7 +770,7 @@ export default function VideoHLS3({
                 {/* Settings dropdown - Fixed z-index and positioning */}
                 {showSettings && (
                   <div
-                    className="absolute bottom-full right-0 mb-2 w-60 bg-black/95 backdrop-blur-md rounded-lg shadow-xl  overflow-hidden z-50"
+                    className="absolute bottom-full right-0 mb-2 pb-2 w-60 bg-black/95 backdrop-blur-md rounded-lg shadow-xl  overflow-hidden z-50"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                   >
@@ -835,12 +839,45 @@ export default function VideoHLS3({
         </div>
       </div>
 
-      <style>{`
+ <style>{`
         @keyframes seekFlashIn {
           0%   { opacity: 0; }
           20%  { opacity: 1; }
           70%  { opacity: 1; }
           100% { opacity: 0; }
+        }
+        
+        /* Fullscreen fixes */
+        :fullscreen .video-player {
+          object-fit: contain !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        
+        :fullscreen .relative.group {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background: black !important;
+        }
+        
+        /* Vendor prefixes */
+        :-webkit-full-screen .video-player {
+          object-fit: contain !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        
+        :-moz-full-screen .video-player {
+          object-fit: contain !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        
+        :-ms-fullscreen .video-player {
+          object-fit: contain !important;
+          width: 100% !important;
+          height: 100% !important;
         }
       `}</style>
     </div>
