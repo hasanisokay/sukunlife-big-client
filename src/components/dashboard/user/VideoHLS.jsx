@@ -130,20 +130,20 @@ export default function VideoHLS({
     }, []);
 
     useEffect(() => {
-  const video = videoRef.current;
-  if (!video) return;
+        const video = videoRef.current;
+        if (!video) return;
 
-  const onIOSFull = () => setIsFullscreen(true);
-  const onIOSExit = () => setIsFullscreen(false);
+        const onIOSFull = () => setIsFullscreen(true);
+        const onIOSExit = () => setIsFullscreen(false);
 
-  video.addEventListener("webkitbeginfullscreen", onIOSFull);
-  video.addEventListener("webkitendfullscreen", onIOSExit);
+        video.addEventListener("webkitbeginfullscreen", onIOSFull);
+        video.addEventListener("webkitendfullscreen", onIOSExit);
 
-  return () => {
-    video.removeEventListener("webkitbeginfullscreen", onIOSFull);
-    video.removeEventListener("webkitendfullscreen", onIOSExit);
-  };
-}, []);
+        return () => {
+            video.removeEventListener("webkitbeginfullscreen", onIOSFull);
+            video.removeEventListener("webkitendfullscreen", onIOSExit);
+        };
+    }, []);
 
 
     // Listen for fullscreen changes
@@ -861,47 +861,34 @@ export default function VideoHLS({
             </div>
 
             <style>{`
-        @keyframes seekFlashIn {
-          0%   { opacity: 0; }
-          20%  { opacity: 1; }
-          70%  { opacity: 1; }
-          100% { opacity: 0; }
-        }
-        
-        /* Fullscreen fixes */
-        :fullscreen .video-player {
-          object-fit: cover !important;
-          width: 100% !important;
-          height: 100% !important;
-        }
-        
-        :fullscreen .relative.group {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          background: black !important;
-        }
-        
-        /* Vendor prefixes */
-        :-webkit-full-screen .video-player {
-          object-fit: contain !important;
-          width: 100% !important;
-          height: 100% !important;
-        }
-        
-        :-moz-full-screen .video-player {
-          object-fit: contain !important;
-          width: 100% !important;
-          height: 100% !important;
-        }
-        
-        :-ms-fullscreen .video-player {
-          object-fit: contain !important;
-          width: 100% !important;
-          height: 100% !important;
-        }
+  @keyframes seekFlashIn {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
 
-      `}</style>
+  /* Fullscreen fixes — SAME behavior everywhere */
+  :fullscreen .video-player,
+  :-webkit-full-screen .video-player,
+  :-moz-full-screen .video-player,
+  :-ms-fullscreen .video-player {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  :fullscreen .relative.group,
+  :-webkit-full-screen .relative.group,
+  :-moz-full-screen .relative.group,
+  :-ms-fullscreen .relative.group {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: black !important;
+  }
+`}</style>
+
         </div>
     );
 }
