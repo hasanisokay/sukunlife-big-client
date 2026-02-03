@@ -5,10 +5,6 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SERVER } from '@/constants/urls.mjs';
 import BlogContent from '@/components/blogs/BlogContnet';
-import dynamic from 'next/dynamic';
-// const VideoHLS = dynamic(() => import('../dashboard/user/VideoHLS'), {
-//   ssr: false,
-// });
 
 import {
   ClipboardSVG,
@@ -23,8 +19,7 @@ import {
   LockClosedSVG
 } from '../svg/AdditionalSVGS';
 import { getFileToken, getStreamData, updateCourseProgress } from '@/server-functions/course-related/updateCourseProgress.mjs';
-import VideoHLS3 from '../dashboard/user/VideoHLS3';
-// import VideoHLS2 from '../dashboard/user/VideoHLS2';
+import VideoHLS from '../dashboard/user/VideoHLS';
 
 const CourseLoader = () => (
   <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -285,10 +280,17 @@ const CoursePlayer = ({
         if (!progressInitializedRef.current.has(progressKey)) {
           progressInitializedRef.current.add(progressKey);
 
-          // Save initial progress immediately (no setTimeout to avoid race conditions)
+          // AUTO-COMPLETE TEXT INSTRUCTIONS AND FILES ON FIRST LOAD
           if (["textInstruction", "file"].includes(currentItem.type)) {
-            // Don't auto-complete these, wait for user interaction
-            saveProgress("VIDEO_PROGRESS", { progress: 0 });
+            // Check if already completed
+            const currentProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
+            const wasAlreadyCompleted = currentProgress === 100;
+
+            // Only mark complete if not already completed
+            if (!wasAlreadyCompleted) {
+              console.log(`Auto-completing ${currentItem.type} on first load`);
+              saveProgress("MARK_COMPLETE");
+            }
           } else if (currentItem.type === "video") {
             saveProgress("VIDEO_PROGRESS", { progress: 0 });
           }
@@ -298,7 +300,6 @@ const CoursePlayer = ({
 
     checkUnlockStatus();
   }, [currentItemId, currentModuleId, userProgress, courseData.modules, isInitialized, getItemAccessibility, currentItem, saveProgress]);
-
 
   // Handle video ended with proper cleanup
   const handleVideoEnded = useCallback(async () => {
@@ -551,7 +552,7 @@ const CoursePlayer = ({
           <div className="space-y-6 relative">
             <div className="w-full md:h-[70vh] h-fit aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
               {hlsUrl ? (
-                <VideoHLS3
+                <VideoHLS
                   src={hlsUrl}
                   title={currentItem.title || `Lesson ${currentItem?.order || 1}`}
                   initialProgress={videoProgressTime}
