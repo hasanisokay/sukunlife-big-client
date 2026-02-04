@@ -16,6 +16,7 @@ export default function VideoHLS({
     const idleTimerRef = useRef(null);
     const lastProgressEmitRef = useRef(0);
     const hasSetInitialTimeRef = useRef(false);
+    const initialProgressSetRef = useRef(false);
 
     // Double-tap / tap detection
     const tapCountRef = useRef(0);
@@ -69,24 +70,18 @@ export default function VideoHLS({
     // ── Controls auto-hide logic ─────────────────────────────
     const resetIdleTimer = useCallback(() => {
         setShowControls(true);
-        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
 
         // Don't hide controls if video is paused
         if (!isPlaying) {
             return;
         }
 
-        // In fullscreen, we hide controls regardless of hover
-        // On normal screen, we hide only if not hovering
-        if (!isFullscreen && isHovering) {
-            return;
-        }
-
         idleTimerRef.current = setTimeout(() => {
             setShowControls(false);
             setShowSettings(false);
-        }, 2000);
-    }, [isPlaying, isHovering, isFullscreen]);
+        }, 3000); // Increased to 3 seconds for better UX
+    }, [isPlaying]);
 
     // ── Handle mouse/touch enter/leave ──────────────────────
     const handlePointerEnter = useCallback(() => {
@@ -97,12 +92,14 @@ export default function VideoHLS({
 
     const handlePointerLeave = useCallback(() => {
         setIsHovering(false);
-        // Only hide controls if video is playing AND we're not in fullscreen
-        if (isPlaying && !isFullscreen) {
-            setShowControls(false);
+        // In fullscreen, always use timer to hide controls
+        // In normal mode, hide immediately if playing
+        if (!isFullscreen && isPlaying) {
+            // Start timer for normal mode
+            resetIdleTimer();
         }
         setShowSettings(false);
-    }, [isPlaying, isFullscreen]);
+    }, [isPlaying, isFullscreen, resetIdleTimer]);
 
     // ── Handle any activity in the player ───────────────────
     const handleActivity = useCallback(() => {
@@ -112,58 +109,79 @@ export default function VideoHLS({
 
 
     const toggleFullscreen = useCallback(() => {
-        const video = videoRef.current;
-        if (!video) return;
+        const container = containerRef.current;
+        if (!container) return;
 
-        // iOS Safari
-        if (video.webkitEnterFullscreen) {
-            video.webkitEnterFullscreen();
-            return;
-        }
+        // Check if we're currently in fullscreen
+        const isCurrentlyFullscreen = !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+        );
 
-        // Standard
-        if (!document.fullscreenElement) {
-            video.requestFullscreen();
+        if (!isCurrentlyFullscreen) {
+            // Enter fullscreen
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.webkitRequestFullscreen) {
+                container.webkitRequestFullscreen();
+            } else if (container.mozRequestFullScreen) {
+                container.mozRequestFullScreen();
+            } else if (container.msRequestFullscreen) {
+                container.msRequestFullscreen();
+            }
         } else {
-            document.exitFullscreen();
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
         }
     }, []);
-
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        const onIOSFull = () => setIsFullscreen(true);
-        const onIOSExit = () => setIsFullscreen(false);
-
-        video.addEventListener("webkitbeginfullscreen", onIOSFull);
-        video.addEventListener("webkitendfullscreen", onIOSExit);
-
-        return () => {
-            video.removeEventListener("webkitbeginfullscreen", onIOSFull);
-            video.removeEventListener("webkitendfullscreen", onIOSExit);
-        };
-    }, []);
-
 
     // Listen for fullscreen changes
     useEffect(() => {
         const handleFullscreenChange = () => {
-            const isNowFullscreen = !!document.fullscreenElement;
+            const isNowFullscreen = !!(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
+            );
+
             setIsFullscreen(isNowFullscreen);
 
             // When entering fullscreen, always show controls briefly
             if (isNowFullscreen) {
                 setShowControls(true);
                 resetIdleTimer();
+            } else {
+                // When exiting fullscreen, show controls
+                setShowControls(true);
+                if (isPlaying) {
+                    resetIdleTimer();
+                }
             }
         };
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
         return () => {
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('msfullscreenchange', handleFullscreenChange);
         };
-    }, [resetIdleTimer]);
+    }, [resetIdleTimer, isPlaying]);
 
     // ── Seek helpers ──────────────────────────────────────────
     const seekBy = useCallback((seconds) => {
@@ -292,6 +310,7 @@ export default function VideoHLS({
         // Always show controls when video is paused
         if (!isPlaying) {
             setShowControls(true);
+            if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
         }
 
         // Set up event listeners
@@ -300,46 +319,37 @@ export default function VideoHLS({
         el.addEventListener("pointermove", handleActivity);
         el.addEventListener("touchstart", handleActivity);
 
-        // For fullscreen: track mouse movement on the whole screen
-        const handleFullscreenMouseMove = (e) => {
-            if (isFullscreen) {
-                handleActivity();
-            }
+        const handleVideoMouseMove = () => {
+            handleActivity();
         };
 
-        // Also track mouse movement on the video itself in fullscreen
-        const handleVideoMouseMove = (e) => {
-            if (isFullscreen) {
-                handleActivity();
-            }
-        };
+        video.addEventListener("mousemove", handleVideoMouseMove);
 
-        if (isFullscreen) {
-            document.addEventListener("mousemove", handleFullscreenMouseMove);
-            video.addEventListener("mousemove", handleVideoMouseMove);
-        }
-
-        video.addEventListener("play", () => {
+        const onPlay = () => {
             setIsPlaying(true);
             resetIdleTimer();
-        });
+        };
 
-        video.addEventListener("pause", () => {
+        const onPause = () => {
             setIsPlaying(false);
             setShowControls(true);
             if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-        });
+        };
+
+        video.addEventListener("play", onPlay);
+        video.addEventListener("pause", onPause);
 
         return () => {
             el.removeEventListener("pointerenter", handlePointerEnter);
             el.removeEventListener("pointerleave", handlePointerLeave);
             el.removeEventListener("pointermove", handleActivity);
             el.removeEventListener("touchstart", handleActivity);
-            document.removeEventListener("mousemove", handleFullscreenMouseMove);
             video.removeEventListener("mousemove", handleVideoMouseMove);
+            video.removeEventListener("play", onPlay);
+            video.removeEventListener("pause", onPause);
             if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
         };
-    }, [handlePointerEnter, handlePointerLeave, handleActivity, resetIdleTimer, isPlaying, isFullscreen]);
+    }, [handlePointerEnter, handlePointerLeave, handleActivity, resetIdleTimer, isPlaying]);
 
     // ── Click outside settings handler ──────────────────────
     useEffect(() => {
@@ -366,10 +376,11 @@ export default function VideoHLS({
     // ── HLS initialisation ──────────────────────────────────
     useEffect(() => {
         if (!isClient || !src) return;
-
         setIsLoading(true);
         setError(null);
+        // Reset the initial progress flag when src changes
         hasSetInitialTimeRef.current = false;
+        initialProgressSetRef.current = false;
 
         let destroyed = false;
         const video = videoRef.current;
@@ -438,18 +449,23 @@ export default function VideoHLS({
                     return;
                 }
 
+
                 const onLoadedMetadata = () => {
                     if (destroyed) return;
                     setDuration(video.duration);
                     setVolume(video.volume);
                     setIsMuted(video.muted);
 
-                    if (!hasSetInitialTimeRef.current && initialProgress > 0 && video.duration) {
-                        video.currentTime = (initialProgress / 100) * video.duration;
+                    // ✅ FIXED: Only set initial time ONCE per src change, ignore subsequent prop changes
+                    if (!initialProgressSetRef.current && initialProgress > 0 && video.duration) {
+                        const startTime = (initialProgress / 100) * video.duration;
+                        video.currentTime = startTime;
+                        initialProgressSetRef.current = true;
                         hasSetInitialTimeRef.current = true;
                     }
                     setIsLoading(false);
                 };
+
 
                 const onTimeUpdate = () => {
                     if (destroyed) return;
@@ -459,9 +475,12 @@ export default function VideoHLS({
                         setBuffered(video.buffered.end(video.buffered.length - 1));
                     }
 
-                    if (onProgress && video.duration) {
+                    // ✅ FIXED: Add throttling and prevent updates during initial seek
+                    if (onProgress && video.duration && hasSetInitialTimeRef.current) {
                         const pct = Math.floor((video.currentTime / video.duration) * 100);
                         const now = Date.now();
+
+                        // Only emit every 5 seconds OR at key milestones
                         if (now - lastProgressEmitRef.current > 5000 || [25, 50, 75, 95].includes(pct)) {
                             lastProgressEmitRef.current = now;
                             onProgress(pct);
@@ -469,20 +488,31 @@ export default function VideoHLS({
                     }
                 };
 
-                const onPlay = () => { if (!destroyed) setIsPlaying(true); if (onPlayy) onPlayy(); };
-                const onPlayCb = () => { if (!destroyed) { setIsPlaying(true); if (onPlayy) onPlayy(); } };
-                const onPause = () => { if (!destroyed) setIsPlaying(false); };
-                const onEnded_ = () => { if (!destroyed) { setIsPlaying(false); if (onEnded) onEnded(); } };
-                const onWaiting = () => { };
+                const onPlayCb = () => {
+                    if (!destroyed) {
+                        setIsPlaying(true);
+                        if (onPlayy) onPlayy();
+                    }
+                };
+
+                const onPause = () => {
+                    if (!destroyed) setIsPlaying(false);
+                };
+
+                const onEnded_ = () => {
+                    if (!destroyed) {
+                        setIsPlaying(false);
+                        if (onEnded) onEnded();
+                    }
+                };
 
                 video.addEventListener("loadedmetadata", onLoadedMetadata);
                 video.addEventListener("timeupdate", onTimeUpdate);
                 video.addEventListener("play", onPlayCb);
                 video.addEventListener("pause", onPause);
                 video.addEventListener("ended", onEnded_);
-                video.addEventListener("waiting", onWaiting);
 
-                video._cleanupHandlers = { onLoadedMetadata, onTimeUpdate, onPlayCb, onPause, onEnded_, onWaiting };
+                video._cleanupHandlers = { onLoadedMetadata, onTimeUpdate, onPlayCb, onPause, onEnded_ };
 
                 video.play().catch(() => setShowControls(true));
 
@@ -510,7 +540,6 @@ export default function VideoHLS({
                     video.removeEventListener("play", h.onPlayCb);
                     video.removeEventListener("pause", h.onPause);
                     video.removeEventListener("ended", h.onEnded_);
-                    video.removeEventListener("waiting", h.onWaiting);
                     delete video._cleanupHandlers;
                 }
             }
@@ -518,7 +547,7 @@ export default function VideoHLS({
             if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
             if (seekFlashTimerRef.current) clearTimeout(seekFlashTimerRef.current);
         };
-    }, [src, isClient, retryTrigger, initialProgress, onPlayy, onProgress, onEnded]);
+    }, [src, isClient, retryTrigger, onPlayy, onEnded]);
 
     // ── Keyboard shortcuts ──────────────────────────────────
     useEffect(() => {
@@ -610,7 +639,6 @@ export default function VideoHLS({
             className="relative group w-full h-full bg-black overflow-hidden select-none"
             style={{
                 touchAction: "manipulation",
-
             }}
             onPointerDown={handlePointerDown}
         >
@@ -790,10 +818,10 @@ export default function VideoHLS({
                                     </svg>
                                 </button>
 
-                                {/* Settings dropdown - Fixed z-index and positioning */}
+                                {/* Settings dropdown */}
                                 {showSettings && (
                                     <div
-                                        className="absolute bottom-full right-0 mb-2 pb-2 w-60 bg-black/95 backdrop-blur-md rounded-lg shadow-xl  overflow-hidden z-50"
+                                        className="absolute bottom-full right-0 mb-2 pb-2 w-60 bg-black/95 backdrop-blur-md rounded-lg shadow-xl overflow-hidden z-50"
                                         onClick={(e) => e.stopPropagation()}
                                         onPointerDown={(e) => e.stopPropagation()}
                                     >
@@ -801,7 +829,7 @@ export default function VideoHLS({
                                             <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">
                                                 Quality
                                             </div>
-                                            <div className="flex gap-2 max-h-36 ">
+                                            <div className="flex gap-2 max-h-36">
                                                 {levels.map((l) => (
                                                     <button
                                                         key={l.index}
@@ -851,9 +879,15 @@ export default function VideoHLS({
                                 className="text-white hover:text-gray-300 transition-transform hover:scale-110 w-6 h-6 flex items-center justify-center"
                                 aria-label="Fullscreen"
                             >
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
-                                </svg>
+                                {isFullscreen ? (
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+                                    </svg>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -868,12 +902,12 @@ export default function VideoHLS({
     100% { opacity: 0; }
   }
 
-  /* Fullscreen fixes — SAME behavior everywhere */
+  /* Fullscreen video styling */
   :fullscreen .video-player,
   :-webkit-full-screen .video-player,
   :-moz-full-screen .video-player,
   :-ms-fullscreen .video-player {
-    object-fit: cover !important;
+    object-fit: contain !important;
     width: 100% !important;
     height: 100% !important;
   }

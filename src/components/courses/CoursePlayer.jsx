@@ -62,9 +62,19 @@ const getItemProgress = (progress, moduleId, itemId) => {
   return itemProgress ? itemProgress.progress : 0;
 };
 
+// Helper function to get quiz score data
+const getQuizScore = (progress, moduleId, itemId) => {
+  if (!progress || !progress.quizScores) return null;
+
+  const moduleScores = progress.quizScores[moduleId];
+  if (!moduleScores) return null;
+
+  return moduleScores[itemId] || null;
+};
+
 const CoursePlayer = ({
   course,
-  progress,
+  progress: initialProgress,
   currentModuleId,
   currentItemId
 }) => {
@@ -73,13 +83,16 @@ const CoursePlayer = ({
   const [loading, setLoading] = useState(true);
   const [fileData, setFileData] = useState(null);
   const [quizAnswers, setQuizAnswers] = useState({});
-  const [quizCompleted, setQuizCompleted] = useState({});
+  const [quizSubmitted, setQuizSubmitted] = useState({});
   const [expandedModules, setExpandedModules] = useState(new Set());
   const [videoProgressTime, setVideoProgressTime] = useState(0);
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [retakeMode, setRetakeMode] = useState({});
+  // Use local state for progress so we can update it when API returns new data
+  const [progress, setProgress] = useState(initialProgress || {});
+  const [initialVideoProgress, setTnitialVideoProgress] = useState(initialProgress || {});
 
   // Refs for cleanup and optimization
   const navigationTimeoutRef = useRef(null);
@@ -88,6 +101,7 @@ const CoursePlayer = ({
   const lastProgressSaveRef = useRef(0);
   const saveInProgressRef = useRef(false);
   const hasNavigatedToNextRef = useRef(false);
+  const retakeSubmittedRef = useRef(new Set());
 
   // Extract data
   const courseData = course;
@@ -171,18 +185,6 @@ const CoursePlayer = ({
 
   // Optimized save progress with debouncing and deduplication
   const saveProgress = useCallback(async (action, payload = {}) => {
-    // Check if item is already at 100% progress
-    const currentProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-    
-    // Allow saving for quiz retakes
-    const isQuizRetake = action === "QUIZ_SUBMIT" && payload.isRetake === true;
-    
-    // Only block saves if already at 100% AND not a quiz retake
-    if (currentProgress === 100 && !isQuizRetake) {
-      console.log('Item already completed (100%), skipping save');
-      return;
-    }
-
     // Prevent duplicate saves within 1 second
     const now = Date.now();
     const timeSinceLastSave = now - lastProgressSaveRef.current;
@@ -204,6 +206,12 @@ const CoursePlayer = ({
       );
 
       console.log('Progress saved:', res);
+
+      // Update local progress state with API response
+      if (res?.success && res?.progress && currentItem.type === "quiz") {
+        setProgress(res.progress);
+      }
+
       return res;
     } catch (err) {
       console.error("Progress save failed:", err);
@@ -395,7 +403,7 @@ const CoursePlayer = ({
     };
 
     loadVideoStream();
-  }, [currentItem, userProgress, currentModuleId, currentItemId, isUnlocked]);
+  }, [currentModuleId, currentItemId, isUnlocked]);
 
   // Load file data on first load
   useEffect(() => {
@@ -458,36 +466,29 @@ const CoursePlayer = ({
   // Load quiz data when item changes
   useEffect(() => {
     if (currentItem?.type === 'quiz' && isUnlocked) {
+
+      // Reset local state when quiz changes
+      setQuizAnswers(prev => ({ ...prev, [currentItemId]: undefined }));
+      setQuizSubmitted(prev => ({ ...prev, [currentItemId]: false }));
+      retakeSubmittedRef.current.delete(currentItemId);
+
+      // Check if we're in retake mode
+      if (retakeMode[currentItemId]) {
+        return;
+      }
+
+      // Get quiz progress
       const quizProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-      
-      console.log('Quiz progress:', quizProgress);
-      
+
       // Check if quiz is completed (100% progress)
       if (quizProgress === 100) {
-        console.log('Quiz is completed, loading previous data');
-        // Load previous data from progress
-        const moduleProgress = userProgress?.viewed?.find(m => m.moduleId === currentModuleId);
-        if (moduleProgress) {
-          const itemProgress = moduleProgress.items.find(i => i.itemId === currentItemId);
-          if (itemProgress?.data?.selected !== undefined) {
-            console.log('Found previous quiz data:', itemProgress.data);
-            setQuizAnswers(prev => ({ 
-              ...prev, 
-              [currentItemId]: itemProgress.data.selected 
-            }));
-          }
+        const quizScore = getQuizScore(userProgress, currentModuleId, currentItemId);
+        if (quizScore && quizScore.selected !== undefined) {
+          setQuizAnswers(prev => ({
+            ...prev,
+            [currentItemId]: quizScore.selected
+          }));
         }
-        setQuizCompleted(prev => ({ ...prev, [currentItemId]: true }));
-        
-        // Check if we're in retake mode
-        if (retakeMode[currentItemId]) {
-          console.log('In retake mode, resetting quiz');
-          setQuizCompleted(prev => ({ ...prev, [currentItemId]: false }));
-          setQuizAnswers(prev => ({ ...prev, [currentItemId]: undefined }));
-        }
-      } else {
-        console.log('Quiz not completed yet');
-        setQuizCompleted(prev => ({ ...prev, [currentItemId]: false }));
       }
     }
   }, [currentItemId, currentItem?.type, isUnlocked, userProgress, currentModuleId, retakeMode]);
@@ -532,10 +533,10 @@ const CoursePlayer = ({
   }, []);
 
   const handleQuizSubmit = useCallback(async (selectedOption) => {
+    console.log('Submitting quiz answer:', selectedOption);
+
     if (!currentItem || currentItem.type !== "quiz" || !isUnlocked) return;
 
-    console.log('Submitting quiz answer:', selectedOption);
-    
     const isCorrect = selectedOption === currentItem.answer;
     const isRetake = retakeMode[currentItemId] || false;
 
@@ -543,24 +544,26 @@ const CoursePlayer = ({
 
     try {
       // Save quiz submission data
-      await saveProgress("QUIZ_SUBMIT", {
+      const res = await saveProgress("QUIZ_SUBMIT", {
         selected: selectedOption,
         correct: isCorrect,
         isRetake: isRetake
       });
-      
+
       // Mark as complete
       await saveProgress("MARK_COMPLETE");
 
-      console.log('Quiz submitted successfully');
-      
       // Update local state
       setQuizAnswers(prev => ({ ...prev, [currentItemId]: selectedOption }));
-      setQuizCompleted(prev => ({ ...prev, [currentItemId]: true }));
-      
+      setQuizSubmitted(prev => ({ ...prev, [currentItemId]: true }));
+
+      // Track retake submissions
+      if (isRetake) {
+        retakeSubmittedRef.current.add(currentItemId);
+      }
+
       // Exit retake mode if we were in it
       if (isRetake) {
-        console.log('Exiting retake mode');
         setRetakeMode(prev => ({ ...prev, [currentItemId]: false }));
       }
     } catch (err) {
@@ -571,19 +574,18 @@ const CoursePlayer = ({
   // Handle retake quiz
   const handleRetakeQuiz = useCallback(async () => {
     if (!currentItem || currentItem.type !== "quiz") return;
-    
-    console.log('Starting quiz retake for:', currentItemId);
-    
+
     try {
       // Enter retake mode
       setRetakeMode(prev => ({ ...prev, [currentItemId]: true }));
-      
+
       // Reset local state immediately
       setQuizAnswers(prev => ({ ...prev, [currentItemId]: undefined }));
-      setQuizCompleted(prev => ({ ...prev, [currentItemId]: false }));
-      
+      setQuizSubmitted(prev => ({ ...prev, [currentItemId]: false }));
+      retakeSubmittedRef.current.delete(currentItemId);
+
       console.log('Retake mode activated, local state reset');
-      
+
       // Reset progress to 0 to allow saving new attempt
       try {
         await updateCourseProgress(
@@ -641,6 +643,8 @@ const CoursePlayer = ({
     }
 
     const isCompleted = getItemProgress(userProgress, currentModuleId, currentItemId) === 100;
+    const isInRetakeMode = retakeMode[currentItemId];
+    const isRetakeSubmitted = retakeSubmittedRef.current.has(currentItemId);
 
     switch (currentItem.type) {
       case 'video':
@@ -655,8 +659,8 @@ const CoursePlayer = ({
                   onEnded={handleVideoEnded}
                   onProgress={(percent) => {
                     const now = Date.now();
-                    // Save at key milestones or every 10 seconds
-                    if ([25, 50, 75].includes(percent) || now - lastProgressSaveRef.current > 10000) {
+                    // Save at key milestones or every 30 seconds
+                    if ([25, 50, 75].includes(percent) || now - lastProgressSaveRef?.current > 30000) {
                       saveProgress("VIDEO_PROGRESS", { progress: percent });
                     }
                   }}
@@ -682,21 +686,10 @@ const CoursePlayer = ({
 
       case 'textInstruction':
         return (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-            <div className="prose max-h-screen overflow-y-auto dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm h-[calc(100vh-200px)] overflow-y-auto">
+            <div className="prose max-w-none text-gray-700 dark:text-gray-300">
               <BlogContent content={currentItem.content || ''} />
             </div>
-            {!isCompleted && (
-              <div className="mt-6 pt-6 border-t dark:border-gray-700">
-                <button
-                  onClick={() => saveProgress("MARK_COMPLETE")}
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
-                >
-                  <CheckCircleSVG className="w-5 h-5 mr-2" />
-                  Mark as Complete
-                </button>
-              </div>
-            )}
           </div>
         );
 
@@ -705,7 +698,7 @@ const CoursePlayer = ({
         const isImage = fileData?.mime?.includes('image');
 
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 h-[calc(100vh-200px)] overflow-y-auto">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-start flex-1">
@@ -768,36 +761,96 @@ const CoursePlayer = ({
         );
 
       case 'quiz':
-        const quizProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
-        const isQuizCompleted = quizProgress === 100;
         const userAnswer = quizAnswers[currentItemId];
-        const isInRetakeMode = retakeMode[currentItemId];
-        
+        const hasSubmitted = quizSubmitted[currentItemId];
+        const quizProgress = getItemProgress(userProgress, currentModuleId, currentItemId);
+        const isQuizCompleted = quizProgress === 100 && !isInRetakeMode;
+
         console.log('Quiz rendering state:', {
+          userAnswer,
+          hasSubmitted,
           quizProgress,
           isQuizCompleted,
-          userAnswer,
           isInRetakeMode,
-          quizCompleted: quizCompleted[currentItemId]
+          isRetakeSubmitted,
+          progressQuizScores: userProgress.quizScores
         });
 
-        // Get previous submission data
-        let previousData = null;
-        const moduleProgress = userProgress?.viewed?.find(m => m.moduleId === currentModuleId);
-        if (moduleProgress) {
-          const itemProgress = moduleProgress.items.find(i => i.itemId === currentItemId);
-          if (itemProgress?.data) {
-            previousData = itemProgress.data;
-          }
-        }
-        
-        const previousSelectedOption = previousData?.selected;
-        const previousWasCorrect = previousData?.correct;
+        // Get quiz score data from updated progress
+        const quizScore = getQuizScore(userProgress, currentModuleId, currentItemId);
+        const previousSelectedOption = quizScore?.selected;
+        const previousWasCorrect = quizScore?.correct;
 
-        // If quiz is completed and not in retake mode, show results
-        if (isQuizCompleted && !isInRetakeMode) {
-          console.log('Showing completed quiz results');
-          
+        // Case 1: Just submitted (show immediate feedback) - this includes retake submissions
+        if (hasSubmitted && userAnswer !== undefined) {
+          const isCorrect = userAnswer === currentItem.answer;
+
+          return (
+            <div className="space-y-6">
+              <div className={`bg-gradient-to-r ${isCorrect
+                ? 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30'
+                : 'from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30'
+                } p-8 rounded-xl shadow-sm`}>
+                <div className="text-center">
+                  <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isCorrect ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'
+                    }`}>
+                    <span className="text-3xl">{isCorrect ? '✓' : '✗'}</span>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">
+                    {isRetakeSubmitted ? 'Retake Result!' : (isCorrect ? 'Correct!' : 'Incorrect')}
+                  </h3>
+                  <p className="text-lg mb-6 text-gray-700 dark:text-gray-300">
+                    {currentItem.question}
+                  </p>
+
+                  <div className="space-y-3 max-w-md mx-auto">
+                    <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                      <span className="font-medium">Your answer: </span>
+                      <span className={`ml-2 ${isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
+                        {currentItem.options[userAnswer]}
+                      </span>
+                    </div>
+                    {/* Only show correct answer for first-time incorrect answers, not for retakes */}
+                    {!isCorrect && !isRetakeSubmitted && (
+                      <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <span className="font-medium">Correct answer: </span>
+                        <span className="ml-2 text-green-600 dark:text-green-400">
+                          {currentItem.options[currentItem.answer]}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Navigation */}
+                  <div className="mt-8 flex justify-center gap-4">
+                    <button
+                      onClick={handleRetakeQuiz}
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
+                    >
+                      <QuizSVG className="w-5 h-5 mr-2" />
+                      Retake Quiz
+                    </button>
+
+                    {nextItem && (
+                      <Link
+                        href={`/courses/${userProgress?.courseId}/${nextItem.moduleId}/${nextItem.itemId}`}
+                        onClick={() => setIsTransitioning(true)}
+                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
+                      >
+                        Next Lesson
+                        <RightArrowSVG className="w-4 h-4 ml-2" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Case 2: Previously completed quiz (show detailed results) - only show if not in retake mode
+        if (isQuizCompleted && quizScore && !isInRetakeMode) {
           return (
             <div className="space-y-6">
               <div className={`bg-gradient-to-r ${previousWasCorrect
@@ -810,20 +863,20 @@ const CoursePlayer = ({
                       <div className="p-2 bg-primary/10 rounded-lg mr-3">
                         <QuizSVG className="w-6 h-6 text-primary" />
                       </div>
-                      <h3 className="text-xl font-bold">Quiz</h3>
+                      <h3 className="text-xl font-bold">Quiz - Previous Attempt</h3>
                     </div>
                   </div>
-                  
+
                   <p className="text-lg mb-6 text-gray-700 dark:text-gray-300">
                     {currentItem.question}
                   </p>
-                  
-                  {/* Display all options with user's selection and correct answer */}
+
+                  {/* Display all options */}
                   <div className="space-y-3 max-w-lg mx-auto">
                     {currentItem.options?.map((option, idx) => {
                       const isUserChoice = idx === previousSelectedOption;
                       const isCorrectAnswer = idx === currentItem.answer;
-                      
+
                       return (
                         <div
                           key={idx}
@@ -832,7 +885,7 @@ const CoursePlayer = ({
                               ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
                               : 'border-red-500 bg-red-50 dark:bg-red-900/30'
                             : isCorrectAnswer
-                              ? 'border-green-300 bg-green-50/50 dark:bg-green-900/20'
+                              ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                               : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                             }`}
                         >
@@ -850,7 +903,7 @@ const CoursePlayer = ({
                               </div>
                               <span className="text-gray-800 dark:text-gray-200">{option}</span>
                             </div>
-                            
+
                             <div className="flex items-center gap-2">
                               {isUserChoice && (
                                 <span className={`px-3 py-1 text-xs font-medium rounded-full ${isCorrectAnswer
@@ -860,7 +913,7 @@ const CoursePlayer = ({
                                   Your answer
                                 </span>
                               )}
-                              {isCorrectAnswer && !isUserChoice && (
+                              {isCorrectAnswer && !isUserChoice && previousWasCorrect && (
                                 <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
                                   Correct
                                 </span>
@@ -871,7 +924,7 @@ const CoursePlayer = ({
                       );
                     })}
                   </div>
-                  
+
                   {/* Result Summary */}
                   <div className="mt-8 pt-6 border-t dark:border-gray-700">
                     <div className={`inline-flex items-center px-6 py-3 rounded-xl ${previousWasCorrect
@@ -883,12 +936,12 @@ const CoursePlayer = ({
                       </span>
                       {!previousWasCorrect && (
                         <span className="ml-4 text-sm">
-                          Correct answer: <strong>{currentItem.options[currentItem.answer]}</strong>
+                          Please retake the quiz.
                         </span>
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Retake Quiz Button */}
                   <div className="mt-6">
                     <button
@@ -905,53 +958,7 @@ const CoursePlayer = ({
           );
         }
 
-        // Show quiz after submission (before marking complete in database)
-        if (quizCompleted[currentItemId] && userAnswer !== undefined) {
-          console.log('Showing just submitted quiz results');
-          const isCorrect = userAnswer === currentItem.answer;
-
-          return (
-            <div className="space-y-6">
-              <div className={`bg-gradient-to-r ${isCorrect
-                ? 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30'
-                : 'from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30'
-                } p-8 rounded-xl shadow-sm`}>
-                <div className="text-center">
-                  <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isCorrect ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'
-                    }`}>
-                    <span className="text-3xl">{isCorrect ? '✓' : '✗'}</span>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">
-                    {isCorrect ? 'Correct!' : 'Incorrect'}
-                  </h3>
-                  <p className="text-lg mb-6 text-gray-700 dark:text-gray-300">
-                    {currentItem.question}
-                  </p>
-                  <div className="space-y-3 max-w-md mx-auto">
-                    <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                      <span className="font-medium">Your answer: </span>
-                      <span className={`ml-2 ${isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                        }`}>
-                        {currentItem.options[userAnswer]}
-                      </span>
-                    </div>
-                    {!isCorrect && (
-                      <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                        <span className="font-medium">Correct answer: </span>
-                        <span className="ml-2 text-green-600 dark:text-green-400">
-                          {currentItem.options[currentItem.answer]}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        }
-
-        // Show quiz form for new or retake
-        console.log('Showing quiz form');
+        // Case 3: Not attempted yet or in retake mode (show quiz form)
         return (
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
             <div className="mb-6">
@@ -960,6 +967,11 @@ const CoursePlayer = ({
                   <QuizSVG className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold">Quiz</h3>
+                {isInRetakeMode && (
+                  <span className="ml-3 px-3 py-1 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100 rounded-full">
+                    Retake Mode
+                  </span>
+                )}
               </div>
               <p className="text-lg mb-6 text-gray-800 dark:text-gray-200">
                 {currentItem.question}
@@ -967,18 +979,18 @@ const CoursePlayer = ({
             </div>
 
             <div className="space-y-3">
-              {currentItem.options?.map((option, idx) => (
+              {currentItem?.options?.map((option, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleQuizSubmit(idx)}
                   className="w-full p-4 rounded-xl text-left bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 border-2 border-transparent hover:border-primary/30 hover:shadow-md"
                 >
                   <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center transition-all ${quizAnswers[currentItemId] === idx
+                    <div className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center transition-all ${userAnswer === idx
                       ? 'border-primary bg-primary'
                       : 'border-gray-300 dark:border-gray-600'
                       }`}>
-                      {quizAnswers[currentItemId] === idx && (
+                      {userAnswer === idx && (
                         <div className="w-2 h-2 rounded-full bg-white"></div>
                       )}
                     </div>
@@ -989,6 +1001,7 @@ const CoursePlayer = ({
             </div>
           </div>
         );
+
       default:
         return (
           <div className="text-center py-12">
@@ -1011,7 +1024,7 @@ const CoursePlayer = ({
     saveProgress,
     fileData,
     quizAnswers,
-    quizCompleted,
+    quizSubmitted,
     handleQuizSubmit,
     handleRetakeQuiz,
     retakeMode
@@ -1020,7 +1033,7 @@ const CoursePlayer = ({
   if (!currentItem || !isInitialized) return <CourseLoader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col">
       {/* Mobile Header - SIMPLIFIED - NO HAMBURGER MENU */}
       <div className="lg:hidden sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-sm">
         <div className="px-4 py-3 flex items-center">
@@ -1042,11 +1055,11 @@ const CoursePlayer = ({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto md:px-4 md:py-4 lg:py-6">
-        <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-4 lg:py-6 lg:px-0">
+        <div className="lg:grid lg:grid-cols-4 lg:gap-8 h-full">
           {/* Sidebar - LEFT SIDE (Desktop only) */}
-          <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-6 space-y-6">
+          <div className="hidden lg:block lg:col-span-1 h-full">
+            <div className="sticky top-6 space-y-6 h-[calc(100vh-3rem)] flex flex-col">
               {/* Course Info */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-gray-700">
                 {/* Progress */}
@@ -1070,12 +1083,12 @@ const CoursePlayer = ({
               </div>
 
               {/* Course Content */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700 flex-1 flex flex-col">
                 <div className="p-4 border-b dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
                   <h3 className="font-bold text-lg">Course Content</h3>
                 </div>
 
-                <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
+                <div className="overflow-y-auto flex-1">
                   {courseData.modules.map((module) => (
                     <div key={module.moduleId} className="border-b dark:border-gray-700 last:border-b-0">
                       <button
@@ -1168,17 +1181,17 @@ const CoursePlayer = ({
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 h-full flex flex-col">
             {/* Desktop Header */}
-            <div className="hidden lg:block mb-6">
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-gray-900 dark:text-white">
+            <div className="hidden lg:block mb-4">
+              <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-gray-900 dark:text-white truncate">
                 {courseData.title}
               </h1>
             </div>
 
             {/* Content Container */}
-            <div className="bg-white dark:bg-gray-800 shadow-sm lg:shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
-              <div className="py-6">
+            <div className="bg-white dark:bg-gray-800 shadow-sm lg:shadow-md overflow-hidden border border-gray-100 dark:border-gray-700 rounded-xl flex-1 flex flex-col">
+              <div className="p-6 flex-1 flex flex-col">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentItemId}
@@ -1187,7 +1200,7 @@ const CoursePlayer = ({
                     exit="exit"
                     variants={itemVariants}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6"
+                    className="space-y-6 flex-1 flex flex-col"
                   >
                     {/* Item Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1203,8 +1216,10 @@ const CoursePlayer = ({
                       </div>
                     </div>
 
-                    {/* Content */}
-                    {renderContent()}
+                    {/* Content - This area should scroll */}
+                    <div className="flex-1 overflow-y-auto">
+                      {renderContent()}
+                    </div>
 
                     {/* Navigation - Always enabled */}
                     <div className="flex justify-between items-center pt-6 border-t dark:border-gray-700 gap-4">
