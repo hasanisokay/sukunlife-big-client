@@ -10,16 +10,6 @@ import Navbar from "@/components/nav/Navbar";
 import StoreProvider from "@/components/providers/StoreProvider";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 
-// import { makeStore } from "@/store/store";
-// import { setEnrolledCourses, setUserData } from "@/store/slices/authSlice";
-// import { setTheme } from "@/store/slices/themeSlice";
-// import { setCartData } from "@/store/slices/cartSlice";
-// import getThemeCookie from "@/utils/getThemeCookie.mjs";
-// import checkToken from "@/utils/checkToken.mjs";
-// import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
-// import getCartItemsFromDb from "@/components/cart/functions/getCartItemsFromDb.mjs";
-// import getEnrolledCourses from "@/utils/getEnrolledCourses.mjs";
-
 import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import sukunLifeImage from "@/../public/images/sukunlife.jpg";
@@ -27,6 +17,7 @@ import capitalize from "@/utils/capitalize.mjs";
 import TokenRefresh from "@/components/providers/TokenRefresh";
 import Footer from "@/components/shared/Footer";
 import ClientBootstrap from "@/components/providers/ClientBootstrap";
+import { headers } from "next/headers";
 
 // Font configurations
 const geistSans = Geist({
@@ -140,54 +131,19 @@ export async function generateMetadata() {
 }
 
 export default async function RootLayout({ children }) {
-  // Initialize store and fetch initial data
-  // const store = makeStore();
-  // const refreshToken = await checkToken();
-  // const storedTheme = await getThemeCookie();
-  // const userData = await getUserDataFromToken();
-  // Dispatch initial state
-  // store.dispatch(setUserData(userData || null));
-  // store.dispatch(setTheme("light"));
-  // store.dispatch(setTheme(storedTheme || "light"));
-
-  // Fetch user-specific data if authenticated
-  // if (userData?._id) {
-  //   const [cartItems, courses] = await Promise.all([
-  //     getCartItemsFromDb(userData._id),
-  //     getEnrolledCourses(userData._id),
-  //   ]);
-
-  //   store.dispatch(setCartData(cartItems?.cart?.cart || []));
-  //   store.dispatch(setEnrolledCourses(courses?.courses?.enrolledCourses || []));
-  // }
-
-  // const initialReduxState = store.getState();
+  const headersList = headers();
+  const theme = headersList.get("x-theme") || "light";
 
   return (
-    <html lang="en" data-theme={"light"} suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme={theme}
+      className={theme === "dark" ? "dark" : ""}
+      suppressHydrationWarning
+    >
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-(function () {
-  try {
-    const theme = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('theme='))
-      ?.split('=')[1];
-
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const resolvedTheme = theme ?? (systemDark ? 'dark' : 'light');
-
-    document.documentElement.dataset.theme = resolvedTheme;
-    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
-  } catch (_) {}
-})();
-            `,
-          }}
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  ${sacramento.variable}  ${charisSIL.variable} antialiased`}
