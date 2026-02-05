@@ -131,8 +131,8 @@ export async function generateMetadata() {
 }
 
 export default async function RootLayout({ children }) {
-  const headersList = headers();
-  const theme = headersList.get("x-theme") || "light";
+  const headersList = await headers();
+  const theme = await headersList.get("x-theme") || "light";
 
   return (
     <html
