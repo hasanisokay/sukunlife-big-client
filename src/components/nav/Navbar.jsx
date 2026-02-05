@@ -6,7 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { CartSVG } from "../svg/SvgCollection";
 import { setCartData } from "@/store/slices/cartSlice";
-
+import Image from "next/image";
+import logoSrc from "@/../public/logo-sukunlife.png"
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -32,9 +33,9 @@ const Navbar = () => {
     }
   }, [currentPath])
 
-  useEffect(()=>{
+  useEffect(() => {
     setMenuOpen(false)
-  },[currentPath])
+  }, [currentPath])
 
   const handleScroll = () => {
     if (window.scrollY > lastScrollY) {
@@ -163,7 +164,10 @@ const Navbar = () => {
               </button>
             </div>
             <Link href="/" className="text-2xl font-bold ">
-              <svg
+
+
+            <Image src={logoSrc} alt="Logo" width={1000} height={1000} className="w-[181px]  bg-transparent"/>
+              {/* <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="181"
                 height="41"
@@ -237,7 +241,9 @@ const Navbar = () => {
                     <path fill="#fff" d="M0 0h181v41H0z"></path>
                   </clipPath>
                 </defs>
-              </svg>
+              </svg> */}
+
+
             </Link>
             <div className="nav-items items-center justify-center ">
               <Link href="/about-us" className={getLinkClass("/about-us")}>
