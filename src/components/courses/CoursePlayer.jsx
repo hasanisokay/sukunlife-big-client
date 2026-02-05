@@ -90,9 +90,7 @@ const CoursePlayer = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [retakeMode, setRetakeMode] = useState({});
-  // Use local state for progress so we can update it when API returns new data
   const [progress, setProgress] = useState(initialProgress || {});
-  const [initialVideoProgress, setTnitialVideoProgress] = useState(initialProgress || {});
 
   // Refs for cleanup and optimization
   const navigationTimeoutRef = useRef(null);
@@ -659,8 +657,8 @@ const CoursePlayer = ({
                   onEnded={handleVideoEnded}
                   onProgress={(percent) => {
                     const now = Date.now();
-                    // Save at key milestones or every 30 seconds
-                    if ([25, 50, 75].includes(percent) || now - lastProgressSaveRef?.current > 30000) {
+                    // Save at key milestones or every 60 seconds
+                    if ([25, 50, 75].includes(percent) || now - lastProgressSaveRef?.current > 60000) {
                       saveProgress("VIDEO_PROGRESS", { progress: percent });
                     }
                   }}
@@ -1072,7 +1070,7 @@ const CoursePlayer = ({
                   </div>
                   <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500 ease-out rounded-full"
+                      className="h-full bg-gradient-to-r from-[#63953a] to-[#71de18] hover:from-[#71de18] hover:to-[#63953a] transition-all duration-500 ease-out rounded-full"
                       style={{ width: `${overallProgress}%` }}
                     ></div>
                   </div>
@@ -1361,7 +1359,6 @@ const CoursePlayer = ({
           </div>
         </div>
       </div>
-
       {/* Transition Overlay */}
       {isTransitioning && (
         <div className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center">

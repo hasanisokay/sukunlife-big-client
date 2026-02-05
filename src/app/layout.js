@@ -168,6 +168,26 @@ export default async function RootLayout({ children }) {
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function () {
+  try {
+    const theme = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('theme='))
+      ?.split('=')[1];
+
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const resolvedTheme = theme ?? (systemDark ? 'dark' : 'light');
+
+    document.documentElement.dataset.theme = resolvedTheme;
+    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
+  } catch (_) {}
+})();
+            `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable}  ${sacramento.variable}  ${charisSIL.variable} antialiased`}

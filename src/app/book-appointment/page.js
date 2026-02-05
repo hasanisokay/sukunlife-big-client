@@ -1,4 +1,4 @@
-import appointmentCover from "@/../public/images/blog.jpg";
+import appointmentCover from "@/../public/images/appointment.jpg";
 import { websiteName } from "@/constants/names.mjs";
 import hostname from "@/constants/hostname.mjs";
 import NotFound from "@/components/not-found/NotFound";

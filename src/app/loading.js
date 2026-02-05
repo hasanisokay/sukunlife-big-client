@@ -1,7 +1,7 @@
-import Spinner from "@/components/loaders/Spinner";
+import MainLoading from "@/components/shared/MainLoading";
 
 const rootLoading = () => {
-  return <Spinner />;
+  return <MainLoading />
 };
 
 export default rootLoading;

@@ -1,3 +1,4 @@
+'use server'
 import { THEME_COOKIE } from "@/constants/names.mjs";
 import { cookies } from "next/headers";
 

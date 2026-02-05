@@ -1,6 +1,4 @@
-import setThemeCookie from "@/utils/setThemeCookie.mjs";
-
-const { createSlice } = require("@reduxjs/toolkit");
+import { createSlice } from "@reduxjs/toolkit";
 
 const themeSlice = createSlice({
   name: "theme",
@@ -9,14 +7,13 @@ const themeSlice = createSlice({
   },
   reducers: {
     toggleTheme: (state) => {
-      const newTheme = state.mode === "light" ? "dark" : "light"
-      state.mode = newTheme;
-    setThemeCookie(newTheme)
+      state.mode = state.mode === "light" ? "dark" : "light";
     },
     setTheme: (state, action) => {
       state.mode = action.payload;
     },
   },
 });
+
 export const { toggleTheme, setTheme } = themeSlice.actions;
 export default themeSlice.reducer;

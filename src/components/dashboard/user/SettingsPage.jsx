@@ -85,7 +85,7 @@ const SettingsPage = () => {
                 },
                 credentials: "include",
             });
-            const data = await res.json()
+            const data = await res.json();
             dispatch(setUserData(data?.user))
         } catch {
         }
@@ -162,7 +162,7 @@ const SettingsPage = () => {
                             />
                         ) : (
                             <span className="text-2xl font-medium">
-                                {user.name.charAt(0).toUpperCase()}
+                                {user?.name?.charAt(0)?.toUpperCase()}
                             </span>
                         )}
 

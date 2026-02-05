@@ -1,9 +1,15 @@
+import MainLoading from "../shared/MainLoading";
 
-const Spinner2 = ({ loadingText }) => {
+const Spinner2 = ({ loadingText = "Loading..." }) => {
+    return <MainLoading />
     return (
-        <div className="bg-black text-white  flex flex-col items-center justify-center bg-opacity-70 px-2 py-1 absolute right-1/2 ">
-            <span className="spinner2"></span>
-            <span>{loadingText || 'Loading...'}</span>
+        <div className="absolute right-1/2 translate-x-1/2 top-4 z-50">
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-black/60 px-4 py-3 backdrop-blur-md text-white shadow-lg">
+                <span className="spinner-modern" />
+                <span className="text-sm tracking-wide opacity-90">
+                    {loadingText}
+                </span>
+            </div>
         </div>
     );
 };
