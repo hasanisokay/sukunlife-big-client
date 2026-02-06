@@ -672,9 +672,9 @@ const CoursePlayer = ({
                 </div>
               )}
             </div>
-            {currentItem?.description && (
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-                <p className="text-gray-600 dark:text-gray-300">
+            {currentItem?.description?.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 p-2">
+                <p className="text-gray-600 dark:text-gray-300 max-h-[100px] overflow-y-auto">
                   {currentItem.description}
                 </p>
               </div>
@@ -721,7 +721,7 @@ const CoursePlayer = ({
                     download
                     target='_blank'
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md whitespace-nowrap"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black dark:text-white font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md whitespace-nowrap"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -824,7 +824,7 @@ const CoursePlayer = ({
                   <div className="mt-8 flex justify-center gap-4">
                     <button
                       onClick={handleRetakeQuiz}
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-black dark:text-white font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
                     >
                       <QuizSVG className="w-5 h-5 mr-2" />
                       Retake Quiz
@@ -834,7 +834,7 @@ const CoursePlayer = ({
                       <Link
                         href={`/courses/${userProgress?.courseId}/${nextItem.moduleId}/${nextItem.itemId}`}
                         onClick={() => setIsTransitioning(true)}
-                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
+                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black dark:text-white font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
                       >
                         Next Lesson
                         <RightArrowSVG className="w-4 h-4 ml-2" />
@@ -944,7 +944,7 @@ const CoursePlayer = ({
                   <div className="mt-6">
                     <button
                       onClick={handleRetakeQuiz}
-                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black dark:text-gray-300  font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
                     >
                       <QuizSVG className="w-5 h-5 mr-2" />
                       Retake Quiz
@@ -981,7 +981,8 @@ const CoursePlayer = ({
                 <button
                   key={idx}
                   onClick={() => handleQuizSubmit(idx)}
-                  className="w-full p-4 rounded-xl text-left bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 border-2 border-transparent hover:border-primary/30 hover:shadow-md"
+                  className="w-full p-4 rounded-xl text-left bg-gray-50 dark:bg-gray-900 hover:bg-[#63953a]/5
+ transition-all duration-200 border-2 border-transparent hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5 "
                 >
                   <div className="flex items-center">
                     <div className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center transition-all ${userAnswer === idx
@@ -1036,24 +1037,25 @@ const CoursePlayer = ({
       <div className="lg:hidden sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-sm">
         <div className="px-4 py-3 flex items-center">
           <Link
-            href="/courses"
+            href={`/courses/${userProgress?.courseId}`}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <LeftArrowSVG className="w-5 h-5" />
           </Link>
 
-          <div className="flex-1 px-4">
-            <h2 className="text-sm font-medium truncate">
-              {currentItem.title || 'Course Content'}
-            </h2>
-            <div className="text-xs text-gray-500 truncate">
-              {currentModule?.title || 'Module'} • {currentItem.type}
+          <div className="flex-1 px-4 leading-tight">
+            <div className="text-[11px] uppercase tracking-wide text-[#63953a] font-semibold truncate">
+              {currentModule?.title || `Module ${currentModule?.order || 1}`}
             </div>
+
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              {currentItem.title || `Lesson ${currentItem?.order || 1}`}
+            </h2>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-4 lg:py-6 lg:px-0">
+      <div className="flex-1 max-w-7xl mx-auto w-full md:px-4 md:py-4 lg:py-6 lg:px-0">
         <div className="lg:grid lg:grid-cols-4 lg:gap-8 h-full">
           {/* Sidebar - LEFT SIDE (Desktop only) */}
           <div className="hidden lg:block lg:col-span-1 h-full">
@@ -1070,7 +1072,8 @@ const CoursePlayer = ({
                   </div>
                   <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#63953a] to-[#71de18] hover:from-[#71de18] hover:to-[#63953a] transition-all duration-500 ease-out rounded-full"
+                      className="h-full bg-gradient-to-r from-[#4f7a2e] via-[#63953a] to-[#7bbf3d]
+ shadow-[0_0_8px_rgba(99,149,58,0.6)] transition-all duration-500 ease-out rounded-full"
                       style={{ width: `${overallProgress}%` }}
                     ></div>
                   </div>
@@ -1087,7 +1090,7 @@ const CoursePlayer = ({
                 </div>
 
                 <div className="overflow-y-auto flex-1">
-                  {courseData.modules.map((module) => (
+                  {courseData?.modules?.map((module) => (
                     <div key={module.moduleId} className="border-b dark:border-gray-700 last:border-b-0">
                       <button
                         onClick={() => toggleModule(module.moduleId)}
@@ -1095,12 +1098,13 @@ const CoursePlayer = ({
                         aria-expanded={expandedModules.has(module.moduleId)}
                       >
                         <div className="flex items-center flex-1">
-                          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 mr-3 flex items-center justify-center">
-                            <span className="font-semibold text-sm text-primary">
+                          <div className="w-9 h-9 rounded-lg bg-[#63953a]/10 backdrop-blur-sm border border-[#63953a]/20
+ dark:from-primary/30 dark:to-primary/20 mr-3 flex items-center justify-center">
+                            <span className="font-bold text-sm text-[#63953a]">
                               {module.order}
                             </span>
                           </div>
-                          <span className="font-medium text-left text-sm">{module.title || `Module ${module.order}`}</span>
+                          <span className="font-medium text-left leading-2 text-sm">{module.title || `Module ${module.order}`}</span>
                         </div>
                         <DownArrowSVG
                           className={`w-4 h-4 transition-transform duration-200 ${expandedModules.has(module.moduleId) ? 'rotate-180' : ''
@@ -1129,10 +1133,12 @@ const CoursePlayer = ({
                                   key={item.itemId}
                                   href={itemPath}
                                   onClick={() => setIsTransitioning(true)}
-                                  className={`flex items-center px-4 py-3 text-left transition-all border-l-4 ${isActive
-                                    ? 'bg-primary/10 border-l-primary shadow-sm'
-                                    : 'border-l-transparent hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-l-primary/30'
-                                    } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-200 group
+${isActive
+                                      ? 'bg-[#63953a]/10 shadow-[0_0_0_1px_rgba(99,149,58,0.15)]'
+                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                    }`}
+
                                   aria-disabled={!accessibility.accessible}
                                 >
                                   <div className="flex items-center flex-1 min-w-0">
@@ -1152,10 +1158,10 @@ const CoursePlayer = ({
                                           {item.title || `${item.type} ${item.order}`}
                                         </span>
                                         {isActive && (
-                                          <span className="ml-2 text-xs bg-primary text-white px-2 py-0.5 rounded-full font-medium">
-                                            Current
-                                          </span>
+                                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
+                   bg-[#63953a] rounded-r-full shadow-[0_0_10px_rgba(99,149,58,0.7)]" />
                                         )}
+
                                       </div>
                                       <div className="text-xs text-gray-500 mt-0.5">
                                         <span className="capitalize">{item.type}</span>
@@ -1181,15 +1187,16 @@ const CoursePlayer = ({
           {/* Main Content Area */}
           <div className="lg:col-span-3 h-full flex flex-col">
             {/* Desktop Header */}
-            <div className="hidden lg:block mb-4">
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-gray-900 dark:text-white truncate">
+            <div className="hidden lg:block mb-1">
+              <h1 className="text-2xl line-clamp-3 lg:text-3xl font-bold mb-2 text-gray-900 dark:text-white truncate">
                 {courseData.title}
               </h1>
             </div>
 
             {/* Content Container */}
-            <div className="bg-white dark:bg-gray-800 shadow-sm lg:shadow-md overflow-hidden border border-gray-100 dark:border-gray-700 rounded-xl flex-1 flex flex-col">
-              <div className="p-6 flex-1 flex flex-col">
+            <div className="bg-white dark:bg-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.05)]
+ overflow-hidden  border-gray-100 dark:border-gray-700 md:rounded-xl flex-1 ">
+              <div className="md:p-4  flex-1 flex flex-col">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentItemId}
@@ -1198,21 +1205,19 @@ const CoursePlayer = ({
                     exit="exit"
                     variants={itemVariants}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6 flex-1 flex flex-col"
+                    className="space-y-2 md:space-y-4 flex-1 flex flex-col"
                   >
                     {/* Item Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <span className="text-xs font-medium px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
-                            {currentModule?.title || `Module ${currentModule?.order || 1}`}
-                          </span>
-                          <span className="text-xs font-medium px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
-                            {currentItem.title || currentItem.type || `Lesson ${currentItem?.order || 1}`}
-                          </span>
-                        </div>
-                      </div>
+
+                    <div className="hidden lg:flex items-center gap-2 flex-wrap">
+                      <span className="text-xs line-clamp-2 font-medium px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                        {currentModule?.title || `Module ${currentModule?.order || 1}`}
+                      </span>
+                      <span className="text-xs line-clamp-2 font-medium px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                        {currentItem.title || currentItem.type || `Lesson ${currentItem?.order || 1}`}
+                      </span>
                     </div>
+
 
                     {/* Content - This area should scroll */}
                     <div className="flex-1 overflow-y-auto">
@@ -1220,13 +1225,13 @@ const CoursePlayer = ({
                     </div>
 
                     {/* Navigation - Always enabled */}
-                    <div className="flex justify-between items-center pt-6 border-t dark:border-gray-700 gap-4">
+                    <div className="flex justify-between items-center md:pt-6 px-2 pb-2 dark:border-gray-700 gap-4">
                       <div className="flex-1">
                         {previousItem ? (
                           <Link
                             href={`/courses/${userProgress?.courseId}/${previousItem.moduleId}/${previousItem.itemId}`}
                             onClick={() => setIsTransitioning(true)}
-                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-black rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
+                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 text-black dark:text-white  rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
                           >
                             <LeftArrowSVG className="w-4 h-4 mr-2" />
                             Previous
@@ -1241,7 +1246,7 @@ const CoursePlayer = ({
                           <Link
                             href={`/courses/${userProgress?.courseId}/${nextItem.moduleId}/${nextItem.itemId}`}
                             onClick={() => setIsTransitioning(true)}
-                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
+                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-black dark:text-white  rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
                           >
                             Next Lesson
                             <RightArrowSVG className="w-4 h-4 ml-2" />
@@ -1307,7 +1312,7 @@ const CoursePlayer = ({
                           >
                             {module.items.map((item) => {
                               const accessibility = getItemAccessibility(item.itemId, module.moduleId);
-                              const isActive = item.itemId === currentItemId;
+                              const isActive = item.itemId === currentItemId && module.moduleId === currentModuleId;
                               const isCompleted = getItemProgress(userProgress, module.moduleId, item.itemId) === 100;
                               const isViewed = isItemViewed(userProgress, module.moduleId, item.itemId);
                               const itemPath = `/courses/${userProgress?.courseId}/${module.moduleId}/${item.itemId}`;
@@ -1317,9 +1322,14 @@ const CoursePlayer = ({
                                   key={item.itemId}
                                   href={itemPath}
                                   onClick={() => setIsTransitioning(true)}
-                                  className={`flex items-center px-4 py-3 text-left transition-all border-l-4 ${isActive
-                                    ? 'bg-primary/10 border-l-primary shadow-sm'
-                                    : 'border-l-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                                  // className={`flex items-center px-4 py-3 text-left transition-all border-l-4 ${isActive
+                                  //   ? 'bg-primary/10 border-l-primary shadow-sm'
+                                  //   : 'border-l-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                                  //   } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  className={`relative flex items-center px-4 py-3 text-left transition-all rounded-lg
+${isActive
+                                      ? 'bg-[#63953a]/10'
+                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                     } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   aria-disabled={!accessibility.accessible}
                                 >
@@ -1340,8 +1350,11 @@ const CoursePlayer = ({
                                       <div className="text-xs text-gray-500">
                                         <span className="capitalize">{item.type}</span>
                                         {isActive && (
-                                          <span className="ml-1 text-primary">• Current</span>
+                                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
+                   bg-[#63953a] rounded-r-full 
+                   shadow-[0_0_10px_rgba(99,149,58,0.7)]" />
                                         )}
+
                                       </div>
                                     </div>
                                   </div>

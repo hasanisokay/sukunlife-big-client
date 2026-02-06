@@ -110,7 +110,7 @@ const Navbar = () => {
   if (isCoursePage) { return <></> }
 
   return (
-    <div ref={navRef} className="h-[110px] montserrat-font ">
+    <div ref={navRef} className="md:h-[110px] h-[64px] montserrat-font ">
       <div className="dark:bg-[#0c0c0e] sticky top-0 z-50 w-full bg-gray-700 supports-[backdrop-filter]:bg-background/60 shadow-lg">
         <nav
           className={`fixed  top-0 left-0 w-full mx-auto px-2 bg-gray-100 dark:bg-[#111827]  sm:px-6 lg:px-8 z-50 transition-transform duration-300  shadow-md border-b border-gray-500/20 ${visible ? "transform-none shadow-[0_4px_20px_rgba(0,0,0,0.3)]" : "-translate-y-full shadow-none"
