@@ -222,21 +222,6 @@ body {
 .ProseMirror-focused:focus-visible {
   outline: none;
 }
-.spinner-modern {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 3px solid transparent;
-  border-top-color: #7ebc12;
-  border-right-color: #7ebc12;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 
 @keyframes rotation2 {
