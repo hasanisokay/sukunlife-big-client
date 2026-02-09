@@ -10,14 +10,30 @@ const DatePickerWithDisableDates = ({
   labelText,
 }) => {
   const inputRef = useRef(null);
-
+  
   useEffect(() => {
+    // Convert enabledDates to Date objects if they're strings
+    const parsedEnabledDates = enabledDates?.length
+      ? enabledDates.map(dateStr => {
+          // If it's already a Date object, return it
+          if (dateStr instanceof Date) return dateStr;
+          
+          // If it's a string in YYYY-MM-DD format, convert to Date
+          if (typeof dateStr === 'string') {
+            const [year, month, day] = dateStr.split('-');
+            return new Date(year, month - 1, day);
+          }
+          
+          return dateStr;
+        })
+      : null;
+
     const fp = flatpickr(inputRef.current, {
       dateFormat: 'd-m-Y',
-  disableMobile:true,
+      disableMobile: true,
       // If enabledDates is passed → use it
-      ...(enabledDates?.length
-        ? { enable: enabledDates }
+      ...(parsedEnabledDates?.length
+        ? { enable: parsedEnabledDates }
         : { minDate }),
 
       onChange: (selectedDates) => {

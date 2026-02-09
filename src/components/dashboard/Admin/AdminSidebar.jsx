@@ -128,7 +128,8 @@ const AdminSidebar = () => {
                     {activeMenu === 'appointments' && (
                         <div className="ml-4 space-y-2">
                             <Link href="/dashboard/appointments" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments")}`}>All Appointments</Link>
-                            <Link href="/dashboard/appointments/schedule" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments/schedule")}`}>Schedule Management</Link>
+                            <Link href="/dashboard/appointments/add-date" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments/add-date")}`}>Add Date</Link>
+                            <Link href="/dashboard/appointments/manage" onClick={handleMenuItemClick} className={` ${pathStyles("/dashboard/appointments/manage")}`}>Manage</Link>
                         </div>
                     )}
                 </div>

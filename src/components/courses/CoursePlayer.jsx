@@ -20,6 +20,7 @@ import {
 } from '../svg/AdditionalSVGS';
 import { getFileToken, getStreamData, updateCourseProgress } from '@/server-functions/course-related/updateCourseProgress.mjs';
 import VideoHLS from '../dashboard/user/VideoHLS';
+import VideoHLS2 from '../dashboard/user/VideoHLS2';
 
 const CourseLoader = () => (
   <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -650,7 +651,7 @@ const CoursePlayer = ({
           <div className="space-y-6 relative">
             <div className="w-full md:h-[70vh] h-fit aspect-video bg-black rounded-xl overflow-hidden shadow-2xl relative">
               {hlsUrl ? (
-                <VideoHLS
+                <VideoHLS2
                   src={hlsUrl}
                   title={currentItem.title || `Lesson ${currentItem?.order || 1}`}
                   initialProgress={videoProgressTime}
