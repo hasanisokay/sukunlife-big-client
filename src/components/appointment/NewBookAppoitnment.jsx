@@ -104,7 +104,7 @@ useEffect(() => {
     }
 }, [requiresConsultantSelection, selectedService, setValue]);
 
-    // Get fixed fee for emergency-ruqyah and hijama
+    //fixed fee for emergency-ruqyah and hijama
     const fixedServiceFee = useMemo(() => {
         if (selectedService === 'emergency-ruqyah' || selectedService === 'hijama') {
             return 4000;
