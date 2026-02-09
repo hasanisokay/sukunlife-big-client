@@ -54,6 +54,11 @@
     width: 390px;
   } */
 }
+@media (max-width: 499px) {
+  .book-appointment-modal {
+    width: 99vw;
+  }
+}
 @media (min-width: 500px) {
   .book-appointment-modal {
     width: 490px;
