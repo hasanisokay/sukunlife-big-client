@@ -10,6 +10,7 @@ import { SERVER } from "@/constants/urls.mjs";
 import "./appointment-styles.css";
 import { Flip, toast, ToastContainer } from "react-toastify";
 import capitalize from "@/utils/capitalize.mjs";
+import { CONSULTANT_DETAILS } from "@/constants/names.mjs";
 import WhyChoosSukunLIfeBookingAppointment from "./WhyChoosSukunLIfeBookingAppointment";
 import AppointmentBannerSection from "./AppointmentBannerSection";
 import PricingSectionAppointment from "./PricingSectionAppointment";
@@ -26,7 +27,7 @@ const schema = z.object({
     address: z.string().min(1, "Address is required"),
     date: z.string().min(1, "Date is required"),
     time: z.string().min(1, "Time is required"),
-    consultant: z.string().min(1, "Please select a consultant"),
+    consultant: z.string().optional(), // Made optional for emergency-ruqyah and hijama
     reference: z.string().optional(),
     problem: z.string().min(1, "Problem description is required"),
     advancePayment: z.boolean().optional(),
@@ -34,7 +35,17 @@ const schema = z.object({
     termsAgreed: z.literal(true, {
         errorMap: () => ({ message: "You must agree to the terms" }),
     }),
+}).refine((data) => {
+    // For counseling and ruqyah, consultant is required
+    if (data.service === 'counseling' || data.service === 'ruqyah') {
+        return data.consultant && data.consultant.length > 0;
+    }
+    return true;
+}, {
+    message: "Please select a consultant",
+    path: ["consultant"],
 });
+
 
 
 const NewBookAppointment = ({ preSelectedService }) => {
@@ -49,6 +60,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
     const [openModal, setOpenModal] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
 
+
     const {
         register,
         handleSubmit,
@@ -62,6 +74,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
 
     const watchDate = watch("date");
     const watchTime = watch("time");
+    const watchConsultant = watch("consultant");
 
     // Helper function to convert 24-hour time to 12-hour AM/PM format
     const convertTo12Hour = (time24) => {
@@ -72,6 +85,38 @@ const NewBookAppointment = ({ preSelectedService }) => {
         const hour12 = hour % 12 || 12;
         return `${hour12}:${minutes} ${ampm}`;
     };
+
+    // Get consultant fee based on service
+    const getConsultantFee = (consultantName, service) => {
+        const consultant = CONSULTANT_DETAILS.find(c => c.name === consultantName);
+        if (!consultant) return null;
+        return consultant.services[service] || null;
+    };
+
+    // Check if service requires consultant selection
+    const requiresConsultantSelection = useMemo(() => {
+        return selectedService === 'counseling' || selectedService === 'ruqyah';
+    }, [selectedService]);
+
+useEffect(() => {
+    if (!requiresConsultantSelection && selectedService) {
+        setValue("consultant", "any");
+    }
+}, [requiresConsultantSelection, selectedService, setValue]);
+
+    // Get fixed fee for emergency-ruqyah and hijama
+    const fixedServiceFee = useMemo(() => {
+        if (selectedService === 'emergency-ruqyah' || selectedService === 'hijama') {
+            return 4000;
+        }
+        return null;
+    }, [selectedService]);
+
+    // Get current consultant fee
+    const currentConsultantFee = useMemo(() => {
+        if (!requiresConsultantSelection || !watchConsultant) return null;
+        return getConsultantFee(watchConsultant, selectedService);
+    }, [watchConsultant, selectedService, requiresConsultantSelection]);
 
     // Fetch available slots from API
     const getSlots = async () => {
@@ -88,6 +133,10 @@ const NewBookAppointment = ({ preSelectedService }) => {
             setIsLoadingSlots(false);
         }
     };
+    useEffect(() => {
+        setSelectedDate("")
+        setSelectedTime("")
+    }, [selectedService])
 
     useEffect(() => {
         getSlots();
@@ -105,7 +154,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
         if (!availableSlots?.length) return [];
         const dates = [...new Set(availableSlots.map(slot => slot.date))];
         return dates.sort();
-    }, [availableSlots]);
+    }, [availableSlots, selectedService]);
 
 
     // Get available times for selected date
@@ -131,7 +180,8 @@ const NewBookAppointment = ({ preSelectedService }) => {
 
         const times = Array.from(uniqueTimesMap.values());
         return times.sort((a, b) => a.start.localeCompare(b.start));
-    }, [selectedDate, availableSlots]);
+    }, [selectedDate, availableSlots, selectedService]);
+
     // Get available consultants for selected date and time
     const availableConsultants = useMemo(() => {
         if (!selectedDate || !selectedTime || !availableSlots?.length) return [];
@@ -144,7 +194,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
         );
 
         return slot?.consultants || [];
-    }, [selectedDate, selectedTime, availableSlots]);
+    }, [selectedDate, selectedTime, availableSlots, selectedService]);
 
     // Update selected date when date changes
     useEffect(() => {
@@ -181,6 +231,8 @@ const NewBookAppointment = ({ preSelectedService }) => {
                 date: convertedDate,
                 startTime: startTime,
                 endTime: endTime,
+                // Set consultant to 'any' for emergency-ruqyah and hijama
+                consultant: requiresConsultantSelection ? d.consultant : 'any',
                 source: 'appointment',
                 advancePayment: d.advancePayment ?? false,
                 reviewed: false
@@ -189,6 +241,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
             if (user && Object.entries(user).length !== 0) {
                 bookingData.loggedInUser = { _id: user._id, name: user.name };
             }
+
             if (d.advancePayment) {
                 setIsPaying(true);
                 await startPaystationPayment(bookingData);
@@ -217,7 +270,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
             toast.error("Server is busy. Please try again later.");
         } finally {
             setIsPaying(false);
-            window.location.reload()
+            window.location.reload();
         }
     };
 
@@ -294,6 +347,15 @@ const NewBookAppointment = ({ preSelectedService }) => {
                                                 {selectedService === 'emergency-ruqyah' ? "Emergency Ruqyah" : capitalize(selectedService)}
                                             </span>
                                         </h3>
+
+                                        {/* Fixed Fee Display for Emergency Ruqyah & Hijama */}
+                                        {fixedServiceFee && (
+                                            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                <p className="text-sm font-semibold text-green-800">
+                                                    Service Fee: <span className="text-lg">৳{fixedServiceFee} BDT</span>
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Loading State */}
@@ -374,7 +436,7 @@ const NewBookAppointment = ({ preSelectedService }) => {
                                             control={control}
                                             render={({ field }) => (
                                                 <DatePickerWithDisableDates
-                                                    labelText="Select Available Date"
+                                                    labelText="Select Date"
                                                     enabledDates={availableDates}
                                                     onChangeHandler={(date) => {
                                                         const d = `${date.getDate().toString().padStart(2, "0")}-${(date.getMonth() + 1)
@@ -437,55 +499,82 @@ const NewBookAppointment = ({ preSelectedService }) => {
                                         )}
                                     </div>
 
-                                    {/* Consultant Selection - Only available consultants */}
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                                            Select Available Consultant
-                                        </label>
-                                        {!selectedTime ? (
-                                            <p className="text-sm text-gray-500 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                                Please select a date and time first
-                                            </p>
-                                        ) : availableConsultants.length === 0 ? (
-                                            <p className="text-sm text-amber-600 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                                                No consultants available for this slot
-                                            </p>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                {availableConsultants.map((consultant, index) => (
-                                                    <label
-                                                        key={index}
-                                                        className={`
-                                                            flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all border-2
-                                                            ${watch("consultant") === consultant
-                                                                ? 'bg-[#2e3e23] text-white border-[#2e3e23]'
-                                                                : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-[#4a5e3a]'
-                                                            }
-                                                        `}
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            {...register("consultant")}
-                                                            value={consultant}
-                                                            className="sr-only"
-                                                        />
-                                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${watch("consultant") === consultant
-                                                            ? 'border-white'
-                                                            : 'border-gray-400'
-                                                            }`}>
-                                                            {watch("consultant") === consultant && (
-                                                                <div className="w-2 h-2 bg-white rounded-full"></div>
-                                                            )}
-                                                        </div>
-                                                        <span className="text-sm font-medium">{consultant}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {errors.consultant && (
-                                            <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.consultant.message}</p>
-                                        )}
-                                    </div>
+                                    {/* Consultant Selection - Only for counseling and ruqyah */}
+                                    {requiresConsultantSelection ? (
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                                                Select Available Consultant
+                                            </label>
+                                            {!selectedTime ? (
+                                                <p className="text-sm text-gray-500 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                                    Please select a date and time first
+                                                </p>
+                                            ) : availableConsultants.length === 0 ? (
+                                                <p className="text-sm text-amber-600 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                                                    No consultants available for this slot
+                                                </p>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {availableConsultants.map((consultant, index) => {
+                                                        const fee = getConsultantFee(consultant, selectedService);
+                                                        return (
+                                                            <label
+                                                                key={index}
+                                                                className={`
+                                                                    flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all border-2
+                                                                    ${watchConsultant === consultant
+                                                                        ? 'bg-[#2e3e23] text-white border-[#2e3e23]'
+                                                                        : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-[#4a5e3a]'
+                                                                    }
+                                                                `}
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <input
+                                                                        type="radio"
+                                                                        {...register("consultant")}
+                                                                        value={consultant}
+                                                                        className="sr-only"
+                                                                    />
+                                                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${watchConsultant === consultant
+                                                                        ? 'border-white'
+                                                                        : 'border-gray-400'
+                                                                        }`}>
+                                                                        {watchConsultant === consultant && (
+                                                                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                                        )}
+                                                                    </div>
+                                                                    <span className="text-sm font-medium">{consultant}</span>
+                                                                </div>
+                                                                {fee && (
+                                                                    <span className={`text-sm font-bold ${watchConsultant === consultant
+                                                                        ? 'text-white'
+                                                                        : 'text-green-600 dark:text-green-500'
+                                                                        }`}>
+                                                                        ৳{fee}
+                                                                    </span>
+                                                                )}
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                            {errors.consultant && (
+                                                <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.consultant.message}</p>
+                                            )}
+
+                                            {/* Selected Consultant Fee Display */}
+                                            {currentConsultantFee && (
+                                                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                    <p className="text-sm font-semibold text-green-800">
+                                                        Consultation Fee: <span className="text-lg">৳{currentConsultantFee}</span>
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        // For emergency-ruqyah and hijama, automatically set consultant to 'any'
+                                        <input type="hidden" {...register("consultant")} value="any" />
+                                    )}
 
                                     {/* Reference field */}
                                     <div>

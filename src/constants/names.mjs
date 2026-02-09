@@ -16,3 +16,48 @@ export const CONSULTANTS = [
   "Abu Muhammadan",
   "Toyyobul Haque",
 ];
+
+export const CONSULTANT_DETAILS = [
+  {
+    name: "Abdullah Al Mahmud",
+    services: {
+      counseling: 1500,
+      ruqyah: 3800,
+    },
+  },
+  {
+    name: "Taqi Ibn Ishaq",
+    services: {
+      counseling: 3000,
+      ruqyah: 4500,
+    },
+  },
+  {
+    name: "Abu Khubaib Najmul",
+    services: {
+      counseling: 2000,
+      ruqyah: 4000,
+    },
+  },
+  {
+    name: "Majhar Bin Bashar",
+    services: {
+      counseling: 1500,
+      ruqyah: 3800,
+    },
+  },
+  {
+    name: "Abu Muhammadan",
+    services: {
+      counseling: 1500,
+      ruqyah: 3800,
+    },
+  },
+  {
+    name: "Toyyobul Haque",
+    services: {
+      counseling: 1500,
+      ruqyah: 3800,
+    },
+  },
+];
