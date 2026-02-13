@@ -500,7 +500,7 @@ const SingleCoursePage = ({ course, enrollData }) => {
                         <div
                             className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-3xl relative"
                         >
-                            <CustomYouTubePlayer url={videoModal.url} />
+                            <CustomYouTubePlayer url={videoModal.url} courseId={course?.courseId} />
                             <div className='absolute top-0 right-0'>
                                 <button title='Close' onClick={closeVideoModal} className='rounded-full bg-red-600 px-2 text-lg'>
                                     X

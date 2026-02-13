@@ -38,69 +38,69 @@ const AddCourse = () => {
     const generateModuleId = () => `module-${uuidv4().split('-')[0]}`;
     const generateItemId = () => `item-${uuidv4().split('-')[0]}`;
 
-  // Reusable validation function
-const validateId = (id, type = "ID") => {
-  if (!id || id.trim() === "") {
-    return { isValid: false, message: `${type} is required` };
-  }
+    // Reusable validation function
+    const validateId = (id, type = "ID") => {
+        if (!id || id.trim() === "") {
+            return { isValid: false, message: `${type} is required` };
+        }
 
-  // Regex: only lowercase letters, numbers, hyphens, and underscores
-  const regex = /^[a-z0-9-_]+$/;
-  if (!regex.test(id)) {
-    return { isValid: false, message: "Only lowercase letters, numbers, hyphens, and underscores allowed" };
-  }
+        // Regex: only lowercase letters, numbers, hyphens, and underscores
+        const regex = /^[a-z0-9-_]+$/;
+        if (!regex.test(id)) {
+            return { isValid: false, message: "Only lowercase letters, numbers, hyphens, and underscores allowed" };
+        }
 
-  return { isValid: true, message: "✓ Format valid" };
-};
+        return { isValid: true, message: "✓ Format valid" };
+    };
 
-// Validate Module ID
-const validateModuleId = (moduleId, currentModuleIndex) => {
-  const baseValidation = validateId(moduleId, "Module ID");
-  if (!baseValidation.isValid) return baseValidation;
+    // Validate Module ID
+    const validateModuleId = (moduleId, currentModuleIndex) => {
+        const baseValidation = validateId(moduleId, "Module ID");
+        if (!baseValidation.isValid) return baseValidation;
 
-  // Check for duplicates
-  const duplicateIndex = modules.findIndex(
-    (module, index) => index !== currentModuleIndex && module.moduleId === moduleId
-  );
+        // Check for duplicates
+        const duplicateIndex = modules.findIndex(
+            (module, index) => index !== currentModuleIndex && module.moduleId === moduleId
+        );
 
-  if (duplicateIndex !== -1) {
-    return { isValid: false, message: `Duplicate ID used in module ${duplicateIndex + 1}` };
-  }
+        if (duplicateIndex !== -1) {
+            return { isValid: false, message: `Duplicate ID used in module ${duplicateIndex + 1}` };
+        }
 
-  return { isValid: true, message: "✓ Available" };
-};
+        return { isValid: true, message: "✓ Available" };
+    };
 
-// Validate Item ID
-const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
-  const baseValidation = validateId(itemId, "Item ID");
-  if (!baseValidation.isValid) return baseValidation;
+    // Validate Item ID
+    const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
+        const baseValidation = validateId(itemId, "Item ID");
+        if (!baseValidation.isValid) return baseValidation;
 
-  // Check for duplicates within the same module
-  const currentModule = modules[moduleIndex];
-  if (currentModule?.items) {
-    const duplicateIndex = currentModule.items.findIndex(
-      (item, index) => index !== currentItemIndex && item.itemId === itemId
-    );
+        // Check for duplicates within the same module
+        const currentModule = modules[moduleIndex];
+        if (currentModule?.items) {
+            const duplicateIndex = currentModule.items.findIndex(
+                (item, index) => index !== currentItemIndex && item.itemId === itemId
+            );
 
-    if (duplicateIndex !== -1) {
-      return { isValid: false, message: "Duplicate ID in same module" };
-    }
-  }
+            if (duplicateIndex !== -1) {
+                return { isValid: false, message: "Duplicate ID in same module" };
+            }
+        }
 
-  return { isValid: true, message: "✓ Available" };
-};
+        return { isValid: true, message: "✓ Available" };
+    };
 
     const handleIdChange = (type, moduleIndex, itemIndex, value) => {
         const formatted = formatUrlAdIds(value);
-        
+
         if (type === 'module') {
             // Update module ID directly
-            setModules(prevModules => 
-                prevModules.map((module, idx) => 
+            setModules(prevModules =>
+                prevModules.map((module, idx) =>
                     idx === moduleIndex ? { ...module, moduleId: formatted } : module
                 )
             );
-            
+
             // Validate immediately
             const validation = validateModuleId(formatted, moduleIndex);
             setIdValidation(prev => ({
@@ -112,12 +112,12 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
             }));
         } else if (type === 'item') {
             // Update item ID directly
-            setModules(prevModules => 
+            setModules(prevModules =>
                 prevModules.map((module, modIdx) => {
                     if (modIdx === moduleIndex) {
                         return {
                             ...module,
-                            items: module.items.map((item, itmIdx) => 
+                            items: module.items.map((item, itmIdx) =>
                                 itmIdx === itemIndex ? { ...item, itemId: formatted } : item
                             )
                         };
@@ -125,7 +125,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                     return module;
                 })
             );
-            
+
             // Validate immediately
             const validation = validateItemId(formatted, moduleIndex, itemIndex);
             setIdValidation(prev => ({
@@ -140,7 +140,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
 
     const handleIdBlur = (type, moduleIndex, itemIndex, value) => {
         if (!value || value.trim() === '') return;
-        
+
         if (type === 'module') {
             const validation = validateModuleId(value, moduleIndex);
             setIdValidation(prev => ({
@@ -150,7 +150,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                     [`${moduleIndex}`]: validation
                 }
             }));
-            
+
             if (!validation.isValid) {
                 toast.error(`Module ID error: ${validation.message}`);
             }
@@ -163,7 +163,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                     [`${moduleIndex}-${itemIndex}`]: validation
                 }
             }));
-            
+
             if (!validation.isValid) {
                 toast.error(`Item ID error: ${validation.message}`);
             }
@@ -238,14 +238,14 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
     // Form submission with ID validation
     const validateAllIds = () => {
         const errors = [];
-        
+
         // Validate module IDs
         modules.forEach((module, moduleIndex) => {
             const validation = validateModuleId(module.moduleId, moduleIndex);
             if (!validation.isValid) {
                 errors.push(`Module ${moduleIndex + 1}: ${validation.message}`);
             }
-            
+
             // Validate item IDs
             module.items.forEach((item, itemIndex) => {
                 const itemValidation = validateItemId(item.itemId, moduleIndex, itemIndex);
@@ -254,7 +254,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                 }
             });
         });
-        
+
         return errors;
     };
 
@@ -555,6 +555,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
         const updatedItem = {
             ...currentItem,
             url: fileData,
+            isEncrypted: currentItem.status === 'private',
             duration: fileData.duration && fileData.duration > 0 ? fileData.duration : currentItem.duration || ''
         };
 
@@ -699,14 +700,14 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
             }
         }
     }, []);
-    
+
     const handleBeforeUnload = (e) => {
         if (!formSubmitted) {
             e.preventDefault();
             e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
         }
     };
-    
+
     useEffect(() => {
         window.addEventListener("beforeunload", handleBeforeUnload);
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -725,7 +726,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
 
     const renderQuizItem = (moduleIndex, itemIndex, item) => {
         const itemValidation = getItemValidation(moduleIndex, itemIndex);
-        
+
         return (
             <div key={`quiz-${moduleIndex}-${itemIndex}`} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="flex justify-between items-center mb-3">
@@ -749,13 +750,12 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                                     onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
                                     onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
                                     placeholder="item-xyz123"
-                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                                        itemValidation
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${itemValidation
                                             ? itemValidation.isValid
                                                 ? 'border-green-500 bg-green-50'
                                                 : 'border-red-500 bg-red-50'
                                             : 'border-gray-300'
-                                    }`}
+                                        }`}
                                 />
                             </div>
                             {itemValidation && (
@@ -813,7 +813,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
 
     const renderTextInstructionItem = (moduleIndex, itemIndex, item) => {
         const itemValidation = getItemValidation(moduleIndex, itemIndex);
-        
+
         return (
             <div key={`text-${moduleIndex}-${itemIndex}`} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="flex justify-between items-center mb-3">
@@ -837,13 +837,12 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                                     onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
                                     onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
                                     placeholder="item-xyz123"
-                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                                        itemValidation
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${itemValidation
                                             ? itemValidation.isValid
                                                 ? 'border-green-500 bg-green-50'
                                                 : 'border-red-500 bg-red-50'
                                             : 'border-gray-300'
-                                    }`}
+                                        }`}
                                 />
                             </div>
                             {itemValidation && (
@@ -938,13 +937,12 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                                     onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
                                     onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
                                     placeholder="item-xyz123"
-                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                                        itemValidation
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${itemValidation
                                             ? itemValidation.isValid
                                                 ? 'border-green-500 bg-green-50'
                                                 : 'border-red-500 bg-red-50'
                                             : 'border-gray-300'
-                                    }`}
+                                        }`}
                                 />
                             </div>
                             {itemValidation && (
@@ -1092,13 +1090,12 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                                     onChange={(e) => handleIdChange('item', moduleIndex, itemIndex, e.target.value)}
                                     onBlur={(e) => handleIdBlur('item', moduleIndex, itemIndex, e.target.value)}
                                     placeholder="item-xyz123"
-                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                                        itemValidation
+                                    className={`text-xs w-28 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${itemValidation
                                             ? itemValidation.isValid
                                                 ? 'border-green-500 bg-green-50'
                                                 : 'border-red-500 bg-red-50'
                                             : 'border-gray-300'
-                                    }`}
+                                        }`}
                                 />
                             </div>
                             {itemValidation && (
@@ -1698,7 +1695,7 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                     <div className="space-y-6">
                         {modules.map((module, moduleIndex) => {
                             const moduleValidation = getModuleValidation(moduleIndex);
-                            
+
                             return (
                                 <div key={`module-${moduleIndex}`} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
                                     <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
@@ -1724,13 +1721,12 @@ const validateItemId = (itemId, moduleIndex, currentItemIndex) => {
                                                             onChange={(e) => handleIdChange('module', moduleIndex, null, e.target.value)}
                                                             onBlur={(e) => handleIdBlur('module', moduleIndex, null, e.target.value)}
                                                             placeholder="module-xyz123"
-                                                            className={`text-xs w-32 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                                                                moduleValidation
+                                                            className={`text-xs w-32 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${moduleValidation
                                                                     ? moduleValidation.isValid
                                                                         ? 'border-green-500 bg-green-50'
                                                                         : 'border-red-500 bg-red-50'
                                                                     : 'border-gray-300'
-                                                            }`}
+                                                                }`}
                                                         />
                                                         {moduleValidation && (
                                                             <span className={`text-xs ${moduleValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>

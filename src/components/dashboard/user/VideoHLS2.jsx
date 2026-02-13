@@ -11,7 +11,7 @@ export default function VideoHLS2({
     const videoRef = useRef(null);
     const hlsRef = useRef(null);
     const containerRef = useRef(null);
-
+console.log(src)
     // Timers & state refs
     const idleTimerRef = useRef(null);
     const lastProgressEmitRef = useRef(0);

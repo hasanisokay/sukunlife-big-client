@@ -125,6 +125,21 @@ export const getStreamData = async (courseId, filename) => {
     if (!response.ok) {
       throw new Error("Failed to get stream data.");
     }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error getting stream data:", error);
+    return null;
+  }
+};
+export const getPublicStreamData = async (courseId, filename) => {
+  try {
+    const response = await fetch(
+      `${SERVER}/api/public/course/stream-url/${courseId}/${filename}`,
+    );
+    if (!response.ok) {
+      throw new Error("Failed to get stream data.");
+    }
 
     const data = await response.json();
     return data;
