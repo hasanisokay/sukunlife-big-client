@@ -744,7 +744,7 @@ export default function VideoHLS2({
 
             {/* Watermark overlay to discourage recording */}
             <div className="absolute top-4 right-4 text-white/30 text-xs font-mono pointer-events-none z-30 select-none">
-                © Protected Content
+                {/* © Protected Content */}
             </div>
 
             {isLoading && !error && (

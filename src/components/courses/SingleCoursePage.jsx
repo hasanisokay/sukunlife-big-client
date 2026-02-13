@@ -19,6 +19,7 @@ import BlogContent from '../blogs/BlogContnet';
 import { SERVER } from '@/constants/urls.mjs';
 
 const SingleCoursePage = ({ course, enrollData }) => {
+ console.log(course)
     const [expandedModule, setExpandedModule] = useState(null);
     const [videoModal, setVideoModal] = useState({ isOpen: false, url: '' });
     const [itemAddedToCart, setItemAddedToCart] = useState(false);

@@ -19,7 +19,6 @@ import {
   LockClosedSVG
 } from '../svg/AdditionalSVGS';
 import { getFileToken, getStreamData, updateCourseProgress } from '@/server-functions/course-related/updateCourseProgress.mjs';
-import VideoHLS from '../dashboard/user/VideoHLS';
 import VideoHLS2 from '../dashboard/user/VideoHLS2';
 
 const CourseLoader = () => (
