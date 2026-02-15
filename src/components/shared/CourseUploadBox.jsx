@@ -35,166 +35,165 @@ const CourseUploadBox = ({
   const toastId = useRef(null);
 
   // --- BACKGROUND POLLING LOGIC ---
-  useEffect(() => {
-    let pollInterval;
+useEffect(() => {
+  let pollInterval;
+  
+  if ((processingStatus === 'queued' || processingStatus === 'processing') && videoId) {
     
-    // Only poll if we are waiting for the server (queued or actively processing)
-    if ((processingStatus === 'queued' || processingStatus === 'processing') && videoId) {
-      
-      // Ensure toast exists
-      if (!toastId.current) {
-        toastId.current = toast.loading("Checking video status...");
-      }
+    // Create NEW toast for background processing (don't reuse upload toast)
+    if (!toastId.current) {
+      toastId.current = toast.info("Checking video status...", {
+        autoClose: false,
+        isLoading: true,
+      });
+    }
 
-      pollInterval = setInterval(async () => {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+    pollInterval = setInterval(async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-          const res = await fetch(
-            `https://upload.sukunlife.com/api/admin/course/video-status/${videoId}`,
-            {
-              credentials: "include",
-              signal: controller.signal,
-            }
-          ).finally(() => clearTimeout(timeoutId));
+        const res = await fetch(
+          `https://upload.sukunlife.com/api/admin/course/video-status/${videoId}`,
+          {
+            credentials: "include",
+            signal: controller.signal,
+          }
+        ).finally(() => clearTimeout(timeoutId));
 
-          if (!res.ok) return; // Fail silently, retry next tick
+        if (!res.ok) return;
 
-          const statusData = await res.json();
+        const statusData = await res.json();
 
-          // --- HANDLE QUEUED STATUS ---
-          if (statusData.status === "queued") {
-            setProcessingStatus('queued');
-            
-            // Update Queue Data
-            setQueueData({
-              position: statusData.queuePosition,
-              total: statusData.totalInQueue,
-              waitTime: statusData.waitTime
-            });
+        if (statusData.status === "queued") {
+          setProcessingStatus('queued');
+          setQueueData({
+            position: statusData.queuePosition,
+            total: statusData.totalInQueue,
+            waitTime: statusData.waitTime
+          });
 
-            // Sync Toast with Queue Status
+          toast.update(toastId.current, {
+            render: `Queued: Position ${statusData.queuePosition} of ${statusData.totalInQueue}`,
+            type: "warning",
+            isLoading: true,
+          });
+        }
+
+        else if (statusData.status === "processing") {
+          setProcessingStatus('processing');
+          
+          if (statusData.percent) {
+            setProcessingProgress(statusData.percent);
+
             toast.update(toastId.current, {
-              render: `Queued: Position ${statusData.queuePosition} of ${statusData.totalInQueue}`,
-              type: "warning", // Yellow for waiting
+              render: `Processing video: ${statusData.percent}%`,
+              type: "info",
               isLoading: true,
+              progress: statusData.percent / 100,
             });
           }
-
-          // --- HANDLE PROCESSING STATUS ---
-          else if (statusData.status === "processing") {
-            setProcessingStatus('processing');
-            
-            if (statusData.percent) {
-              setProcessingProgress(statusData.percent);
-
-              // Sync Toast with Processing Status
-              toast.update(toastId.current, {
-                render: `Processing video: ${statusData.percent}%`,
-                type: "info", // Blue for active work
-                isLoading: true,
-                progress: statusData.percent / 100,
-              });
-            }
-          }
-
-          // --- HANDLE COMPLETED STATUS ---
-          if (statusData.status === "completed" || statusData.status === "ready") {
-            clearInterval(pollInterval);
-            setProcessingStatus('completed');
-            
-            toast.update(toastId.current, {
-              render: `🎉 Video processing completed!`,
-              type: "success",
-              isLoading: false,
-              autoClose: 5000,
-            });
-
-            setFileInfo((prev) => ({
-              ...prev,
-              duration: statusData.duration || prev.duration,
-              resolutions: statusData.resolutions || [],
-              status: "ready"
-            }));
-          }
-
-          // --- HANDLE FAILED STATUS ---
-          if (statusData.status === "failed") {
-            clearInterval(pollInterval);
-            setProcessingStatus('failed');
-            
-            toast.update(toastId.current, {
-              render: `❌ Video processing failed: ${statusData.error}`,
-              type: "error",
-              isLoading: false,
-              autoClose: 5000,
-            });
-          }
-
-        } catch (error) {
-          console.warn("Polling error:", error.message);
-          // Don't stop polling on network hiccups
         }
-      }, 3000); // Poll every 3 seconds
-    }
 
-    return () => {
-      if (pollInterval) clearInterval(pollInterval);
-    };
-  }, [processingStatus, videoId]);
+        if (statusData.status === "completed" || statusData.status === "ready") {
+          clearInterval(pollInterval);
+          setProcessingStatus('completed');
+          
+          toast.update(toastId.current, {
+            render: `🎉 Video ready!`,
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+          });
 
-
-  const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
-    if (!selectedFile) return;
-
-    // Reset States
-    setFile(selectedFile);
-    setFileInfo(null);
-    setLoading(true);
-    setProcessingStatus('uploading');
-    setUploadProgress(0);
-    setProcessingProgress(0);
-    
-    try {
-      // 1. Upload File
-      const result = await uploadPrivateContent(
-        selectedFile, 
-        status, 
-        estimatedDuration,
-        (percent) => {
-            setUploadProgress(percent);
+          setFileInfo((prev) => ({
+            ...prev,
+            duration: statusData.duration || prev.duration,
+            resolutions: statusData.resolutions || [],
+            status: "ready"
+          }));
         }
-      );
 
-      // 2. Upload Finished. Determine Next State.
-      // Note: We assume 'processing' initially. The polling logic immediately checks
-      // if it's 'queued' or 'processing'.
-      if (result.processingStatus === 'processing') {
-        // We start polling, which will correctly detect "queued" or "processing"
-        setProcessingStatus('queued'); // Start with queued assumption, updates immediately
-        setVideoId(result.videoId);
-        
-        setFileInfo({
-            ...result,
-            status: "processing"
-        });
+        if (statusData.status === "failed") {
+          clearInterval(pollInterval);
+          setProcessingStatus('failed');
+          
+          toast.update(toastId.current, {
+            render: `❌ Processing failed: ${statusData.error}`,
+            type: "error",
+            isLoading: false,
+            autoClose: 5000,
+          });
+        }
 
-      } else {
-        setProcessingStatus('completed');
-        setFileInfo({ ...result, status: "ready" });
-        onUpload(result);
+      } catch (error) {
+        console.warn("Polling error:", error.message);
       }
+    }, 3000);
+  }
 
-    } catch (err) {
-      console.error("Upload failed:", err);
-      setProcessingStatus('failed');
-      toast.error(err.message || "Upload failed");
-    } finally {
-      setLoading(false);
-    }
+  return () => {
+    if (pollInterval) clearInterval(pollInterval);
   };
+}, [processingStatus, videoId]);
+
+
+const handleFileChange = async (e) => {
+  const selectedFile = e.target.files[0];
+  if (!selectedFile) return;
+
+  // Reset States
+  setFile(selectedFile);
+  setFileInfo(null);
+  setLoading(true);
+  setProcessingStatus('uploading');
+  setUploadProgress(0);
+  setProcessingProgress(0);
+  
+  try {
+    // 1. Upload File
+    const result = await uploadPrivateContent(
+      selectedFile, 
+      status, 
+      estimatedDuration,
+      (percent) => {
+          setUploadProgress(percent);
+      }
+    );
+
+    // 2. Upload Finished - IMMEDIATELY call onUpload so form can proceed
+    onUpload(result); // ✅ Call this immediately for ALL files
+
+    // 3. Determine Next State for UI only
+    if (result.processingStatus === 'processing') {
+      // Start background polling (just for UI status)
+      setProcessingStatus('queued');
+      setVideoId(result.videoId);
+      
+      setFileInfo({
+          ...result,
+          status: "processing"
+      });
+
+      // Show a NEW toast just for background status tracking
+      toastId.current = toast.info("Video processing in background...", {
+        autoClose: false,
+        isLoading: true,
+      });
+
+    } else {
+      setProcessingStatus('completed');
+      setFileInfo({ ...result, status: "ready" });
+    }
+
+  } catch (err) {
+    console.error("Upload failed:", err);
+    setProcessingStatus('failed');
+    toast.error(err.message || "Upload failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 Bytes';

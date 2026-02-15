@@ -68,7 +68,7 @@ const uploadPrivateContent = async (
     xhr.onload = () => {
       try {
         const data = JSON.parse(xhr.responseText);
-        
+
         if (xhr.status < 200 || xhr.status >= 300) {
           toast.update(uploadToast, {
             render: `❌ Upload failed: ${data?.error || "Server error"}`,
@@ -83,7 +83,9 @@ const uploadPrivateContent = async (
         // We do NOT wait for processing here. We let the component handle the next steps.
         const isVideo =
           file.type.includes("video") ||
-          file.name.match(/\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg|3gp)$/i);
+          file.name.match(
+            /\.(mp4|mov|avi|mkv|webm|flv|wmv|m4v|mpg|mpeg|3gp)$/i,
+          );
 
         const result = {
           success: true,
@@ -95,29 +97,26 @@ const uploadPrivateContent = async (
           size: data.size || file.size,
           type: status,
           duration: estimatedDuration || 0,
-          // Tell the component what state we are in
-          processingStatus: isVideo ? "processing" : "completed", 
+          processingStatus: isVideo ? "processing" : "completed",
         };
 
-        // Update toast to indicate upload phase is done
         if (isVideo) {
           toast.update(uploadToast, {
-            render: `✅ Upload complete. Starting video processing...`,
-            type: "info",
-            isLoading: true,
-            autoClose: false, // Keep alive for polling updates
+            render: `✅ Upload complete. Processing in background...`,
+            type: "success",
+            isLoading: false,
+            autoClose: 3000, 
           });
         } else {
           toast.update(uploadToast, {
             render: `✅ File uploaded successfully`,
             type: "success",
             isLoading: false,
-            autoClose: 4000,
+            autoClose: 3000,
           });
         }
 
         resolve(result);
-
       } catch (err) {
         toast.update(uploadToast, {
           render: `Failed to parse server response`,
@@ -139,12 +138,12 @@ const uploadPrivateContent = async (
 
     xhr.timeout = 60 * 60 * 1000; // 1 hour timeout
     xhr.ontimeout = () => {
-        toast.update(uploadToast, {
-            render: `Upload timeout (1hr limit).`,
-            type: "error",
-            isLoading: false,
-        });
-        reject(new Error("Upload timeout"));
+      toast.update(uploadToast, {
+        render: `Upload timeout (1hr limit).`,
+        type: "error",
+        isLoading: false,
+      });
+      reject(new Error("Upload timeout"));
     };
 
     xhr.send(formData);
