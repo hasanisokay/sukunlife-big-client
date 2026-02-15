@@ -582,37 +582,42 @@ const EditCourse = ({ course }) => {
         toast.info(`Cleared ${type} fields`);
     };
 
-    const handleVideoUploadComplete = (moduleIndex, itemIndex, fileData) => {
-        const currentModule = modules[moduleIndex];
-        if (!currentModule) return;
+const handleVideoUploadComplete = (moduleIndex, itemIndex, fileData) => {
+    const currentModule = modules[moduleIndex];
+    if (!currentModule) return;
 
-        const currentItem = currentModule.items[itemIndex];
-        if (!currentItem) return;
+    const currentItem = currentModule.items[itemIndex];
+    if (!currentItem) return;
 
-        const updatedItem = {
-            ...currentItem,
-            url: fileData,
-            isEncrypted: currentItem?.isEncrypted ||currentItem.status === 'private',
-            duration: fileData.duration && fileData.duration > 0 ? fileData.duration : currentItem.duration || ''
-        };
-
-        const updatedItems = currentModule.items.map((item, idx) =>
-            idx === itemIndex ? updatedItem : item
-        );
-
-        const updatedModule = {
-            ...currentModule,
-            items: updatedItems,
-            duration: calculateModuleDuration(updatedItems)
-        };
-
-        const updatedModules = modules.map((module, idx) =>
-            idx === moduleIndex ? updatedModule : module
-        );
-
-        setModules(updatedModules);
-        toast.success(`Video "${currentItem.title || 'Untitled'}" updated successfully!`);
+    // Check if the file has changed by comparing filenames
+    const fileChanged = currentItem.url?.filename !== fileData.filename;
+    
+    const updatedItem = {
+        ...currentItem,
+        url: fileData,
+        isEncrypted: fileChanged 
+            ? currentItem.status === 'private' 
+            : (currentItem.isEncrypted ?? currentItem.status === 'private'),
+        duration: fileData.duration && fileData.duration > 0 ? fileData.duration : currentItem.duration || ''
     };
+
+    const updatedItems = currentModule.items.map((item, idx) =>
+        idx === itemIndex ? updatedItem : item
+    );
+
+    const updatedModule = {
+        ...currentModule,
+        items: updatedItems,
+        duration: calculateModuleDuration(updatedItems)
+    };
+
+    const updatedModules = modules.map((module, idx) =>
+        idx === moduleIndex ? updatedModule : module
+    );
+
+    setModules(updatedModules);
+    toast.success(`Video "${currentItem.title || 'Untitled'}" updated successfully!`);
+};
 
     const handleFileUploadComplete = (moduleIndex, itemIndex, fileData) => {
         const currentModule = modules[moduleIndex];
