@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const Footer = () => {
   const [isCoursePage, setIsCoursePage] = useState(false)
+  const [isDashboardPage, setIsDashboardPage] = useState(false)
   const currentPath = usePathname();
   useEffect(() => {
     if (currentPath.startsWith("/courses/")) {
@@ -14,8 +15,11 @@ const Footer = () => {
         setIsCoursePage(true)
       } else setIsCoursePage(false)
     }
+    if (currentPath.startsWith("/dashboard")) {
+      setIsDashboardPage(true)
+    }
   }, [currentPath])
-  if (isCoursePage) return null;
+  if (isCoursePage || isDashboardPage) return null;
   return (
     <footer className="bg-[#2B2B2B] text-white px-6 md:px-16 py-10 text-sm">
       <div className=" mx-auto grid grid-cols-1 md:grid-cols-5 gap-10">
