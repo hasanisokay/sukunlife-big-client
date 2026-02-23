@@ -17,6 +17,7 @@ const AppointmentSchedulePage = () => {
   const [newBreak, setNewBreak] = useState({ start: "", end: "" });
   const [consultantAvailability, setConsultantAvailability] = useState({});
   const [selectedConsultants, setSelectedConsultants] = useState([]);
+  const [consultantSpecificTimes, setConsultantSpecificTimes] = useState({}); // Format: { "consultantName": ["10:00", "15:00"] }
   const [generatedSlots, setGeneratedSlots] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,11 +46,22 @@ const AppointmentSchedulePage = () => {
 
   // Toggle consultant selection for all dates
   const toggleConsultant = (consultant) => {
-    setSelectedConsultants((prev) =>
-      prev.includes(consultant)
+    setSelectedConsultants((prev) => {
+      const isRemoving = prev.includes(consultant);
+      
+      // If removing, also clear their specific times
+      if (isRemoving) {
+        setConsultantSpecificTimes(prevTimes => {
+          const newTimes = { ...prevTimes };
+          delete newTimes[consultant];
+          return newTimes;
+        });
+      }
+      
+      return isRemoving
         ? prev.filter((c) => c !== consultant)
-        : [...prev, consultant],
-    );
+        : [...prev, consultant];
+    });
   };
 
   // Generate time slots with session duration and gap
@@ -141,6 +153,18 @@ const AppointmentSchedulePage = () => {
           // Get available consultants for this specific date-time
           const availableConsultants = selectedConsultants.filter(
             (consultant) => {
+              // Check if consultant has specific time restrictions
+              const specificTimes = consultantSpecificTimes[consultant];
+              
+              // If consultant has specific times set, check if this slot's start time is in their available times
+              if (specificTimes && specificTimes.length > 0) {
+                const isInSpecificTimes = specificTimes.includes(slot.start);
+                if (!isInSpecificTimes) {
+                  return false; // Consultant not available at this time
+                }
+              }
+              
+              // Check slot-specific availability (from edit mode toggles)
               const specificAvailability =
                 consultantAvailability[`${consultant}-${date}-${slot.start}`];
               return specificAvailability !== false; // Available unless explicitly set to false
@@ -304,6 +328,7 @@ const AppointmentSchedulePage = () => {
         });
         setSelectedConsultants([]);
         setConsultantAvailability({});
+        setConsultantSpecificTimes({});
         setGeneratedSlots([]);
         setEditMode(false);
         setFilterDate("");
@@ -500,7 +525,7 @@ const AppointmentSchedulePage = () => {
               {/* Break Periods */}
               <div className="mt-6">
                 <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Break Periods (Sessions won&lsquo;t be created during these times)
+                  Break Periods (Sessions won&apos;t be created during these times)
                 </label>
                 <div className="space-y-3">
                   {timeSettings.breaks.map((breakPeriod) => (
@@ -611,6 +636,128 @@ const AppointmentSchedulePage = () => {
                 ))}
               </div>
             </div>
+
+            {/* Consultant-Specific Time Availability */}
+            {selectedConsultants.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-lg shadow-indigo-100/50 p-6 border border-indigo-100">
+                <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5 text-indigo-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Set Specific Time Availability (Optional)
+                </h2>
+                <p className="text-sm text-slate-600 mb-4">
+                  By default, consultants are available for all generated time slots. 
+                  Select specific times below to restrict a consultant&apos;s availability.
+                </p>
+
+                {selectedConsultants.map((consultant) => {
+                  // Generate all possible time slots for selection
+                  const allPossibleSlots = generateTimeSlots(
+                    timeSettings.startTime,
+                    timeSettings.endTime,
+                    timeSettings.sessionDuration,
+                    timeSettings.gapBetweenSessions,
+                    timeSettings.breaks,
+                  );
+                  
+                  const consultantTimes = consultantSpecificTimes[consultant] || [];
+
+                  return (
+                    <div key={consultant} className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-slate-800">{consultant}</h3>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              // Select all times
+                              setConsultantSpecificTimes(prev => ({
+                                ...prev,
+                                [consultant]: allPossibleSlots.map(slot => slot.start)
+                              }));
+                            }}
+                            className="text-xs px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-all"
+                          >
+                            Select All
+                          </button>
+                          <button
+                            onClick={() => {
+                              // Clear all times (back to default - available for all)
+                              setConsultantSpecificTimes(prev => {
+                                const newTimes = { ...prev };
+                                delete newTimes[consultant];
+                                return newTimes;
+                              });
+                            }}
+                            className="text-xs px-3 py-1.5 bg-slate-200 text-slate-700 rounded hover:bg-slate-300 transition-all"
+                          >
+                            Clear (Available All Times)
+                          </button>
+                        </div>
+                      </div>
+
+                      {consultantTimes.length === 0 ? (
+                        <p className="text-xs text-slate-500 italic">Available for all generated time slots</p>
+                      ) : (
+                        <p className="text-xs text-emerald-700 font-medium mb-2">
+                          Available for {consultantTimes.length} specific time slot(s)
+                        </p>
+                      )}
+
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mt-3">
+                        {allPossibleSlots.map((slot, idx) => {
+                          const isSelected = consultantTimes.includes(slot.start);
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                setConsultantSpecificTimes(prev => {
+                                  const current = prev[consultant] || [];
+                                  const newTimes = isSelected
+                                    ? current.filter(t => t !== slot.start)
+                                    : [...current, slot.start].sort();
+                                  
+                                  // If all times are selected, just remove the entry (default behavior)
+                                  if (newTimes.length === allPossibleSlots.length) {
+                                    const updated = { ...prev };
+                                    delete updated[consultant];
+                                    return updated;
+                                  }
+                                  
+                                  return {
+                                    ...prev,
+                                    [consultant]: newTimes
+                                  };
+                                });
+                              }}
+                              className={`
+                                text-xs py-2 px-2 rounded-md font-medium transition-all border
+                                ${isSelected
+                                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                  : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'
+                                }
+                              `}
+                            >
+                              {slot.start}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Generate Button */}
             <button
