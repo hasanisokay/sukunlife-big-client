@@ -2,10 +2,9 @@ import hostname from "@/constants/hostname.mjs";
 import { websiteName } from "@/constants/names.mjs";
 import aboutUsCover from "@/../public/images/sukunlife.jpg";
 import AboutUs from "@/components/about-us/AboutUs";
-import MainLoading from "@/components/shared/MainLoading";
 
 const page = async () => {
-  return <MainLoading />
+
   return (
     <>
       <AboutUs />
