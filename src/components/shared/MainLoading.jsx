@@ -1,5 +1,5 @@
 import Image from "next/image";
-import logoSvg from "./logo-big.svg";
+import logoSvg from "./logo-big.png";
 
 export default function MainLoading() {
 
