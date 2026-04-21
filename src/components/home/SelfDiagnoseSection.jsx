@@ -56,7 +56,7 @@ const SelfDiagnosisSection = () => {
               />
 
               {/* Overlay on hover */}
-              <div className="absolute inset-0 bg-[#63953A99] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-[#1f83b099] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               {/* Title - Moves to center on hover */}
               <div className="absolute bottom-2 left-2 right-2 text-white text-sm sm:text-base font-semibold transition-all duration-300 group-hover:bottom-1/2 group-hover:translate-y-1/2 text-center">

@@ -39,7 +39,7 @@ const BlogTagPage = ({ b, page, selectedTag, tags }) => {
                       ${
                         selectedTag === tag
                           ? "bg-green text-white shadow-md scale-105  hover:shadow-lg"
-                          : "hover:bg-[#63953a] hover:text-white "
+                          : "hover:bg-[#1f83b0] hover:text-white "
                       }
                     `}
                   >

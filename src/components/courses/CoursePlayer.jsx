@@ -666,7 +666,7 @@ const CoursePlayer = ({
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-900">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#63953a] mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1f83b0] mx-auto mb-4"></div>
                     <p className="text-white">Loading video...</p>
                   </div>
                 </div>
@@ -981,7 +981,7 @@ const CoursePlayer = ({
                 <button
                   key={idx}
                   onClick={() => handleQuizSubmit(idx)}
-                  className="w-full p-4 rounded-xl text-left bg-gray-50 dark:bg-gray-900 hover:bg-[#63953a]/5
+                  className="w-full p-4 rounded-xl text-left bg-gray-50 dark:bg-gray-900 hover:bg-[#1f83b0]/5
  transition-all duration-200 border-2 border-transparent hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5 "
                 >
                   <div className="flex items-center">
@@ -1044,7 +1044,7 @@ const CoursePlayer = ({
           </Link>
 
           <div className="flex-1 px-4 leading-tight">
-            <div className="text-[11px] uppercase tracking-wide text-[#63953a] font-semibold truncate">
+            <div className="text-[11px] uppercase tracking-wide text-[#1f83b0] font-semibold truncate">
               {currentModule?.title || `Module ${currentModule?.order || 1}`}
             </div>
 
@@ -1072,7 +1072,7 @@ const CoursePlayer = ({
                   </div>
                   <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#4f7a2e] via-[#63953a] to-[#7bbf3d]
+                      className="h-full bg-gradient-to-r from-[#4f7a2e] via-[#1f83b0] to-[#7bbf3d]
  shadow-[0_0_8px_rgba(99,149,58,0.6)] transition-all duration-500 ease-out rounded-full"
                       style={{ width: `${overallProgress}%` }}
                     ></div>
@@ -1098,9 +1098,9 @@ const CoursePlayer = ({
                         aria-expanded={expandedModules.has(module.moduleId)}
                       >
                         <div className="flex items-center flex-1">
-                          <div className="w-9 h-9 rounded-lg bg-[#63953a]/10 backdrop-blur-sm border border-[#63953a]/20
+                          <div className="w-9 h-9 rounded-lg bg-[#1f83b0]/10 backdrop-blur-sm border border-[#1f83b0]/20
  dark:from-primary/30 dark:to-primary/20 mr-3 flex items-center justify-center">
-                            <span className="font-bold text-sm text-[#63953a]">
+                            <span className="font-bold text-sm text-[#1f83b0]">
                               {module.order}
                             </span>
                           </div>
@@ -1135,7 +1135,7 @@ const CoursePlayer = ({
                                   onClick={() => setIsTransitioning(true)}
                                   className={`relative flex items-center px-4 py-3 rounded-lg transition-all duration-200 group
 ${isActive
-                                      ? 'bg-[#63953a]/10 shadow-[0_0_0_1px_rgba(99,149,58,0.15)]'
+                                      ? 'bg-[#1f83b0]/10 shadow-[0_0_0_1px_rgba(99,149,58,0.15)]'
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                     }`}
 
@@ -1159,7 +1159,7 @@ ${isActive
                                         </span>
                                         {isActive && (
                                           <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
-                   bg-[#63953a] rounded-r-full shadow-[0_0_10px_rgba(99,149,58,0.7)]" />
+                   bg-[#1f83b0] rounded-r-full shadow-[0_0_10px_rgba(99,149,58,0.7)]" />
                                         )}
 
                                       </div>
@@ -1328,7 +1328,7 @@ ${isActive
                                   //   } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   className={`relative flex items-center px-4 py-3 text-left transition-all rounded-lg
 ${isActive
-                                      ? 'bg-[#63953a]/10'
+                                      ? 'bg-[#1f83b0]/10'
                                       : 'hover:bg-gray-100 dark:hover:bg-gray-800'
                                     } ${!accessibility.accessible ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   aria-disabled={!accessibility.accessible}
@@ -1351,7 +1351,7 @@ ${isActive
                                         <span className="capitalize">{item.type}</span>
                                         {isActive && (
                                           <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
-                   bg-[#63953a] rounded-r-full 
+                   bg-[#1f83b0] rounded-r-full 
                    shadow-[0_0_10px_rgba(99,149,58,0.7)]" />
                                         )}
 

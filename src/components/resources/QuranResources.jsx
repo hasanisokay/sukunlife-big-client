@@ -80,7 +80,7 @@ const QuranResources = ({ quranList = [] }) => {
                         href={quran.readLink}
                         target="_blank"
                         className="flex-1 px-4 py-2.5 rounded-full
-                                 bg-[#63953a] text-white
+                                 bg-[#1f83b0] text-white
                                  font-semibold text-sm text-center
                                  hover:bg-[#4f7e2f] transition"
                       >
@@ -93,10 +93,10 @@ const QuranResources = ({ quranList = [] }) => {
                         href={quran.listenLink}
                         target="_blank"
                         className="flex-1 px-4 py-2.5 rounded-full
-                                 border border-[#63953a]
-                                 text-[#63953a]
+                                 border border-[#1f83b0]
+                                 text-[#1f83b0]
                                  font-semibold text-sm text-center
-                                 hover:bg-[#63953a] hover:text-white
+                                 hover:bg-[#1f83b0] hover:text-white
                                  transition"
                       >
                         Listen

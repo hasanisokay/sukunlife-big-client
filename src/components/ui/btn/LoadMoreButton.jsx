@@ -19,7 +19,7 @@ const LoadMoreButton = ({ page, noSkip =false }) => {
         <div className="text-center my-5">
             <button
                 onClick={handleClick}
-                className="px-6 py-2 text-sm font-semibold text-white rounded-full bg-[#63953a] focus:outline-none  transition duration-150 ease-in-out"
+                className="px-6 py-2 text-sm font-semibold text-white rounded-full bg-[#1f83b0] focus:outline-none  transition duration-150 ease-in-out"
             >
                 Load More
             </button>

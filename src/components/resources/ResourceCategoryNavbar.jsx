@@ -84,7 +84,7 @@ const ResourceCategoryNavbar = ({heading, categories}) => {
       <div className="overflow-x-auto">
         <div
           ref={listRef}
-          className="flex gap-6 md:gap-8 border-b-2 border-[#63953a] pb-2 px-4 whitespace-nowrap w-max mx-auto"
+          className="flex gap-6 md:gap-8 border-b-2 border-[#1f83b0] pb-2 px-4 whitespace-nowrap w-max mx-auto"
         >
           {categories.map((cat) => (
             <button

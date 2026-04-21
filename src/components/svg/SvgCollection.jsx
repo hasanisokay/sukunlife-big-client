@@ -532,7 +532,7 @@ export const AppointmentSVG = ({ color, width, height, classes }) => {
   </svg>
 };
 
-export function AudioIcon({ size = 28, color = "#63953a" }) {
+export function AudioIcon({ size = 28, color = "#1f83b0" }) {
   return (
     <svg
       width={size}
@@ -551,7 +551,7 @@ export function AudioIcon({ size = 28, color = "#63953a" }) {
   );
 }
 
-export function QuranIcon({ size = 28, color = "#63953a" }) {
+export function QuranIcon({ size = 28, color = "#1f83b0" }) {
   return (
     <svg
       width={size}
@@ -575,7 +575,7 @@ export function QuranIcon({ size = 28, color = "#63953a" }) {
   );
 }
 
-export function VideoIcon({ size = 28, color = "#63953a" }) {
+export function VideoIcon({ size = 28, color = "#1f83b0" }) {
   return (
     <svg
       width={size}
@@ -592,7 +592,7 @@ export function VideoIcon({ size = 28, color = "#63953a" }) {
     </svg>
   );
 }
-export function LiteratureIcon({ size = 28, color = "#63953a" }) {
+export function LiteratureIcon({ size = 28, color = "#1f83b0" }) {
   return (
     <svg
       width={size}

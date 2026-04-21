@@ -469,7 +469,7 @@ export const LockClosedOutlineSVG = ({ className = "w-5 h-5", ...props }) => (
 // Color-coded lock (uses your primary color by default)
 export const ColoredLockClosedSVG = ({ 
   className = "w-5 h-5", 
-  lockedColor = "#63953a", 
+  lockedColor = "#1f83b0", 
   unlockedColor = "#22c55e",
   isLocked = true,
   ...props 

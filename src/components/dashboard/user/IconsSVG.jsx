@@ -84,7 +84,7 @@ export const CenterPlayIcon = ({ size = 'md' }) => {
 
 // Loading Spinner
 export const LoadingSpinner = () => (
-  <svg className="animate-spin h-10 w-10 border-t-2 border-b-2 border-[#63953a]" viewBox="0 0 24 24">
+  <svg className="animate-spin h-10 w-10 border-t-2 border-b-2 border-[#1f83b0]" viewBox="0 0 24 24">
     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
   </svg>
 );

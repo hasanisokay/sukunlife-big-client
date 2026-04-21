@@ -4,8 +4,8 @@
 :root {
   --text-primary: #1f2937; /* Default text color for light mode */
   --text-secondary: #4b5563; /* Secondary text color for light mode */
-  --text-green: #63953a;
-  --bg-green: #63953a;
+  --text-green: #1f83b0;
+  --bg-green: #1f83b0;
   --text-orange: #f7ca41;
   --bg-orange: #ffc267;
   --bg-primary: #ffffff; /* Background color for light mode */
@@ -13,7 +13,7 @@
   --border-color: #d1d5db; /* Border color for light mode */
   --link-color: #2563eb; /* Link color for light mode */
   --btn-primary: #007bff; /* Primary button color for light mode */
-  --btn-submit: #27c93f; /* Submit button color for light mode */
+  --btn-submit: #01a6de; /* Submit button color for light mode */
   --btn-cancel: #dc3545; /* Cancel button color for light mode */
   --btn-outline: transparent; /* Outline button color for light mode */
   --btn-outline-border: #007bff; /* Outline button border color for light mode */
@@ -22,8 +22,8 @@
 [data-theme="dark"] {
   --text-primary: #f3f4f6; /* Default text color for dark mode */
   --text-secondary: #9ca3af; /* Secondary text color for dark mode */
-  --text-green: #63953a;
-  --bg-green: #63953a;
+  --text-green: #1f83b0;
+  --bg-green: #1f83b0;
   --text-orange: #ffc267;
   --bg-orange: #f7ca41;
   --bg-primary: #1f2937; /* Background color for dark mode */
@@ -31,7 +31,7 @@
   --border-color: #374151; /* Border color for dark mode */
   --link-color: #3b82f6; /* Link color for dark mode */
   --btn-primary: #375a7f; /* Primary button color for dark mode */
-  --btn-submit: #218838; /* Submit button color for dark mode */
+  --btn-submit: #1f83b0; /* Submit button color for dark mode */
   --btn-cancel: #c82333; /* Cancel button color for dark mode */
   --btn-outline: transparent; /* Outline button color for dark mode */
   --btn-outline-border: #375a7f; /* Outline button border color for dark mode */
@@ -100,7 +100,7 @@ body {
 
 .load-more-btn {
   padding: 0.5rem 1rem; 
-  background-color: #63953a;
+  background-color: #1f83b0;
   color: white; 
   border-radius: 9999px; 
   transition: all 0.2s ease-in-out;
@@ -164,7 +164,7 @@ body {
   outline: 0;
 }
 .btn-submit {
-  background-color: #779341;
+  background-color: #1f83b0;
   color: white;
 }
 .btn-cancel {
@@ -319,7 +319,7 @@ svg.star-svg {
 } */
 
 .btn-rounded-green {
-  background-color: #63953a;
+  background-color: #1f83b0;
   color: #ffffff;
 }
 .btn-rounded-transparent {
@@ -331,14 +331,14 @@ svg.star-svg {
   text-align: center;
 }
 .btn-rounded-transparent:hover {
-  background-color: #63953a;
+  background-color: #1f83b0;
   color: #ffffff;
   transition: all;
   transition-duration: 500ms;
 }
 .green-border {
   border-style: solid;
-  border-color: #63953a;
+  border-color: #1f83b0;
   border-width: 1px;
 }
 .nav-buttons {
@@ -438,7 +438,7 @@ svg.star-svg {
 
 .eq span {
   width: 3px;
-  background: #63953a;
+  background: #1f83b0;
   animation: bounce 1s infinite ease-in-out;
 }
 

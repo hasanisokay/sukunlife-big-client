@@ -276,7 +276,7 @@ const SingleProductPage = ({ product }) => {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => handleAddToCart(false)}
-                                    className=" bg-[#63953A] text-white py-3 rounded-full w-[172px] h-[52px] transition duration-300"
+                                    className=" bg-[#1f83b0] text-white py-3 rounded-full w-[172px] h-[52px] transition duration-300"
                                 >
                                     Add to Cart
                                 </motion.button>

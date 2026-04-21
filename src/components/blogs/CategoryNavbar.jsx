@@ -84,7 +84,7 @@ const CategoryNavbar = ({ heading, categories, noHeading = false, noBorder = fal
       <div className="overflow-x-auto">
         <div
           ref={listRef}
-          className={`flex gap-6 md:gap-8 ${!noBorder && 'border-b-2 border-[#63953a]'} pb-2 px-4 whitespace-nowrap w-max mx-auto`}
+          className={`flex gap-6 md:gap-8 ${!noBorder && 'border-b-2 border-[#1f83b0]'} pb-2 px-4 whitespace-nowrap w-max mx-auto`}
         >
           {categories.map((cat) => (
             <button
@@ -97,7 +97,7 @@ const CategoryNavbar = ({ heading, categories, noHeading = false, noBorder = fal
               <span className="flex flex-col items-center">
                 {cat.label}
                 {active === cat.id && noBorder && (
-                  <span className="mt-1 h-[3px] w-[90%] bg-[#63953A] rounded"></span>
+                  <span className="mt-1 h-[3px] w-[90%] bg-[#1f83b0] rounded"></span>
                 )}
               </span>
             </button>

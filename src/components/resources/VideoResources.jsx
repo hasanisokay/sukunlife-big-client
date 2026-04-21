@@ -80,8 +80,8 @@ const VideoResources = ({ videos = [], allTopic = [] }) => {
             onClick={() => setTopic("all")}
             className={`px-5 py-2 rounded-full text-sm font-semibold transition
             ${activeTopic === "all"
-                ? "bg-[#63953a] text-white"
-                : "border border-[#63953a]/30 text-[#63953a] hover:bg-[#63953a]/10"
+                ? "bg-[#1f83b0] text-white"
+                : "border border-[#1f83b0]/30 text-[#1f83b0] hover:bg-[#1f83b0]/10"
               }`}
           >
             All Topics ({totalCount})
@@ -96,8 +96,8 @@ const VideoResources = ({ videos = [], allTopic = [] }) => {
                 onClick={() => setTopic(key)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition
                 ${activeTopic === key
-                    ? "bg-[#63953a] text-white"
-                    : "border border-[#63953a]/30 text-[#63953a] hover:bg-[#63953a]/10"
+                    ? "bg-[#1f83b0] text-white"
+                    : "border border-[#1f83b0]/30 text-[#1f83b0] hover:bg-[#1f83b0]/10"
                   }`}
               >
                 {capitalize(topic)} ({count})
@@ -171,7 +171,7 @@ const VideoResources = ({ videos = [], allTopic = [] }) => {
 
                         {/* Topic badge */}
                         <div className="absolute top-3 left-3 px-3 py-1 rounded-full
-                                      bg-white/90 text-xs font-semibold text-[#63953a]">
+                                      bg-white/90 text-xs font-semibold text-[#1f83b0]">
                           {capitalize(video.topic || "general")}
                         </div>
 
@@ -182,7 +182,7 @@ const VideoResources = ({ videos = [], allTopic = [] }) => {
                           className="absolute inset-0 flex items-center justify-center
                                    bg-black/35 hover:bg-black/45 transition"
                         >
-                          <div className="w-16 h-16 rounded-full bg-[#63953a]
+                          <div className="w-16 h-16 rounded-full bg-[#1f83b0]
                                         flex items-center justify-center shadow-lg">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

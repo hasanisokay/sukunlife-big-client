@@ -133,11 +133,11 @@ const Pagination2 = ({
 
   // UI classes for morphic / neumorphic look
   const baseBtn =
-    'inline-flex items-center justify-center min-w-[36px] h-9 px-3 rounded-lg shadow-sm transition-shadow focus:outline-none  focus:ring-[#63953a]';
+    'inline-flex items-center justify-center min-w-[36px] h-9 px-3 rounded-lg shadow-sm transition-shadow focus:outline-none  focus:ring-[#1f83b0]';
   const primaryBtn =
     baseBtn + ' bg-gradient-to-b from-white/70 to-slate-100 border border-gray-200 text-sm font-medium';
   const activeBtn =
-    baseBtn + ' bg-[#63953a] text-white shadow-md font-semibold ring-1 ring-[#63953a]';
+    baseBtn + ' bg-[#1f83b0] text-white shadow-md font-semibold ring-1 ring-[#1f83b0]';
   const ghostBtn = baseBtn + ' bg-white/30 border border-gray-100 text-sm text-gray-700';
 
   return (

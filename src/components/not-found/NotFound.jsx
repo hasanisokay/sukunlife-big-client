@@ -9,14 +9,14 @@ const NotFound = () => {
         <h1 className="text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           404
         </h1>
-        <div className="mx-auto my-4 h-1 w-12 rounded-full bg-[#7ebc12]" />
+        <div className="mx-auto my-4 h-1 w-12 rounded-full bg-[#1f83b0]" />
         <p className="text-lg text-gray-600 dark:text-gray-400">
           The page you’re looking for doesn’t exist or was moved.
         </p>
         <div className="mt-6 flex items-center justify-center gap-4">
           <Link
             href="/"
-            className="rounded-lg bg-[#7ebc12] px-5 py-2.5 text-sm font-medium text-black shadow-md transition hover:scale-105 hover:shadow-lg"
+            className="rounded-lg bg-[#1f83b0] px-5 py-2.5 text-sm font-medium text-black shadow-md transition hover:scale-105 hover:shadow-lg"
           >
             Go Home
           </Link>

@@ -750,7 +750,7 @@ console.log(src)
             {isLoading && !error && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#63953a] mx-auto mb-3" />
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#1f83b0] mx-auto mb-3" />
                         <p className="text-xs text-gray-400">Loading video…</p>
                     </div>
                 </div>
@@ -828,7 +828,7 @@ console.log(src)
                         style={{ width: `${bufferedPct}%` }}
                     />
                     <div
-                        className="absolute inset-y-0 left-0 bg-[#63953a] rounded-full z-10 group-hover/prog:bg-[#71de18] transition-colors"
+                        className="absolute inset-y-0 left-0 bg-[#1f83b0] rounded-full z-10 group-hover/prog:bg-[#71de18] transition-colors"
                         style={{ width: `${progressPct}%` }}
                     />
                     <div
@@ -885,7 +885,7 @@ console.log(src)
                                     step="0.05"
                                     value={isMuted ? 0 : volume}
                                     onChange={handleVolumeChange}
-                                    className="w-20 h-1 accent-[#63953a] cursor-pointer"
+                                    className="w-20 h-1 accent-[#1f83b0] cursor-pointer"
                                 />
                             </div>
                         </div>
@@ -932,13 +932,13 @@ console.log(src)
                                                         key={l.index}
                                                         onClick={() => handleQualityChange(l.index)}
                                                         className={`flex items-center justify-between text-sm px-2 py-1.5 rounded transition-colors ${currentLevel === l.index
-                                                            ? "text-[#63953a] bg-white/10"
+                                                            ? "text-[#1f83b0] bg-white/10"
                                                             : "text-white hover:bg-white/5"
                                                             }`}
                                                     >
                                                         <span>{l.height === "Auto" ? "Auto" : `${l.height}p`}</span>
                                                         {currentLevel === l.index && (
-                                                            <svg className="w-4 h-4 text-[#63953a]" fill="currentColor" viewBox="0 0 24 24">
+                                                            <svg className="w-4 h-4 text-[#1f83b0]" fill="currentColor" viewBox="0 0 24 24">
                                                                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                                                             </svg>
                                                         )}
@@ -957,7 +957,7 @@ console.log(src)
                                                         key={r}
                                                         onClick={() => changePlaybackRate(r)}
                                                         className={`text-sm py-1 rounded transition-colors ${playbackRate === r
-                                                            ? "text-[#63953a] bg-white/10 font-bold"
+                                                            ? "text-[#1f83b0] bg-white/10 font-bold"
                                                             : "text-white hover:bg-white/5"
                                                             }`}
                                                     >

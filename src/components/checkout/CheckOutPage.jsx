@@ -337,7 +337,7 @@ const CheckOutPage = () => {
 
                             <button
                                 type="submit"
-                                className="w-full mt-6 px-6 py-3 text-white bg-[#63953a] rounded-full transition"
+                                className="w-full mt-6 px-6 py-3 text-white bg-[#1f83b0] rounded-full transition"
                             >
                                 Confirm Order
                             </button>

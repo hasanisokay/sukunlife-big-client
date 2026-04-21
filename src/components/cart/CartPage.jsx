@@ -136,7 +136,7 @@ const CartPage = () => {
             {cartItems?.length === 0 ? (
                 <div className="text-center py-12 mx-auto max-w-fit">
                     <p className="text-xl">Cart is empty.</p>
-                    <Link href="/shop" className="mt-4 block w-fit px-6 py-2 bg-[#63953a] text-white rounded-full transition">
+                    <Link href="/shop" className="mt-4 block w-fit px-6 py-2 bg-[#1f83b0] text-white rounded-full transition">
                         Continue Shopping
                     </Link>
                 </div>
@@ -222,7 +222,7 @@ const CartPage = () => {
                                     onChange={(e) => setTypedVoucher(e.target.value)}
                                     className={`w-full px-4 py-2 dark:bg-gray-700 dark:text-white bg-gray-200 text-gray-900 rounded-full focus:outline-none`}
                                 />
-                                {typedVoucher.length > 1 && <button className="md:w-[200px] w-[130px] h-fit md:px-6 py-1 md:py-3 text-white bg-[#63953a] rounded-full  transition"
+                                {typedVoucher.length > 1 && <button className="md:w-[200px] w-[130px] h-fit md:px-6 py-1 md:py-3 text-white bg-[#1f83b0] rounded-full  transition"
                                     onClick={validateVoucher}>
                                     {isVoucherValidating ? <span className="btn-loader"></span> : <span className="inline-block">Apply</span>}
                                 </button>}
@@ -238,7 +238,7 @@ const CartPage = () => {
                         <button
                             disabled={courseInCart && !user}
                             onClick={() => router.push("/checkout")}
-                            className="w-full mt-6 px-6 py-3 text-white bg-[#63953a] rounded-full font-semibold transition"
+                            className="w-full mt-6 px-6 py-3 text-white bg-[#1f83b0] rounded-full font-semibold transition"
                         >
                             Checkout
                         </button>

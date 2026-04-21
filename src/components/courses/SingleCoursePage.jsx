@@ -431,7 +431,7 @@ const SingleCoursePage = ({ course, enrollData }) => {
                                     viewBox="0 0 24 24"
                                 >
                                     <path
-                                        fill="#63953A"
+                                        fill="#1f83b0"
                                         d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"
                                     ></path>
                                 </svg>

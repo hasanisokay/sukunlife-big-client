@@ -129,7 +129,7 @@ export default function AudioResources({ audioList = [] }) {
                   <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
                 </svg>
               ) : (
-                <svg width="18" height="18" fill="#63953a" viewBox="0 0 24 24">
+                <svg width="18" height="18" fill="#1f83b0" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               )}
@@ -187,7 +187,7 @@ export default function AudioResources({ audioList = [] }) {
                 height="18"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#63953a"
+                stroke="#1f83b0"
                 strokeWidth="2"
               >
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

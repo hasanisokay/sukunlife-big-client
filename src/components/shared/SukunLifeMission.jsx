@@ -12,7 +12,7 @@ const SukunLifeMission = () => {
       <div className=" h-[501px] bg-black flex flex-col items-center justify-center p-8 text-white">
 
         <h3 className="font-medium text-center md:text-[36px] text-[26px] charisSIL-font">
-          Find your <span className='text-[#73FF00] italic'>peace</span>. Find your peace. Heal with <span className='text-[#73FF00] italic'>faith</span>.
+          Find your <span className='text-[#1f83b0] italic'>peace</span>. Find your peace. Heal with <span className='text-[#1f83b0] italic'>faith</span>.
         </h3>
         <h3 className="md:text-[64px] text-[50px] font-bold text-center charisSIL-font">
           Welcome to Sukun Life.

@@ -38,7 +38,7 @@ export default function PaymentFailed() {
         <div className="mt-6 flex flex-col gap-3">
           <button
             onClick={() => router.push("/")}
-            className="w-full py-3 rounded-full bg-[#63953a] text-white font-medium hover:bg-[#4a5e3a] transition"
+            className="w-full py-3 rounded-full bg-[#1f83b0] text-white font-medium hover:bg-[#4a5e3a] transition"
           >
             Try Again
           </button>

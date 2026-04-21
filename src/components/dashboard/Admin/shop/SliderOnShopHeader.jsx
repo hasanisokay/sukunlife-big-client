@@ -90,7 +90,7 @@ const SliderOnShopHeader = () => {
                 }
 
                 .swiper-pagination-bullet-active {
-                    background: #63953A !important;
+                    background: #1f83b0 !important;
                 }
             `}</style>
         </div>
