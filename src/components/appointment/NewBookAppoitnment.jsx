@@ -610,7 +610,7 @@ useEffect(() => {
                                         <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                             Payment Option
                                         </label>
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-3 flex-wrap">
                                             <button
                                                 type="button"
                                                 onClick={() => {
