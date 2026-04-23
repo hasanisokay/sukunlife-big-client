@@ -8,12 +8,12 @@ import getUserDataFromToken from "@/utils/getUserDataFromToken.mjs";
 const orderPage = async ({ searchParams }) => {
   try {
     const s = await searchParams;
-    const page = s?.page || 1;
-    const limit = s?.limit || 100;
+    const page = Number(s?.page || 1);
+    const limit = Number(s?.limit || 100);
     const keyword = s?.keyword || "";
     const sort = s?.sort || "newest";
     const filter = s?.filter || "all";
-    const skip = 0;
+    const skip = (page - 1) * limit;
 
     const user = await getUserDataFromToken();
     if (user?.role === "admin") {

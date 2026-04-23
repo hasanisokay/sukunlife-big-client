@@ -1,23 +1,26 @@
-
 'use client';
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const PaginationDefault = ({ p, totalPages }) => {
-
-    const [page, setPage] = useState(p)
-    const [hasMounted, setHasMounted] = useState(false)
+    const [page, setPage] = useState(Number(p));
+    const [hasMounted, setHasMounted] = useState(false);
     const router = useRouter();
+
+    // Sync if p prop changes externally
+    useEffect(() => {
+        setPage(Number(p));
+    }, [p]);
+
     const renderPageNumbers = () => {
         const pages = [];
-        for (let i = 1; i < totalPages; i++) {
+        for (let i = 1; i <= totalPages; i++) { // ✅ <= instead of 
             if (i === totalPages || i === 1 || Math.abs(page - i) < 3 || Math.abs(totalPages - i) < 2) {
                 pages.push(
                     <div key={i}>
                         <span className="font-semibold">
                             {Math.abs(totalPages - i) < 2 && Math.abs(totalPages - i) >= 1 &&
-
                                 Math.abs(totalPages - page) > 3 && Math.abs(page - i) > 3 && "..."}
                         </span>
                         <span className="font-semibold">
@@ -26,18 +29,17 @@ const PaginationDefault = ({ p, totalPages }) => {
                         <button
                             onClick={() => setPage(i)}
                             disabled={i === page}
-                            className={`h-[30px] rounded text-white w-[40px] mx-1 ${i === page ? ' bg-blue-600' : "bg-slate-700"} `}
+                            className={`h-[30px] rounded text-white w-[40px] mx-1 ${i === page ? 'bg-blue-600' : 'bg-slate-700'}`}
                         >
                             {i}
                         </button>
                     </div>
-
                 );
             }
-
         }
         return pages;
     };
+
     useEffect(() => {
         if (hasMounted) {
             const query = new URLSearchParams(window.location.search);
@@ -48,9 +50,10 @@ const PaginationDefault = ({ p, totalPages }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
+
     return (
         <div className="flex bg-inherit flex-wrap h-auto mt-4 mb-1 items-center mx-auto max-w-full">
-            { renderPageNumbers()}
+            {renderPageNumbers()}
         </div>
     );
 };
