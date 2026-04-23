@@ -314,7 +314,7 @@ useEffect(() => {
                                                 setOpenModal(false);
                                                 setSelectedService(null);
                                             }}
-                                            className="text-[#2e3e23] hover:text-[#4a5e3a] dark:text-[#4a5e3a] dark:hover:text-[#2e3e23] flex items-center gap-1"
+                                            className="text-[#1f83b0] hover:text-[#1f83b0] dark:text-[#1f83b0] dark:hover:text-[#1f83b0] flex items-center gap-1"
                                         >
                                             Back
                                         </button>
@@ -351,7 +351,7 @@ useEffect(() => {
                                         {/* Fixed Fee Display for Emergency Ruqyah & Hijama */}
                                         {fixedServiceFee && (
                                             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                                <p className="text-sm font-semibold text-green-800">
+                                                <p className="text-sm font-semibold text-[#1f83b0]">
                                                     Service Fee: <span className="text-lg">৳{fixedServiceFee} BDT</span>
                                                 </p>
                                             </div>
@@ -373,7 +373,7 @@ useEffect(() => {
                                         <input
                                             {...register("name")}
                                             type="text"
-                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
+                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#1f83b0] transition-all"
                                             placeholder="Enter your name"
                                         />
                                         {errors.name && (
@@ -389,7 +389,7 @@ useEffect(() => {
                                         <input
                                             {...register("email")}
                                             type="email"
-                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
+                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#1f83b0] transition-all"
                                             placeholder="Enter your email"
                                         />
                                         {errors.email && (
@@ -405,7 +405,7 @@ useEffect(() => {
                                         <input
                                             {...register("mobile")}
                                             type="text"
-                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
+                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#1f83b0] transition-all"
                                             placeholder="Enter your mobile number"
                                         />
                                         {errors.mobile && (
@@ -421,7 +421,7 @@ useEffect(() => {
                                         <input
                                             {...register("address")}
                                             type="text"
-                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
+                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#1f83b0] transition-all"
                                             placeholder="Enter your address"
                                         />
                                         {errors.address && (
@@ -478,8 +478,8 @@ useEffect(() => {
                                                         className={`
                                                             flex items-center justify-center p-3 rounded-lg cursor-pointer transition-all border-2
                                                             ${selectedTime === timeSlot.display
-                                                                ? 'bg-[#2e3e23] text-white border-[#2e3e23]'
-                                                                : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-[#4a5e3a]'
+                                                                ? 'bg-[#1f83b0] text-white border-[#1f83b0]'
+                                                                : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-[#1f83b0]'
                                                             }
                                                         `}
                                                     >
@@ -523,8 +523,8 @@ useEffect(() => {
                                                                 className={`
                                                                     flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all border-2
                                                                     ${watchConsultant === consultant
-                                                                        ? 'bg-[#2e3e23] text-white border-[#2e3e23]'
-                                                                        : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-[#4a5e3a]'
+                                                                        ? 'bg-[#1f83b0] text-white border-[#1f83b0]'
+                                                                        : 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-[#1f83b0]'
                                                                     }
                                                                 `}
                                                             >
@@ -585,7 +585,7 @@ useEffect(() => {
                                             type="text"
                                             {...register("reference")}
                                             placeholder="Who referred you?"
-                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
+                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#1f83b0] transition-all"
                                         />
                                     </div>
 
@@ -596,7 +596,7 @@ useEffect(() => {
                                         </label>
                                         <textarea
                                             {...register("problem")}
-                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#2e3e23] transition-all"
+                                            className="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-[#1f83b0] transition-all"
                                             placeholder="Describe your problem"
                                             rows={4}
                                         />
@@ -618,7 +618,7 @@ useEffect(() => {
                                                     setShowTransactionField(true);
                                                 }}
                                                 className={`flex-1 p-3 rounded-full font-medium transition-colors ${showTransactionField
-                                                    ? "bg-[#2e3e23] text-white hover:bg-[#4a5e3a]"
+                                                    ? "bg-[#1f83b0] text-white hover:bg-[#1f83b0]"
                                                     : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                                                     }`}
                                             >
@@ -632,7 +632,7 @@ useEffect(() => {
                                                     setValue("transactionNumber", "");
                                                 }}
                                                 className={`flex-1 p-3 rounded-full font-medium transition-colors ${!showTransactionField
-                                                    ? "bg-[#2e3e23] text-white hover:bg-[#4a5e3a]"
+                                                    ? "bg-[#1f83b0] text-white hover:bg-[#1f83b0]"
                                                     : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                                                     }`}
                                             >
@@ -655,12 +655,12 @@ useEffect(() => {
                                             type="checkbox"
                                             {...register("termsAgreed")}
                                             onClick={() => setShowTermsModal(true)}
-                                            className="h-4 w-4 text-[#2e3e23] border-gray-300 rounded dark:border-gray-600"
+                                            className="h-4 w-4 text-[#1f83b0] border-gray-300 rounded dark:border-gray-600"
                                         />
                                         <label className="text-sm text-gray-700 dark:text-gray-300">
                                             I agree to the{" "}
                                             <span
-                                                className="text-[#2e3e23] hover:underline cursor-pointer dark:text-[#4a5e3a]"
+                                                className="text-[#1f83b0] hover:underline cursor-pointer dark:text-[#1f83b0]"
                                                 onClick={() => setShowTermsModal(true)}
                                             >
                                                 Terms & Conditions
@@ -675,7 +675,7 @@ useEffect(() => {
                                     <button
                                         type="submit"
                                         disabled={isPaying || isLoadingSlots}
-                                        className="w-full p-3 bg-[#2e3e23] text-white rounded-full font-medium hover:bg-[#4a5e3a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full p-3 bg-[#1f83b0] text-white rounded-full font-medium hover:bg-[#1f83b0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isPaying ? "Processing..." : "Book Appointment"}
                                     </button>
@@ -725,7 +725,7 @@ useEffect(() => {
                                                     setValue("termsAgreed", true);
                                                     setShowTermsModal(false);
                                                 }}
-                                                className="px-4 py-2 bg-[#2e3e23] text-white rounded-lg hover:bg-[#4a5e3a]"
+                                                className="px-4 py-2 bg-[#1f83b0] text-white rounded-lg hover:bg-[#1f83b0]"
                                             >
                                                 Agree
                                             </button>
